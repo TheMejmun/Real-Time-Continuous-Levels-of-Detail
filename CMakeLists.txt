@@ -12,47 +12,18 @@ set(LIB_FOLDER lib)
 
 # Add files
 # Add any added source/header files here
-#set(HEADER_FILES
-#        ${HEADER_FOLDER}/parameter.h
-#        ${HEADER_FOLDER}/solver.h
-#        ${HEADER_FOLDER}/dataset.h
-#        ${HEADER_FOLDER}/point.h
-#        ${HEADER_FOLDER}/vertex.h
-#        ${HEADER_FOLDER}/util.h
-#        ${HEADER_FOLDER}/exporter.h
-#        ${HEADER_FOLDER}/benchmarker.h)
-#message(STATUS "HEADER_FILES: ${HEADER_FILES}")
-#set(SOURCE_FILES
-#        ${SOURCE_FOLDER}/parameter.cpp
-#        ${SOURCE_FOLDER}/solver.cpp
-#        ${SOURCE_FOLDER}/dataset.cpp
-#        ${SOURCE_FOLDER}/point.cpp
-#        ${SOURCE_FOLDER}/vertex.cpp
-#        ${SOURCE_FOLDER}/util.cpp
-#        ${SOURCE_FOLDER}/exporter.cpp
-#        ${SOURCE_FOLDER}/benchmarker.cpp)
-#message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
+set(HEADER_FILES
+        ${HEADER_FOLDER}/application.h)
+message(STATUS "HEADER_FILES: ${HEADER_FILES}")
+set(SOURCE_FILES
+        ${SOURCE_FOLDER}/application.cpp)
+message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable
 add_executable(Realtime_Cell_Collapse ${SOURCE_FOLDER}/main.cpp ${HEADER_FILES} ${SOURCE_FILES})
 
 # Add folders
 target_include_directories(Realtime_Cell_Collapse PUBLIC ${HEADER_FOLDER})
 target_include_directories(Realtime_Cell_Collapse PUBLIC ${SOURCE_FOLDER})
-
-# Submodules
-#add_subdirectory(${EXTERNAL_FOLDER}/glm)
-#target_link_libraries(Realtime_Cell_Collapse PUBLIC glm)
-#add_subdirectory(${EXTERNAL_FOLDER}/glfw)
-#target_link_libraries(Realtime_Cell_Collapse PUBLIC glfw)
-
-# Libraries
-#set(ENV{VULKAN_SDK} ${VK_FOLDER})
-#find_package(Vulkan REQUIRED)
-#target_include_directories(Realtime_Cell_Collapse PUBLIC ${VK_FOLDER}/Include)
-#target_link_libraries(Realtime_Cell_Collapse PUBLIC ${Vulkan_LIBRARIES})
-#
-#get_target_property(LL Realtime_Cell_Collapse LINK_LIBRARIES)
-#message(STATUS "Linked libraries: ${LL}")
 
 # vcpkg autogen
 # glfw
@@ -64,3 +35,7 @@ target_link_libraries(Realtime_Cell_Collapse PRIVATE glm::glm)
 # vulkan
 find_package(Vulkan REQUIRED)
 target_link_libraries(Realtime_Cell_Collapse PRIVATE Vulkan::Vulkan)
+
+# output
+get_target_property(LL Realtime_Cell_Collapse LINK_LIBRARIES)
+message(STATUS "Linked libraries: ${LL}")
