@@ -40,16 +40,27 @@ target_include_directories(Realtime_Cell_Collapse PUBLIC ${HEADER_FOLDER})
 target_include_directories(Realtime_Cell_Collapse PUBLIC ${SOURCE_FOLDER})
 
 # Submodules
-add_subdirectory(${EXTERNAL_FOLDER}/glm)
-target_link_libraries(Realtime_Cell_Collapse PUBLIC glm)
-add_subdirectory(${EXTERNAL_FOLDER}/glfw)
-target_link_libraries(Realtime_Cell_Collapse PUBLIC glfw)
+#add_subdirectory(${EXTERNAL_FOLDER}/glm)
+#target_link_libraries(Realtime_Cell_Collapse PUBLIC glm)
+#add_subdirectory(${EXTERNAL_FOLDER}/glfw)
+#target_link_libraries(Realtime_Cell_Collapse PUBLIC glfw)
 
 # Libraries
-set(ENV{VULKAN_SDK} ${VK_FOLDER})
-find_package(Vulkan REQUIRED)
-target_include_directories(Realtime_Cell_Collapse PUBLIC ${VK_FOLDER}/Include)
-target_link_libraries(Realtime_Cell_Collapse PUBLIC ${Vulkan_LIBRARIES})
+#set(ENV{VULKAN_SDK} ${VK_FOLDER})
+#find_package(Vulkan REQUIRED)
+#target_include_directories(Realtime_Cell_Collapse PUBLIC ${VK_FOLDER}/Include)
+#target_link_libraries(Realtime_Cell_Collapse PUBLIC ${Vulkan_LIBRARIES})
+#
+#get_target_property(LL Realtime_Cell_Collapse LINK_LIBRARIES)
+#message(STATUS "Linked libraries: ${LL}")
 
-get_target_property(LL Realtime_Cell_Collapse LINK_LIBRARIES)
-message(STATUS "Linked libraries: ${LL}")
+# vcpkg autogen
+# glfw
+find_package(glfw3 CONFIG REQUIRED)
+target_link_libraries(Realtime_Cell_Collapse PRIVATE glfw)
+# glm
+find_package(glm CONFIG REQUIRED)
+target_link_libraries(Realtime_Cell_Collapse PRIVATE glm::glm)
+# vulkan
+find_package(Vulkan REQUIRED)
+target_link_libraries(Realtime_Cell_Collapse PRIVATE Vulkan::Vulkan)
