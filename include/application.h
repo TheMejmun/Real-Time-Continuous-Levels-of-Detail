@@ -10,9 +10,20 @@
 #include <GLFW/glfw3.h>
 #include <string>
 #include <utility>
+#include <vector>
 
 const int32_t DEFAULT_WIDTH = 1280;
 const int32_t DEFAULT_HEIGHT = 720;
+
+const std::vector<const char *> VALIDATION_LAYERS = {
+        "VK_LAYER_KHRONOS_validation"
+};
+
+#ifdef NDEBUG
+const bool ENABLE_VALIDATION_LAYERS = false;
+#else
+const bool ENABLE_VALIDATION_LAYERS = true;
+#endif
 
 class Application {
 public:
@@ -28,6 +39,10 @@ private:
     void createInstance();
 
     static void printAvailableVkExtensions();
+
+    static bool checkValidationLayerSupport();
+
+    void pickPhysicalDevice();
 
     void initVulkan();
 

@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <vector>
 #include <iostream>
+#include <cstring>
 #include "application.h"
 
 void Application::run() {
@@ -63,7 +64,15 @@ void Application::createInstance() {
     createInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
     // Validation layers
-    createInfo.enabledLayerCount = 0;
+    if (ENABLE_VALIDATION_LAYERS) {
+        if (!checkValidationLayerSupport()) {
+            throw std::runtime_error("Validation layers not available!");
+        }
+        createInfo.enabledLayerCount = static_cast<uint32_t>(VALIDATION_LAYERS.size());
+        createInfo.ppEnabledLayerNames = VALIDATION_LAYERS.data();
+    } else {
+        createInfo.enabledLayerCount = 0;
+    }
 
     // Done
     VkResult result = vkCreateInstance(&createInfo, nullptr, &this->instance);
@@ -85,8 +94,38 @@ void Application::printAvailableVkExtensions() {
     }
 }
 
+bool Application::checkValidationLayerSupport() {
+    // get available layers
+    uint32_t layerCount;
+    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+    std::vector<VkLayerProperties> availableLayers(layerCount);
+    vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+    for (const char *layerName: VALIDATION_LAYERS) {
+        bool layerFound = false;
+
+        for (const auto &layerProperties: availableLayers) {
+            if (strcmp(layerName, layerProperties.layerName) == 0) {
+                layerFound = true;
+                break;
+            }
+        }
+
+        if (!layerFound) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void Application::pickPhysicalDevice() {
+    // TODO https://vulkan-tutorial.com/en/Drawing_a_triangle/Setup/Physical_devices_and_queue_families
+}
+
 void Application::initVulkan() {
     createInstance();
+    pickPhysicalDevice();
 }
 
 void Application::mainLoop() {
