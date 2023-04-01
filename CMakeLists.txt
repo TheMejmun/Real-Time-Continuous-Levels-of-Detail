@@ -3,7 +3,17 @@ project(Realtime_Cell_Collapse)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(VK_FOLDER "C:/VulkanSDK/1.3.239.0")
+#
+if (WIN32)
+    set(VK_FOLDER "C:/VulkanSDK/1.3.239.0")
+elseif (LINUX)
+
+elseif (UNIX)
+    set(VK_FOLDER "$ENV{HOME}/VulkanSDK/1.3.239.0")
+    message(STATUS "HELLO WORLD!!!!!")
+    message(STATUS ${VK_FOLDER})
+endif ()
+
 
 set(HEADER_FOLDER include)
 set(SOURCE_FOLDER source)
