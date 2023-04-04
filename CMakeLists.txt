@@ -3,17 +3,15 @@ project(Realtime_Cell_Collapse)
 
 set(CMAKE_CXX_STANDARD 17)
 
-#
 if (WIN32)
     set(VK_FOLDER "C:/VulkanSDK/1.3.239.0")
+    message(STATUS "Windows mode")
 elseif (LINUX)
-
+    message(STATUS "Linux mode")
 elseif (UNIX)
     set(VK_FOLDER "$ENV{HOME}/VulkanSDK/1.3.239.0")
-    message(STATUS "HELLO WORLD!!!!!")
-    message(STATUS ${VK_FOLDER})
+    message(STATUS "Unix mode")
 endif ()
-
 
 set(HEADER_FOLDER include)
 set(SOURCE_FOLDER source)
@@ -45,6 +43,9 @@ target_link_libraries(Realtime_Cell_Collapse PRIVATE glm::glm)
 # vulkan
 find_package(Vulkan REQUIRED)
 target_link_libraries(Realtime_Cell_Collapse PRIVATE Vulkan::Vulkan)
+# vulkan hpp
+find_path(VULKAN_HPP_INCLUDE_DIRS "vulkan/vulkan.hpp")
+target_include_directories(Realtime_Cell_Collapse PRIVATE ${VULKAN_HPP_INCLUDE_DIRS})
 
 # output
 get_target_property(LL Realtime_Cell_Collapse LINK_LIBRARIES)
