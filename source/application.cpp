@@ -8,6 +8,7 @@
 #include <cstring>
 #include "application.h"
 
+
 void Application::run() {
     this->initWindow();
     this->initVulkan();
@@ -64,6 +65,8 @@ void Application::createInstance() {
     createInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
     // Validation layers
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "UnreachableCode"
     if (ENABLE_VALIDATION_LAYERS) {
         if (!checkValidationLayerSupport()) {
             throw std::runtime_error("Validation layers not available!");
@@ -73,6 +76,7 @@ void Application::createInstance() {
     } else {
         createInfo.enabledLayerCount = 0;
     }
+#pragma clang diagnostic pop
 
     // Done
     VkResult result = vkCreateInstance(&createInfo, nullptr, &this->instance);
@@ -119,8 +123,94 @@ bool Application::checkValidationLayerSupport() {
     return true;
 }
 
+void Application::printAvailablePhysicalDevices() {
+    uint32_t deviceCount = 0;
+    vkEnumeratePhysicalDevices(this->instance, &deviceCount, nullptr);
+    std::vector<VkPhysicalDevice> devices(deviceCount);
+    vkEnumeratePhysicalDevices(this->instance, &deviceCount, devices.data());
+
+    std::cout << "Available physical devices:" << std::endl;
+
+    for (const auto &device: devices) {
+        VkPhysicalDeviceProperties deviceProperties;
+        vkGetPhysicalDeviceProperties(device, &deviceProperties);
+        std::cout << "\t" << deviceProperties.deviceName << std::endl;
+    }
+}
+
 void Application::pickPhysicalDevice() {
-    // TODO https://vulkan-tutorial.com/en/Drawing_a_triangle/Setup/Physical_devices_and_queue_families
+    printAvailablePhysicalDevices();
+
+    uint32_t deviceCount = 0;
+    vkEnumeratePhysicalDevices(this->instance, &deviceCount, nullptr);
+
+    if (deviceCount == 0) {
+        throw std::runtime_error("failed to find GPUs with Vulkan support!");
+    }
+
+    std::vector<VkPhysicalDevice> devices(deviceCount);
+    vkEnumeratePhysicalDevices(this->instance, &deviceCount, devices.data());
+
+    for (const auto &device: devices) {
+        if (isDeviceSuitable(device, true)) {
+            this->physicalDevice = device;
+            break;
+        } else if (isDeviceSuitable(device, false)) {
+            this->physicalDevice = device;
+            // Keep looking for a better one
+        }
+    }
+
+    VkPhysicalDeviceProperties deviceProperties;
+    vkGetPhysicalDeviceProperties(this->physicalDevice, &deviceProperties);
+    std::cout << "Picked physical device: " << deviceProperties.deviceName << std::endl;
+
+    if (this->physicalDevice == VK_NULL_HANDLE) {
+        throw std::runtime_error("failed to find a suitable GPU!");
+    }
+}
+
+bool Application::isDeviceSuitable(VkPhysicalDevice device, bool strictMode) {
+    VkPhysicalDeviceProperties deviceProperties;
+    vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+    VkPhysicalDeviceFeatures deviceFeatures;
+    vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+    bool suitable = true;
+    if (strictMode) {
+        suitable = deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+    }
+
+    QueueFamilyIndices indices = Application::findQueueFamilies(device);
+    suitable = suitable && indices.isComplete();
+
+    return suitable;
+}
+
+bool QueueFamilyIndices::isComplete() const {
+    return graphicsFamily.has_value();
+}
+
+QueueFamilyIndices Application::findQueueFamilies(VkPhysicalDevice device) {
+    QueueFamilyIndices indices;
+
+    uint32_t queueFamilyCount = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+    std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+    int i = 0;
+    for (const auto &queueFamily: queueFamilies) {
+        if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+            indices.graphicsFamily = i;
+        }
+
+        ++i;
+    }
+
+    return indices;
 }
 
 void Application::initVulkan() {
