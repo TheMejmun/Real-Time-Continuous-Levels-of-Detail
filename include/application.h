@@ -57,6 +57,8 @@ private:
 
     static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
+    void createLogicalDevice();
+
     void initVulkan();
 
     void mainLoop();
@@ -68,6 +70,8 @@ private:
     int32_t width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT;
     VkInstance instance = nullptr;
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+    VkDevice device;
+    VkQueue graphicsQueue;
 };
 
 #endif //REALTIME_CELL_COLLAPSE_APPLICATION_H

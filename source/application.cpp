@@ -145,7 +145,7 @@ void Application::pickPhysicalDevice() {
     vkEnumeratePhysicalDevices(this->instance, &deviceCount, nullptr);
 
     if (deviceCount == 0) {
-        throw std::runtime_error("failed to find GPUs with Vulkan support!");
+        throw std::runtime_error("Failed to find GPUs with Vulkan support!");
     }
 
     std::vector<VkPhysicalDevice> devices(deviceCount);
@@ -166,7 +166,7 @@ void Application::pickPhysicalDevice() {
     std::cout << "Picked physical device: " << deviceProperties.deviceName << std::endl;
 
     if (this->physicalDevice == VK_NULL_HANDLE) {
-        throw std::runtime_error("failed to find a suitable GPU!");
+        throw std::runtime_error("Failed to find a suitable GPU!");
     }
 }
 
@@ -181,6 +181,8 @@ bool Application::isDeviceSuitable(VkPhysicalDevice device, bool strictMode) {
     if (strictMode) {
         suitable = deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
     }
+
+//    suitable = suitable && deviceFeatures. = VK_KHR_swapchain
 
     QueueFamilyIndices indices = Application::findQueueFamilies(device);
     suitable = suitable && indices.isComplete();
@@ -213,9 +215,48 @@ QueueFamilyIndices Application::findQueueFamilies(VkPhysicalDevice device) {
     return indices;
 }
 
+void Application::createLogicalDevice() {
+    QueueFamilyIndices indices = findQueueFamilies(this->physicalDevice);
+
+    VkDeviceQueueCreateInfo queueCreateInfo{};
+    queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
+    queueCreateInfo.queueCount = 1;
+    float queuePriority = 1.0f;
+    queueCreateInfo.pQueuePriorities = &queuePriority;
+
+    // Define the features we will use as queried in isDeviceSuitable
+    VkPhysicalDeviceFeatures deviceFeatures{};
+
+    VkDeviceCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    createInfo.pQueueCreateInfos = &queueCreateInfo;
+    createInfo.queueCreateInfoCount = 1;
+    createInfo.pEnabledFeatures = &deviceFeatures;
+
+    createInfo.enabledExtensionCount = 0;
+
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "UnreachableCode"
+    if (ENABLE_VALIDATION_LAYERS) {
+        createInfo.enabledLayerCount = static_cast<uint32_t>(VALIDATION_LAYERS.size());
+        createInfo.ppEnabledLayerNames = VALIDATION_LAYERS.data();
+    } else {
+        createInfo.enabledLayerCount = 0;
+    }
+#pragma clang diagnostic pop
+
+    if (vkCreateDevice(this->physicalDevice, &createInfo, nullptr, &this->device) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create logical device!");
+    }
+    
+    vkGetDeviceQueue(this->device, indices.graphicsFamily.value(), 0, &graphicsQueue);
+}
+
 void Application::initVulkan() {
     createInstance();
     pickPhysicalDevice();
+    createLogicalDevice();
 }
 
 void Application::mainLoop() {
@@ -229,6 +270,8 @@ void Application::mainLoop() {
 }
 
 void Application::cleanup() {
+    vkDestroyDevice(device, nullptr);
+
     vkDestroyInstance(this->instance, nullptr);
 
     glfwDestroyWindow(this->window);
