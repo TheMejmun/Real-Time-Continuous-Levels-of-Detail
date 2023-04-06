@@ -6,6 +6,7 @@
 #include <vector>
 #include <iostream>
 #include <cstring>
+#include <set>
 #include "engine.h"
 
 
@@ -182,8 +183,6 @@ bool Engine::isDeviceSuitable(VkPhysicalDevice device, bool strictMode) {
         suitable = deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
     }
 
-//    suitable = suitable && deviceFeatures. = VK_KHR_swapchain
-
     QueueFamilyIndices indices = Engine::findQueueFamilies(device);
     suitable = suitable && indices.isComplete();
 
@@ -191,7 +190,13 @@ bool Engine::isDeviceSuitable(VkPhysicalDevice device, bool strictMode) {
 }
 
 bool QueueFamilyIndices::isComplete() const {
-    return graphicsFamily.has_value();
+    return this->graphicsFamily.has_value() &&
+           this->presentFamily.has_value();
+}
+
+bool QueueFamilyIndices::isUnifiedGraphicsPresentQueue() const {
+    if (!this->isComplete()) return false;
+    return this->graphicsFamily.value() == this->presentFamily.value();
 }
 
 QueueFamilyIndices Engine::findQueueFamilies(VkPhysicalDevice device) {
@@ -203,10 +208,26 @@ QueueFamilyIndices Engine::findQueueFamilies(VkPhysicalDevice device) {
     std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
+
     int i = 0;
     for (const auto &queueFamily: queueFamilies) {
+        VkBool32 presentSupport = false;
+        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, this->surface, &presentSupport);
+
+        // Better performance if a queue supports all features together -> break if found.
+        if ((queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) &&
+            (presentSupport)) {
+            indices.graphicsFamily = i;
+            indices.presentFamily = i;
+
+            break;
+        }
+
         if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
             indices.graphicsFamily = i;
+        }
+        if (presentSupport) {
+            indices.presentFamily = i;
         }
 
         ++i;
@@ -217,23 +238,34 @@ QueueFamilyIndices Engine::findQueueFamilies(VkPhysicalDevice device) {
 
 void Engine::createLogicalDevice() {
     QueueFamilyIndices indices = findQueueFamilies(this->physicalDevice);
+    if (indices.isUnifiedGraphicsPresentQueue()) {
+        std::cout << "Found a queue that supports both graphics and presentation!" << std::endl;
+    }
 
-    VkDeviceQueueCreateInfo queueCreateInfo{};
-    queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
-    queueCreateInfo.queueCount = 1;
+
+    std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+    // If the indices are the same, the set will merge them -> Only one single queue creation.
+    std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+
     float queuePriority = 1.0f;
-    queueCreateInfo.pQueuePriorities = &queuePriority;
+    for (uint32_t queueFamily : uniqueQueueFamilies) {
+        VkDeviceQueueCreateInfo queueCreateInfo{};
+        queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queueCreateInfo.queueFamilyIndex = queueFamily;
+        queueCreateInfo.queueCount = 1;
+        queueCreateInfo.pQueuePriorities = &queuePriority;
+        queueCreateInfos.push_back(queueCreateInfo);
+    }
 
     // Define the features we will use as queried in isDeviceSuitable
     VkPhysicalDeviceFeatures deviceFeatures{};
 
     VkDeviceCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.pQueueCreateInfos = &queueCreateInfo;
-    createInfo.queueCreateInfoCount = 1;
-    createInfo.pEnabledFeatures = &deviceFeatures;
 
+    createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+    createInfo.pQueueCreateInfos = queueCreateInfos.data();
+    createInfo.pEnabledFeatures = &deviceFeatures;
     createInfo.enabledExtensionCount = 0;
 
 #pragma clang diagnostic push
@@ -250,7 +282,9 @@ void Engine::createLogicalDevice() {
         throw std::runtime_error("Failed to create logical device!");
     }
 
+    // Get each queue
     vkGetDeviceQueue(this->logicalDevice, indices.graphicsFamily.value(), 0, &graphicsQueue);
+    vkGetDeviceQueue(this->logicalDevice, indices.presentFamily.value(), 0, &presentQueue);
 }
 
 void Engine::createSurface() {

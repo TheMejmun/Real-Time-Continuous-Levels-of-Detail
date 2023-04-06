@@ -28,8 +28,10 @@ const bool ENABLE_VALIDATION_LAYERS = true;
 
 struct QueueFamilyIndices {
     std::optional<uint32_t> graphicsFamily;
+    std::optional<uint32_t> presentFamily;
 
     [[nodiscard]] bool isComplete() const;
+    [[nodiscard]] bool isUnifiedGraphicsPresentQueue() const;
 };
 
 class Engine {
@@ -53,9 +55,9 @@ private:
 
     void printAvailablePhysicalDevices();
 
-    static bool isDeviceSuitable(VkPhysicalDevice device, bool strictMode);
+    bool isDeviceSuitable(VkPhysicalDevice device, bool strictMode);
 
-    static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
     void createLogicalDevice();
 
@@ -76,6 +78,7 @@ private:
     VkPhysicalDevice physicalDevice = nullptr;
     VkDevice logicalDevice = nullptr;
     VkQueue graphicsQueue = nullptr;
+    VkQueue presentQueue = nullptr;
     VkSurfaceKHR surface = nullptr;
 };
 
