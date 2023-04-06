@@ -47,6 +47,9 @@ target_link_libraries(Realtime_Cell_Collapse PRIVATE Vulkan::Vulkan)
 # vulkan hpp
 find_path(VULKAN_HPP_INCLUDE_DIRS "vulkan/vulkan.hpp")
 target_include_directories(Realtime_Cell_Collapse PRIVATE ${VULKAN_HPP_INCLUDE_DIRS})
+# imgui
+find_package(imgui CONFIG REQUIRED)
+target_link_libraries(Realtime_Cell_Collapse PRIVATE imgui::imgui)
 
 # output
 get_target_property(LL Realtime_Cell_Collapse LINK_LIBRARIES)
