@@ -22,10 +22,10 @@ set(LIB_FOLDER lib)
 # Add files
 # Add any added source/header files here
 set(HEADER_FILES
-        ${HEADER_FOLDER}/application.h)
+        ${HEADER_FOLDER}/engine.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
-        ${SOURCE_FOLDER}/application.cpp)
+        ${SOURCE_FOLDER}/engine.cpp)
 message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable
 add_executable(Realtime_Cell_Collapse ${SOURCE_FOLDER}/main.cpp ${HEADER_FILES} ${SOURCE_FILES})
@@ -50,6 +50,9 @@ target_include_directories(Realtime_Cell_Collapse PRIVATE ${VULKAN_HPP_INCLUDE_D
 # imgui
 find_package(imgui CONFIG REQUIRED)
 target_link_libraries(Realtime_Cell_Collapse PRIVATE imgui::imgui)
+# assimp
+find_package(assimp CONFIG REQUIRED)
+target_link_libraries(Realtime_Cell_Collapse PRIVATE assimp::assimp)
 
 # output
 get_target_property(LL Realtime_Cell_Collapse LINK_LIBRARIES)

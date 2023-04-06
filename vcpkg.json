@@ -26,5 +26,8 @@
     "name" : "imgui",
     "version>=" : "1.89.4",
     "$comment" : "    # this is heuristically generated, and may not be correct\n\n    find_package(imgui CONFIG REQUIRED)\n\n    target_link_libraries(main PRIVATE imgui::imgui)\n"
+  }, {
+    "name" : "assimp",
+    "version>=" : "5.2.5"
   } ]
 }
