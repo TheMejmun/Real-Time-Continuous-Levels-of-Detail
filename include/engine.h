@@ -73,7 +73,7 @@ private:
 
     // Vulkan
     VkInstance instance = nullptr;
-    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+    VkPhysicalDevice physicalDevice = nullptr;
     VkDevice logicalDevice = nullptr;
     VkQueue graphicsQueue = nullptr;
     VkSurfaceKHR surface = nullptr;
