@@ -74,9 +74,9 @@ private:
     // Vulkan
     VkInstance instance = nullptr;
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-    VkDevice device;
-    VkQueue graphicsQueue;
-    VkSurfaceKHR surface;
+    VkDevice logicalDevice = nullptr;
+    VkQueue graphicsQueue = nullptr;
+    VkSurfaceKHR surface = nullptr;
 };
 
 #endif //REALTIME_CELL_COLLAPSE_ENGINE_H

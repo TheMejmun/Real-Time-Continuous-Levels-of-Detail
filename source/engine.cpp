@@ -246,11 +246,11 @@ void Engine::createLogicalDevice() {
     }
 #pragma clang diagnostic pop
 
-    if (vkCreateDevice(this->physicalDevice, &createInfo, nullptr, &this->device) != VK_SUCCESS) {
+    if (vkCreateDevice(this->physicalDevice, &createInfo, nullptr, &this->logicalDevice) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create logical device!");
     }
 
-    vkGetDeviceQueue(this->device, indices.graphicsFamily.value(), 0, &graphicsQueue);
+    vkGetDeviceQueue(this->logicalDevice, indices.graphicsFamily.value(), 0, &graphicsQueue);
 }
 
 void Engine::createSurface() {
@@ -277,7 +277,7 @@ void Engine::mainLoop() {
 }
 
 void Engine::cleanup() {
-    vkDestroyDevice(this->device, nullptr);
+    vkDestroyDevice(this->logicalDevice, nullptr);
 
     vkDestroySurfaceKHR(this->instance, this->surface, nullptr);
 
