@@ -253,8 +253,15 @@ void Engine::createLogicalDevice() {
     vkGetDeviceQueue(this->device, indices.graphicsFamily.value(), 0, &graphicsQueue);
 }
 
+void Engine::createSurface() {
+    if (glfwCreateWindowSurface(this->instance, this->window, nullptr, &this->surface) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create window surface!");
+    }
+}
+
 void Engine::initVulkan() {
     createInstance();
+    createSurface();
     pickPhysicalDevice();
     createLogicalDevice();
 }
@@ -270,7 +277,9 @@ void Engine::mainLoop() {
 }
 
 void Engine::cleanup() {
-    vkDestroyDevice(device, nullptr);
+    vkDestroyDevice(this->device, nullptr);
+
+    vkDestroySurfaceKHR(this->instance, this->surface, nullptr);
 
     vkDestroyInstance(this->instance, nullptr);
 

@@ -59,6 +59,8 @@ private:
 
     void createLogicalDevice();
 
+    void createSurface();
+
     void initVulkan();
 
     void mainLoop();
