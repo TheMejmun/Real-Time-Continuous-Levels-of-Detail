@@ -3,13 +3,13 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <iostream>
 
-#include "application.h"
+#include "engine.h"
 
 int main() {
-    Application app("Hello World!");
+    Engine engine("Hello World!");
 
     try {
-        app.run();
+        engine.run();
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;

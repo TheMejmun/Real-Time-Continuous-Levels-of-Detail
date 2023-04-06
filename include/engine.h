@@ -2,8 +2,8 @@
 // Created by Sam on 2023-03-28.
 //
 
-#ifndef REALTIME_CELL_COLLAPSE_APPLICATION_H
-#define REALTIME_CELL_COLLAPSE_APPLICATION_H
+#ifndef REALTIME_CELL_COLLAPSE_ENGINE_H
+#define REALTIME_CELL_COLLAPSE_ENGINE_H
 
 #define GLFW_INCLUDE_VULKAN
 
@@ -32,9 +32,9 @@ struct QueueFamilyIndices {
     [[nodiscard]] bool isComplete() const;
 };
 
-class Application {
+class Engine {
 public:
-    explicit Application(std::string title) : title(std::move(title)) {}
+    explicit Engine(std::string title) : title(std::move(title)) {}
 
     void run();
 
@@ -66,12 +66,15 @@ private:
     void cleanup();
 
     std::string title;
-    GLFWwindow *window = nullptr;
     int32_t width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT;
+    GLFWwindow *window = nullptr;
+
+    // Vulkan
     VkInstance instance = nullptr;
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
     VkDevice device;
     VkQueue graphicsQueue;
+    VkSurfaceKHR surface;
 };
 
-#endif //REALTIME_CELL_COLLAPSE_APPLICATION_H
+#endif //REALTIME_CELL_COLLAPSE_ENGINE_H

@@ -6,23 +6,23 @@
 #include <vector>
 #include <iostream>
 #include <cstring>
-#include "application.h"
+#include "engine.h"
 
 
-void Application::run() {
+void Engine::run() {
     this->initWindow();
     this->initVulkan();
     this->mainLoop();
     this->cleanup();
 }
 
-void Application::run(const int32_t &w, const int32_t &h) {
+void Engine::run(const int32_t &w, const int32_t &h) {
     this->width = w;
     this->height = h;
     run();
 }
 
-void Application::initWindow() {
+void Engine::initWindow() {
     glfwInit();
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -31,7 +31,7 @@ void Application::initWindow() {
     this->window = glfwCreateWindow(this->width, this->height, this->title.c_str(), nullptr, nullptr);
 }
 
-void Application::createInstance() {
+void Engine::createInstance() {
     // App Info
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -60,7 +60,7 @@ void Application::createInstance() {
     createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 
     // Extensions final
-    Application::printAvailableVkExtensions();
+    Engine::printAvailableVkExtensions();
     createInfo.enabledExtensionCount = (uint32_t) requiredExtensions.size();
     createInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
@@ -85,7 +85,7 @@ void Application::createInstance() {
     }
 }
 
-void Application::printAvailableVkExtensions() {
+void Engine::printAvailableVkExtensions() {
     uint32_t extensionCount = 0;
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 
@@ -98,7 +98,7 @@ void Application::printAvailableVkExtensions() {
     }
 }
 
-bool Application::checkValidationLayerSupport() {
+bool Engine::checkValidationLayerSupport() {
     // get available layers
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -123,7 +123,7 @@ bool Application::checkValidationLayerSupport() {
     return true;
 }
 
-void Application::printAvailablePhysicalDevices() {
+void Engine::printAvailablePhysicalDevices() {
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(this->instance, &deviceCount, nullptr);
     std::vector<VkPhysicalDevice> devices(deviceCount);
@@ -138,7 +138,7 @@ void Application::printAvailablePhysicalDevices() {
     }
 }
 
-void Application::pickPhysicalDevice() {
+void Engine::pickPhysicalDevice() {
     printAvailablePhysicalDevices();
 
     uint32_t deviceCount = 0;
@@ -170,7 +170,7 @@ void Application::pickPhysicalDevice() {
     }
 }
 
-bool Application::isDeviceSuitable(VkPhysicalDevice device, bool strictMode) {
+bool Engine::isDeviceSuitable(VkPhysicalDevice device, bool strictMode) {
     VkPhysicalDeviceProperties deviceProperties;
     vkGetPhysicalDeviceProperties(device, &deviceProperties);
 
@@ -184,7 +184,7 @@ bool Application::isDeviceSuitable(VkPhysicalDevice device, bool strictMode) {
 
 //    suitable = suitable && deviceFeatures. = VK_KHR_swapchain
 
-    QueueFamilyIndices indices = Application::findQueueFamilies(device);
+    QueueFamilyIndices indices = Engine::findQueueFamilies(device);
     suitable = suitable && indices.isComplete();
 
     return suitable;
@@ -194,7 +194,7 @@ bool QueueFamilyIndices::isComplete() const {
     return graphicsFamily.has_value();
 }
 
-QueueFamilyIndices Application::findQueueFamilies(VkPhysicalDevice device) {
+QueueFamilyIndices Engine::findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
 
     uint32_t queueFamilyCount = 0;
@@ -215,7 +215,7 @@ QueueFamilyIndices Application::findQueueFamilies(VkPhysicalDevice device) {
     return indices;
 }
 
-void Application::createLogicalDevice() {
+void Engine::createLogicalDevice() {
     QueueFamilyIndices indices = findQueueFamilies(this->physicalDevice);
 
     VkDeviceQueueCreateInfo queueCreateInfo{};
@@ -253,13 +253,13 @@ void Application::createLogicalDevice() {
     vkGetDeviceQueue(this->device, indices.graphicsFamily.value(), 0, &graphicsQueue);
 }
 
-void Application::initVulkan() {
+void Engine::initVulkan() {
     createInstance();
     pickPhysicalDevice();
     createLogicalDevice();
 }
 
-void Application::mainLoop() {
+void Engine::mainLoop() {
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
@@ -269,7 +269,7 @@ void Application::mainLoop() {
     }
 }
 
-void Application::cleanup() {
+void Engine::cleanup() {
     vkDestroyDevice(device, nullptr);
 
     vkDestroyInstance(this->instance, nullptr);
