@@ -23,10 +23,12 @@ set(LIB_FOLDER lib)
 # Add files
 # Add any added source/header files here
 set(HEADER_FILES
-        ${HEADER_FOLDER}/engine.h)
+        ${HEADER_FOLDER}/engine.h
+        ${HEADER_FOLDER}/importer.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
-        ${SOURCE_FOLDER}/engine.cpp)
+        ${SOURCE_FOLDER}/engine.cpp
+        ${SOURCE_FOLDER}/importer.cpp)
 message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable
 add_executable(Realtime_Cell_Collapse ${SOURCE_FOLDER}/main.cpp ${HEADER_FILES} ${SOURCE_FILES})
@@ -58,3 +60,7 @@ target_link_libraries(Realtime_Cell_Collapse PRIVATE assimp::assimp)
 # output
 get_target_property(LL Realtime_Cell_Collapse LINK_LIBRARIES)
 message(STATUS "Linked libraries: ${LL}")
+
+# add resources
+add_custom_target(CopyAssets COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/CopyAssets.cmake)
+add_dependencies(Realtime_Cell_Collapse CopyAssets)

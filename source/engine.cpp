@@ -10,6 +10,7 @@
 #include <limits> // Necessary for std::numeric_limits
 #include <algorithm> // Necessary for std::clamp
 #include "engine.h"
+#include "importer.h"
 
 bool QueueFamilyIndices::isComplete() const {
     return this->graphicsFamily.has_value() &&
@@ -500,6 +501,37 @@ void Engine::createImageViews() {
     }
 }
 
+void Engine::createGraphicsPipeline() {
+    auto vertShaderCode = Importer::readFile("resources/shaders/triangle.vert.spv");
+    std::cout << "Loaded vertex shader with byte size: " << vertShaderCode.size() << std::endl;
+    auto fragShaderCode = Importer::readFile("resources/shaders/triangle.frag.spv");
+    std::cout << "Loaded fragment shader with byte size: " << fragShaderCode.size() << std::endl;
+
+    VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
+    VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
+
+    VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
+    vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    vertShaderStageInfo.module = vertShaderModule;
+    vertShaderStageInfo.pName = "main";
+    // Use pSpecializationInfo to specify constants
+
+    VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
+    fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    fragShaderStageInfo.module = fragShaderModule;
+    fragShaderStageInfo.pName = "main";
+
+    VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
+
+    // TODO https://vulkan-tutorial.com/en/Drawing_a_triangle/Graphics_pipeline_basics/Fixed_functions
+
+    // Once the pipeline is created, we don't need this anymore
+    vkDestroyShaderModule(this->logicalDevice, fragShaderModule, nullptr);
+    vkDestroyShaderModule(this->logicalDevice, vertShaderModule, nullptr);
+}
+
 void Engine::initVulkan() {
     createInstance();
     createSurface();
@@ -507,6 +539,7 @@ void Engine::initVulkan() {
     createLogicalDevice();
     createSwapchain();
     createImageViews();
+    createGraphicsPipeline();
 }
 
 void Engine::mainLoop() {
@@ -536,4 +569,19 @@ void Engine::cleanup() {
     glfwDestroyWindow(this->window);
 
     glfwTerminate();
+}
+
+VkShaderModule Engine::createShaderModule(const std::vector<char> &code) {
+    VkShaderModuleCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    createInfo.codeSize = code.size();
+    // Cast the pointer. Vectors already handle proper memory alignment.
+    createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+
+    VkShaderModule shaderModule;
+    if (vkCreateShaderModule(this->logicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create shader module!");
+    }
+
+    return shaderModule;
 }

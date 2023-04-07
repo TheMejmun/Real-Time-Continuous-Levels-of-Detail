@@ -85,13 +85,18 @@ private:
     void createLogicalDevice();
 
     void createSwapchain();
+
     void createImageViews();
+
+    void createGraphicsPipeline();
 
     void initVulkan();
 
     void mainLoop();
 
     void cleanup();
+
+    VkShaderModule createShaderModule(const std::vector<char>& code);
 
     std::string title;
     int32_t width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT;
