@@ -460,7 +460,7 @@ void Engine::createSwapchain() {
     createInfo.oldSwapchain = nullptr; // Put previous swapchain here if overridden, e.g. if window size changed
 
     if (vkCreateSwapchainKHR(this->logicalDevice, &createInfo, nullptr, &this->swapchain) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create swap chain!");
+        throw std::runtime_error("Failed to create swap chain!");
     }
 
     // imageCount only specified a minimum!
@@ -498,8 +498,6 @@ void Engine::createImageViews() {
             throw std::runtime_error("Failed to create image views!");
         }
     }
-
-
 }
 
 void Engine::initVulkan() {
@@ -523,7 +521,7 @@ void Engine::mainLoop() {
 
 void Engine::cleanup() {
     // Unlike SC images, SC image views were created manually and have to be destroyed manually
-    for (auto imageView : swapchainImageViews) {
+    for (auto imageView: swapchainImageViews) {
         vkDestroyImageView(this->logicalDevice, imageView, nullptr);
     }
 
