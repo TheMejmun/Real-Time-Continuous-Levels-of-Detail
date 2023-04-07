@@ -85,6 +85,7 @@ private:
     void createLogicalDevice();
 
     void createSwapchain();
+    void createImageViews();
 
     void initVulkan();
 
@@ -105,8 +106,9 @@ private:
     VkSurfaceKHR surface = nullptr;
     VkSwapchainKHR swapchain = nullptr;
     std::vector<VkImage> swapchainImages;
-    VkFormat swapchainImageFormat;
-    VkExtent2D swapchainExtent;
+    VkFormat swapchainImageFormat{};
+    VkExtent2D swapchainExtent{};
+    std::vector<VkImageView> swapchainImageViews;
 };
 
 #endif //REALTIME_CELL_COLLAPSE_ENGINE_H
