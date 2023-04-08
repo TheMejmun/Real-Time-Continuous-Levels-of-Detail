@@ -13,6 +13,9 @@
 #include <vector>
 #include <optional>
 
+#define DYNAMIC_VIEWPORT
+//#define WIREFRAME_MODE
+
 const int32_t DEFAULT_WIDTH = 1280;
 const int32_t DEFAULT_HEIGHT = 720;
 
@@ -21,7 +24,8 @@ const std::vector<const char *> VALIDATION_LAYERS = {
 };
 
 const std::vector<const char *> REQUIRED_DEVICE_EXTENSIONS = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+
 };
 
 #ifdef NDEBUG
@@ -114,6 +118,7 @@ private:
     VkFormat swapchainImageFormat{};
     VkExtent2D swapchainExtent{};
     std::vector<VkImageView> swapchainImageViews;
+    VkPipelineLayout pipelineLayout= nullptr;
 };
 
 #endif //REALTIME_CELL_COLLAPSE_ENGINE_H
