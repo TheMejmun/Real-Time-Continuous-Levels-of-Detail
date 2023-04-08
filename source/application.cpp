@@ -25,28 +25,33 @@ void Application::init() {
 
 void Application::mainLoop() {
     while (!this->windowManager->shouldClose()) {
+        // Input
         this->inputManager->poll();
-
-        this->currentGPUWaitTime = renderer->draw();
-
         if (this->inputManager->closeWindow) {
             this->windowManager->close();
         }
 
-        // Bench
-        chrono_sec_point time = Timer::now();
-        this->currentFrameTime = Timer::duration(this->lastTimestamp, time);
-        auto fps = (double) Timer::FPS( this->currentFrameTime);
-        auto fps_old = (double) this->currentFPS;
-        this->currentFPS = (uint32_t) ((fps_old * SMOOTH_FPS_DISPLAY_BIAS + fps) / (SMOOTH_FPS_DISPLAY_BIAS + 1.0));
+        // Render
+        auto gpuWaitTime = renderer->draw();
+
+        // Benchmark
+        auto time = Timer::now();
+        auto frameTime = Timer::duration(this->lastTimestamp, time);
+        this->currentFrameTime =
+                ((this->currentFrameTime * SMOOTH_FPS_DISPLAY_BIAS + frameTime) / (SMOOTH_FPS_DISPLAY_BIAS + 1.0));
+        this->currentGPUWaitTime =
+                ((this->currentGPUWaitTime * SMOOTH_FPS_DISPLAY_BIAS + gpuWaitTime) / (SMOOTH_FPS_DISPLAY_BIAS + 1.0));
+        this->currentFPS = (uint32_t) Timer::FPS(this->currentFrameTime);
+
         this->lastTimestamp = time;
 
-        windowManager->updateTitle(std::string("FPS: ") +
-                                   std::to_string(this->currentFPS) +
-                                   std::string(" Frame time: ") +
-                                   std::to_string(this->currentFrameTime) +
-                                   std::string(" GPU wait time: ") +
-                                   std::to_string(this->currentGPUWaitTime));
+        auto perfText = std::string("FPS: ") +
+                        std::to_string(this->currentFPS) +
+                        std::string(" Frame time: ") +
+                        std::to_string(this->currentFrameTime) +
+                        std::string(" GPU wait time: ") +
+                        std::to_string(this->currentGPUWaitTime);
+        std::cout << perfText << std::endl;
     }
 }
 
