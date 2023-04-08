@@ -96,6 +96,8 @@ private:
 
     void createGraphicsPipeline();
 
+    void createFramebuffers();
+
     void initVulkan();
 
     void mainLoop();
@@ -103,6 +105,16 @@ private:
     void cleanup();
 
     VkShaderModule createShaderModule(const std::vector<char> &code);
+
+    void createCommandPool();
+
+    void createCommandBuffer();
+
+    void createSyncObjects();
+
+    void recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex);
+
+    void drawFrame();
 
     std::string title;
     int32_t width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT;
@@ -120,9 +132,16 @@ private:
     VkFormat swapchainImageFormat{};
     VkExtent2D swapchainExtent{};
     std::vector<VkImageView> swapchainImageViews;
-    VkRenderPass renderPass= nullptr;
+    VkRenderPass renderPass = nullptr;
     VkPipelineLayout pipelineLayout = nullptr;
-    VkPipeline graphicsPipeline= nullptr;
+    VkPipeline graphicsPipeline = nullptr;
+    std::vector<VkFramebuffer> swapchainFramebuffers;
+    VkCommandPool commandPool = nullptr;
+    VkCommandBuffer commandBuffer = nullptr;
+
+    VkSemaphore imageAvailableSemaphore;
+    VkSemaphore renderFinishedSemaphore;
+    VkFence inFlightFence;
 };
 
 #endif //REALTIME_CELL_COLLAPSE_ENGINE_H

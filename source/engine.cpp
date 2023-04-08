@@ -532,6 +532,11 @@ void Engine::createRenderPass() {
     renderPassInfo.subpassCount = 1;
     renderPassInfo.pSubpasses = &subpass;
 
+    VkSubpassDependency dependency{};
+    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependency.dstSubpass = 0;
+    // TODO https://vulkan-tutorial.com/en/Drawing_a_triangle/Drawing/Rendering_and_presentation
+
     if (vkCreateRenderPass(this->logicalDevice, &renderPassInfo, nullptr, &this->renderPass) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create render pass!");
     }
@@ -708,6 +713,30 @@ void Engine::createGraphicsPipeline() {
     vkDestroyShaderModule(this->logicalDevice, vertShaderModule, nullptr);
 }
 
+void Engine::createFramebuffers() {
+    this->swapchainFramebuffers.resize(this->swapchainImageViews.size());
+
+    for (size_t i = 0; i < this->swapchainImageViews.size(); i++) {
+        VkImageView attachments[] = {
+                this->swapchainImageViews[i]
+        };
+
+        VkFramebufferCreateInfo framebufferInfo{};
+        framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebufferInfo.renderPass = this->renderPass;
+        framebufferInfo.attachmentCount = 1;
+        framebufferInfo.pAttachments = attachments;
+        framebufferInfo.width = this->swapchainExtent.width;
+        framebufferInfo.height = this->swapchainExtent.height;
+        framebufferInfo.layers = 1;
+
+        if (vkCreateFramebuffer(this->logicalDevice, &framebufferInfo, nullptr, &this->swapchainFramebuffers[i]) !=
+            VK_SUCCESS) {
+            throw std::runtime_error("Failed to create framebuffer!");
+        }
+    }
+}
+
 void Engine::initVulkan() {
     createInstance();
     createSurface();
@@ -717,11 +746,17 @@ void Engine::initVulkan() {
     createImageViews();
     createRenderPass();
     createGraphicsPipeline();
+    createFramebuffers();
+    createCommandPool();
+    createCommandBuffer();
+    createSyncObjects();
 }
 
 void Engine::mainLoop() {
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
+
+        drawFrame();
 
         if (GLFW_PRESS == glfwGetKey(this->window, GLFW_KEY_ESCAPE)) {
             glfwSetWindowShouldClose(this->window, GLFW_TRUE);
@@ -730,6 +765,16 @@ void Engine::mainLoop() {
 }
 
 void Engine::cleanup() {
+    vkDestroySemaphore(this->logicalDevice, this->imageAvailableSemaphore, nullptr);
+    vkDestroySemaphore(this->logicalDevice, this->renderFinishedSemaphore, nullptr);
+    vkDestroyFence(this->logicalDevice, this->inFlightFence, nullptr);
+
+    vkDestroyCommandPool(this->logicalDevice, this->commandPool, nullptr);
+
+    for (auto framebuffer: this->swapchainFramebuffers) {
+        vkDestroyFramebuffer(this->logicalDevice, framebuffer, nullptr);
+    }
+
     vkDestroyPipeline(this->logicalDevice, this->graphicsPipeline, nullptr);
 
     vkDestroyPipelineLayout(this->logicalDevice, this->pipelineLayout, nullptr);
@@ -767,4 +812,129 @@ VkShaderModule Engine::createShaderModule(const std::vector<char> &code) {
     }
 
     return shaderModule;
+}
+
+void Engine::createCommandPool() {
+    QueueFamilyIndices queueFamilyIndices = findQueueFamilies(this->physicalDevice);
+
+    VkCommandPoolCreateInfo poolInfo{};
+    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // for vkResetCommandBuffer
+    // Use VK_COMMAND_POOL_CREATE_TRANSIENT_BIT if buffer is very short-lived
+    poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+
+    if (vkCreateCommandPool(this->logicalDevice, &poolInfo, nullptr, &this->commandPool) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create command pool!");
+    }
+}
+
+void Engine::createCommandBuffer() {
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.commandPool = this->commandPool;
+    // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkCommandPoolCreateFlagBits.html
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY; // Can be submitted for execution, but not called from other command buffers
+    // VK_COMMAND_BUFFER_LEVEL_SECONDARY can not be submitted, but called from other command buffers
+    allocInfo.commandBufferCount = 1;
+
+    if (vkAllocateCommandBuffers(this->logicalDevice, &allocInfo, &this->commandBuffer) != VK_SUCCESS) {
+        throw std::runtime_error("failed to allocate command buffers!");
+    }
+}
+
+void Engine::createSyncObjects() {
+    VkSemaphoreCreateInfo semaphoreInfo{};
+    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+    VkFenceCreateInfo fenceInfo{};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; // Start off as signaled
+
+    if (vkCreateSemaphore(this->logicalDevice, &semaphoreInfo, nullptr, &this->imageAvailableSemaphore) != VK_SUCCESS ||
+        vkCreateSemaphore(this->logicalDevice, &semaphoreInfo, nullptr, &this->renderFinishedSemaphore) != VK_SUCCESS ||
+        vkCreateFence(this->logicalDevice, &fenceInfo, nullptr, &this->inFlightFence) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create semaphores and/or fences!");
+    }
+}
+
+void Engine::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) {
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = 0; // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkCommandBufferUsageFlagBits.html
+    beginInfo.pInheritanceInfo = nullptr; // Optional
+
+    if (vkBeginCommandBuffer(buffer, &beginInfo) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to begin recording command buffer!");
+    }
+
+    VkRenderPassBeginInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassInfo.renderPass = this->renderPass;
+    renderPassInfo.framebuffer = this->swapchainFramebuffers[imageIndex];
+    renderPassInfo.renderArea.offset = {0, 0};
+    renderPassInfo.renderArea.extent = this->swapchainExtent;
+
+    VkClearValue clearColor = {{{0.5f, 0.5f, 0.5f, 1.0f}}};
+    renderPassInfo.clearValueCount = 1;
+    renderPassInfo.pClearValues = &clearColor;
+
+    vkCmdBeginRenderPass(buffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+    vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->graphicsPipeline);
+
+#ifdef DYNAMIC_VIEWPORT
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = static_cast<float>(this->swapchainExtent.width);
+    viewport.height = static_cast<float>(this->swapchainExtent.height);
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(buffer, 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.offset = {0, 0};
+    scissor.extent = this->swapchainExtent;
+    vkCmdSetScissor(buffer, 0, 1, &scissor);
+#endif
+
+    vkCmdDraw(buffer, 3, 1, 0, 0);
+
+    vkCmdEndRenderPass(buffer);
+
+    if (vkEndCommandBuffer(buffer) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to record command buffer!");
+    }
+}
+
+void Engine::drawFrame() {
+    vkWaitForFences(this->logicalDevice, 1, &this->inFlightFence, VK_TRUE, UINT64_MAX);
+    vkResetFences(this->logicalDevice, 1, &this->inFlightFence);
+
+    uint32_t imageIndex;
+    vkAcquireNextImageKHR(this->logicalDevice, this->swapchain, UINT64_MAX, this->imageAvailableSemaphore, nullptr,
+                          &imageIndex);
+
+    vkResetCommandBuffer(this->commandBuffer, 0); // I am not convinced this is necessary
+    recordCommandBuffer(this->commandBuffer, imageIndex);
+
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+    VkSemaphore waitSemaphores[] = {this->imageAvailableSemaphore}; // index corresponding to wait stage
+    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT}; // Wait in fragment stage
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = waitSemaphores;
+    submitInfo.pWaitDstStageMask = waitStages;
+
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &this->commandBuffer;
+
+    VkSemaphore signalSemaphores[] = {this->renderFinishedSemaphore};
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = signalSemaphores;
+
+    if (vkQueueSubmit(this->graphicsQueue, 1, &submitInfo, this->inFlightFence) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to submit draw command buffer!");
+    }
 }
