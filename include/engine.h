@@ -92,6 +92,8 @@ private:
 
     void createImageViews();
 
+    void createRenderPass();
+
     void createGraphicsPipeline();
 
     void initVulkan();
@@ -100,7 +102,7 @@ private:
 
     void cleanup();
 
-    VkShaderModule createShaderModule(const std::vector<char>& code);
+    VkShaderModule createShaderModule(const std::vector<char> &code);
 
     std::string title;
     int32_t width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT;
@@ -118,7 +120,8 @@ private:
     VkFormat swapchainImageFormat{};
     VkExtent2D swapchainExtent{};
     std::vector<VkImageView> swapchainImageViews;
-    VkPipelineLayout pipelineLayout= nullptr;
+    VkRenderPass renderPass= nullptr;
+    VkPipelineLayout pipelineLayout = nullptr;
 };
 
 #endif //REALTIME_CELL_COLLAPSE_ENGINE_H

@@ -501,8 +501,43 @@ void Engine::createImageViews() {
     }
 }
 
-void Engine::createGraphicsPipeline() {
+void Engine::createRenderPass() {
+    VkAttachmentDescription colorAttachment{};
+    colorAttachment.format = this->swapchainImageFormat;
+    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT; // MSAA
 
+    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Before rendering
+    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // After rendering
+    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+
+    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // Before rendering
+    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // After rendering
+
+    // Only a single attachment for now
+    VkAttachmentReference colorAttachmentRef{};
+    colorAttachmentRef.attachment = 0; // -> layout(location = 0) out vec4 outColor
+    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // Color buffer
+
+    // Single subpass
+    VkSubpassDescription subpass{};
+    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS; // Is graphics subpass
+    subpass.colorAttachmentCount = 1;
+    subpass.pColorAttachments = &colorAttachmentRef; // Output attachment
+
+    VkRenderPassCreateInfo renderPassInfo{};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    renderPassInfo.attachmentCount = 1;
+    renderPassInfo.pAttachments = &colorAttachment;
+    renderPassInfo.subpassCount = 1;
+    renderPassInfo.pSubpasses = &subpass;
+
+    if (vkCreateRenderPass(this->logicalDevice, &renderPassInfo, nullptr, &this->renderPass) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create render pass!");
+    }
+}
+
+void Engine::createGraphicsPipeline() {
     // TODO pull these out of here
     auto vertShaderCode = Importer::readFile("resources/shaders/triangle.vert.spv");
     std::cout << "Loaded vertex shader with byte size: " << vertShaderCode.size() << std::endl;
@@ -640,6 +675,7 @@ void Engine::createGraphicsPipeline() {
         VK_SUCCESS) {
         throw std::runtime_error("Failed to create pipeline layout!");
     }
+
     // Once the pipeline is created, we don't need this anymore
     vkDestroyShaderModule(this->logicalDevice, fragShaderModule, nullptr);
     vkDestroyShaderModule(this->logicalDevice, vertShaderModule, nullptr);
@@ -667,6 +703,8 @@ void Engine::mainLoop() {
 
 void Engine::cleanup() {
     vkDestroyPipelineLayout(this->logicalDevice, this->pipelineLayout, nullptr);
+
+    vkDestroyRenderPass(this->logicalDevice, this->renderPass, nullptr);
 
     // Unlike SC images, SC image views were created manually and have to be destroyed manually
     for (auto imageView: this->swapchainImageViews) {
