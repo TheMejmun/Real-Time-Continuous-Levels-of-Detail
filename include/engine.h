@@ -122,6 +122,7 @@ private:
     std::vector<VkImageView> swapchainImageViews;
     VkRenderPass renderPass= nullptr;
     VkPipelineLayout pipelineLayout = nullptr;
+    VkPipeline graphicsPipeline= nullptr;
 };
 
 #endif //REALTIME_CELL_COLLAPSE_ENGINE_H

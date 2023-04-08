@@ -676,6 +676,33 @@ void Engine::createGraphicsPipeline() {
         throw std::runtime_error("Failed to create pipeline layout!");
     }
 
+    VkGraphicsPipelineCreateInfo pipelineInfo{};
+    pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    pipelineInfo.stageCount = 2;
+    pipelineInfo.pStages = shaderStages;
+    pipelineInfo.pVertexInputState = &vertexInputInfo;
+    pipelineInfo.pInputAssemblyState = &inputAssembly;
+    pipelineInfo.pViewportState = &viewportState;
+    pipelineInfo.pRasterizationState = &rasterizer;
+    pipelineInfo.pMultisampleState = &multisampling;
+    pipelineInfo.pDepthStencilState = nullptr; // Optional
+    pipelineInfo.pColorBlendState = &colorBlending;
+#ifdef DYNAMIC_VIEWPORT
+    pipelineInfo.pDynamicState = &dynamicState;
+#endif
+    pipelineInfo.layout = this->pipelineLayout;
+    pipelineInfo.renderPass = this->renderPass; // https://registry.khronos.org/vulkan/specs/1.3-extensions/html/chap8.html#renderpass-compatibility
+    pipelineInfo.subpass = 0; // Subpass index for this pipeline
+    // Index or handle of parent pipeline. -> Perf+ if available
+    // Needs VK_PIPELINE_CREATE_DERIVATIVE_BIT flag in this struct
+    pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
+    pipelineInfo.basePipelineIndex = -1; // Optional
+
+    if (vkCreateGraphicsPipelines(this->logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
+                                  &this->graphicsPipeline) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create graphics pipeline!");
+    }
+
     // Once the pipeline is created, we don't need this anymore
     vkDestroyShaderModule(this->logicalDevice, fragShaderModule, nullptr);
     vkDestroyShaderModule(this->logicalDevice, vertShaderModule, nullptr);
@@ -688,6 +715,7 @@ void Engine::initVulkan() {
     createLogicalDevice();
     createSwapchain();
     createImageViews();
+    createRenderPass();
     createGraphicsPipeline();
 }
 
@@ -702,6 +730,8 @@ void Engine::mainLoop() {
 }
 
 void Engine::cleanup() {
+    vkDestroyPipeline(this->logicalDevice, this->graphicsPipeline, nullptr);
+
     vkDestroyPipelineLayout(this->logicalDevice, this->pipelineLayout, nullptr);
 
     vkDestroyRenderPass(this->logicalDevice, this->renderPass, nullptr);
