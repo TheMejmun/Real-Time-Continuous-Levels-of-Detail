@@ -532,10 +532,16 @@ void Engine::createRenderPass() {
     renderPassInfo.subpassCount = 1;
     renderPassInfo.pSubpasses = &subpass;
 
+    // To avoid layout transitions before the image has been acquired
     VkSubpassDependency dependency{};
-    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-    dependency.dstSubpass = 0;
-    // TODO https://vulkan-tutorial.com/en/Drawing_a_triangle/Drawing/Rendering_and_presentation
+    dependency.srcSubpass = VK_SUBPASS_EXTERNAL; // Implicit subpass before/after the current render pass
+    dependency.dstSubpass = 0; // dstSubpass > srcSubpass !!! (unless VK_SUBPASS_EXTERNAL)
+    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // Wait for swapchain
+    dependency.srcAccessMask = 0;
+    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // The stage to wait in
+    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // The operation that should wait
+    renderPassInfo.dependencyCount = 1;
+    renderPassInfo.pDependencies = &dependency;
 
     if (vkCreateRenderPass(this->logicalDevice, &renderPassInfo, nullptr, &this->renderPass) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create render pass!");
@@ -765,6 +771,9 @@ void Engine::mainLoop() {
 }
 
 void Engine::cleanup() {
+    // Wait until resources are not actively being used anymore
+    vkDeviceWaitIdle(this->logicalDevice);
+
     vkDestroySemaphore(this->logicalDevice, this->imageAvailableSemaphore, nullptr);
     vkDestroySemaphore(this->logicalDevice, this->renderFinishedSemaphore, nullptr);
     vkDestroyFence(this->logicalDevice, this->inFlightFence, nullptr);
@@ -923,6 +932,7 @@ void Engine::drawFrame() {
 
     VkSemaphore waitSemaphores[] = {this->imageAvailableSemaphore}; // index corresponding to wait stage
     VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT}; // Wait in fragment stage
+    // or VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = waitSemaphores;
     submitInfo.pWaitDstStageMask = waitStages;
@@ -937,4 +947,18 @@ void Engine::drawFrame() {
     if (vkQueueSubmit(this->graphicsQueue, 1, &submitInfo, this->inFlightFence) != VK_SUCCESS) {
         throw std::runtime_error("Failed to submit draw command buffer!");
     }
+
+    VkPresentInfoKHR presentInfo{};
+    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = signalSemaphores;
+
+    VkSwapchainKHR swapchains[] = {this->swapchain};
+    presentInfo.swapchainCount = 1;
+    presentInfo.pSwapchains = swapchains;
+    presentInfo.pImageIndices = &imageIndex;
+    presentInfo.pResults = nullptr; // Per swapchain result
+
+    vkQueuePresentKHR(presentQueue, &presentInfo);
 }
