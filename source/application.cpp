@@ -11,7 +11,7 @@ void Application::run() {
 }
 
 void Application::init() {
-    std::cout<<"Creating Application"<<std::endl;
+    std::cout << "Creating Application" << std::endl;
 
     this->windowManager = std::make_unique<WindowManager>();
     this->windowManager->create(this->title);
@@ -35,13 +35,17 @@ void Application::mainLoop() {
 
         // Bench
         chrono_sec_point time = Timer::now();
-        this->currentFPS = Timer::FPS(this->lastTimestamp, time);
+        auto fps = (double) Timer::FPS(this->lastTimestamp, time);
+        auto fps_old = (double) this->currentFPS;
+        this->currentFPS = (uint32_t) ((fps_old * SMOOTH_FPS_DISPLAY_BIAS + fps) / (SMOOTH_FPS_DISPLAY_BIAS + 1.0));
         this->lastTimestamp = time;
+
+        windowManager->updateTitle(std::string("FPS: ") + std::to_string(this->currentFPS));
     }
 }
 
 void Application::destroy() {
-    std::cout<<"Destroying Application"<<std::endl;
+    std::cout << "Destroying Application" << std::endl;
 
     this->renderer->destroy();
     this->windowManager->destroy();

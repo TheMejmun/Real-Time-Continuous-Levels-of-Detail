@@ -16,6 +16,8 @@ class WindowManager {
 public:
     void create(const std::string &title);
 
+    void updateTitle(const std::string &title);
+
     void destroy() const;
 
     [[nodiscard]] bool shouldClose() const;

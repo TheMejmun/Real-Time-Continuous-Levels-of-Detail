@@ -12,6 +12,8 @@
 #include "window_manager.h"
 #include "input_manager.h"
 
+const double SMOOTH_FPS_DISPLAY_BIAS = 100.0;
+
 class Application {
 public:
     void run();
@@ -30,7 +32,7 @@ private:
     std::unique_ptr<InputManager> inputManager;
 
     chrono_sec_point lastTimestamp = Timer::now();
-    uint32_t currentFPS;
+    uint32_t currentFPS = 0;
 };
 
 #endif //REALTIME_CELL_COLLAPSE_APPLICATION_H
