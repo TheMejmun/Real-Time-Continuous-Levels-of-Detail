@@ -27,7 +27,7 @@ void Application::mainLoop() {
     while (!this->windowManager->shouldClose()) {
         this->inputManager->poll();
 
-        renderer->draw();
+        this->currentGPUWaitTime = renderer->draw();
 
         if (this->inputManager->closeWindow) {
             this->windowManager->close();
@@ -35,12 +35,18 @@ void Application::mainLoop() {
 
         // Bench
         chrono_sec_point time = Timer::now();
-        auto fps = (double) Timer::FPS(this->lastTimestamp, time);
+        this->currentFrameTime = Timer::duration(this->lastTimestamp, time);
+        auto fps = (double) Timer::FPS( this->currentFrameTime);
         auto fps_old = (double) this->currentFPS;
         this->currentFPS = (uint32_t) ((fps_old * SMOOTH_FPS_DISPLAY_BIAS + fps) / (SMOOTH_FPS_DISPLAY_BIAS + 1.0));
         this->lastTimestamp = time;
 
-        windowManager->updateTitle(std::string("FPS: ") + std::to_string(this->currentFPS));
+        windowManager->updateTitle(std::string("FPS: ") +
+                                   std::to_string(this->currentFPS) +
+                                   std::string(" Frame time: ") +
+                                   std::to_string(this->currentFrameTime) +
+                                   std::string(" GPU wait time: ") +
+                                   std::to_string(this->currentGPUWaitTime));
     }
 }
 

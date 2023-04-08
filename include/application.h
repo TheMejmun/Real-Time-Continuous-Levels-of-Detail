@@ -32,6 +32,8 @@ private:
     std::unique_ptr<InputManager> inputManager;
 
     chrono_sec_point lastTimestamp = Timer::now();
+    sec currentFrameTime;
+    sec currentGPUWaitTime;
     uint32_t currentFPS = 0;
 };
 

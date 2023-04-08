@@ -18,6 +18,7 @@
 //#define WIREFRAME_MODE
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
+// TODO https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
 
 const std::vector<const char *> VALIDATION_LAYERS = {
         "VK_LAYER_KHRONOS_validation"
@@ -53,7 +54,7 @@ class Renderer {
 public:
     void create(const std::string &title, GLFWwindow*  window);
 
-    void draw();
+    sec draw();
 
     void destroy();
 

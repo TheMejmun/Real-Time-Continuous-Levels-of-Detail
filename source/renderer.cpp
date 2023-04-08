@@ -23,7 +23,7 @@ bool QueueFamilyIndices::isUnifiedGraphicsPresentQueue() const {
 }
 
 void Renderer::create(const std::string &t, GLFWwindow *w) {
-    std::cout<<"Creating Renderer"<<std::endl;
+    std::cout << "Creating Renderer" << std::endl;
 
     this->window = w;
     this->title = t;
@@ -749,7 +749,7 @@ void Renderer::initVulkan() {
 }
 
 void Renderer::destroy() {
-    std::cout<<"Destroying Renderer"<<std::endl;
+    std::cout << "Destroying Renderer" << std::endl;
 
     // Wait until resources are not actively being used anymore
     vkDeviceWaitIdle(this->logicalDevice);
@@ -892,8 +892,10 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
     }
 }
 
-void Renderer::draw() {
+sec Renderer::draw() {
+    auto beforeFence = Timer::now();
     vkWaitForFences(this->logicalDevice, 1, &this->inFlightFence, VK_TRUE, UINT64_MAX);
+    auto afterFence = Timer::now();
     vkResetFences(this->logicalDevice, 1, &this->inFlightFence);
 
     uint32_t imageIndex;
@@ -937,4 +939,6 @@ void Renderer::draw() {
     presentInfo.pResults = nullptr; // Per swapchain result
 
     vkQueuePresentKHR(presentQueue, &presentInfo);
+
+    return Timer::duration(beforeFence, afterFence);
 }
