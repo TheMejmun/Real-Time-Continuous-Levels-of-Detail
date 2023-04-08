@@ -6,10 +6,10 @@
 #include <iostream>
 #include "input_manager.h"
 
-void InputManager::create(GLFWwindow* window) {
+void InputManager::create(GLFWwindow* w) {
     std::cout<<"Creating InputManager"<<std::endl;
 
-    this->window = window;
+    this->window = w;
 }
 
 void InputManager::poll() {

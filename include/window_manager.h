@@ -16,11 +16,11 @@ class WindowManager {
 public:
     void create(const std::string &title);
 
-    void destroy();
+    void destroy() const;
 
-     bool shouldClose();
+    [[nodiscard]] bool shouldClose() const;
 
-     void close();
+    void close() const;
 
     GLFWwindow *window = nullptr;
 private:

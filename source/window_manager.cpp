@@ -18,15 +18,15 @@ void WindowManager::create(const std::string &t) {
     this->window = glfwCreateWindow(this->width, this->height, this->title.c_str(), nullptr, nullptr);
 }
 
-bool WindowManager::shouldClose() {
+bool WindowManager::shouldClose() const {
     return glfwWindowShouldClose(this->window);
 }
 
-void WindowManager::close() {
+void WindowManager::close() const {
     glfwSetWindowShouldClose(this->window, GLFW_TRUE);
 }
 
-void WindowManager::destroy() {
+void WindowManager::destroy() const {
     std::cout<<"Destroying WindowManager"<<std::endl;
 
     glfwDestroyWindow(this->window);
