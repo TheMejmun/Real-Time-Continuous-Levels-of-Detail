@@ -9,7 +9,7 @@
 #include <set>
 #include <limits> // Necessary for std::numeric_limits
 #include <algorithm> // Necessary for std::clamp
-#include "engine.h"
+#include "renderer.h"
 #include "importer.h"
 
 bool QueueFamilyIndices::isComplete() const {
@@ -22,29 +22,19 @@ bool QueueFamilyIndices::isUnifiedGraphicsPresentQueue() const {
     return this->graphicsFamily.value() == this->presentFamily.value();
 }
 
-void Engine::run() {
-    this->initWindow();
+void Renderer::create(const std::string &t, GLFWwindow *w) {
+    std::cout<<"Creating Renderer"<<std::endl;
+
+    this->window = w;
+    this->title = t;
     this->initVulkan();
-    this->mainLoop();
-    this->cleanup();
 }
 
-void Engine::run(const int32_t &w, const int32_t &h) {
-    this->width = w;
-    this->height = h;
-    run();
+void Renderer::setResolution(int32_t w, int32_t h) {
+    throw std::runtime_error("Not implemented!");
 }
 
-void Engine::initWindow() {
-    glfwInit();
-
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-
-    this->window = glfwCreateWindow(this->width, this->height, this->title.c_str(), nullptr, nullptr);
-}
-
-void Engine::createInstance() {
+void Renderer::createInstance() {
     // App Info
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -73,7 +63,7 @@ void Engine::createInstance() {
     createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 
     // Extensions final
-    Engine::printAvailableInstanceExtensions();
+    Renderer::printAvailableInstanceExtensions();
     createInfo.enabledExtensionCount = (uint32_t) requiredExtensions.size();
     createInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
@@ -98,7 +88,7 @@ void Engine::createInstance() {
     }
 }
 
-void Engine::printAvailableInstanceExtensions() {
+void Renderer::printAvailableInstanceExtensions() {
     uint32_t extensionCount = 0;
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 
@@ -111,7 +101,7 @@ void Engine::printAvailableInstanceExtensions() {
     }
 }
 
-bool Engine::checkValidationLayerSupport() {
+bool Renderer::checkValidationLayerSupport() {
     // get available layers
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -136,13 +126,13 @@ bool Engine::checkValidationLayerSupport() {
     return true;
 }
 
-void Engine::createSurface() {
+void Renderer::createSurface() {
     if (glfwCreateWindowSurface(this->instance, this->window, nullptr, &this->surface) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create window surface!");
     }
 }
 
-void Engine::printAvailablePhysicalDevices() {
+void Renderer::printAvailablePhysicalDevices() {
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(this->instance, &deviceCount, nullptr);
     std::vector<VkPhysicalDevice> devices(deviceCount);
@@ -157,7 +147,7 @@ void Engine::printAvailablePhysicalDevices() {
     }
 }
 
-void Engine::pickPhysicalDevice() {
+void Renderer::pickPhysicalDevice() {
     printAvailablePhysicalDevices();
 
     uint32_t deviceCount = 0;
@@ -189,7 +179,7 @@ void Engine::pickPhysicalDevice() {
     }
 }
 
-bool Engine::isDeviceSuitable(VkPhysicalDevice device, bool strictMode) {
+bool Renderer::isDeviceSuitable(VkPhysicalDevice device, bool strictMode) {
     VkPhysicalDeviceProperties deviceProperties;
     vkGetPhysicalDeviceProperties(device, &deviceProperties);
 
@@ -203,7 +193,7 @@ bool Engine::isDeviceSuitable(VkPhysicalDevice device, bool strictMode) {
     }
 
     // Supports required queues
-    QueueFamilyIndices indices = Engine::findQueueFamilies(device);
+    QueueFamilyIndices indices = Renderer::findQueueFamilies(device);
     suitable = suitable && indices.isComplete();
 
     // Supports required extensions
@@ -217,7 +207,7 @@ bool Engine::isDeviceSuitable(VkPhysicalDevice device, bool strictMode) {
     return suitable;
 }
 
-bool Engine::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+bool Renderer::checkDeviceExtensionSupport(VkPhysicalDevice device) {
     uint32_t extensionCount;
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
@@ -239,7 +229,7 @@ bool Engine::checkDeviceExtensionSupport(VkPhysicalDevice device) {
     return requiredExtensions.empty();
 }
 
-QueueFamilyIndices Engine::findQueueFamilies(VkPhysicalDevice device) {
+QueueFamilyIndices Renderer::findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
 
     uint32_t queueFamilyCount = 0;
@@ -275,7 +265,7 @@ QueueFamilyIndices Engine::findQueueFamilies(VkPhysicalDevice device) {
     return indices;
 }
 
-SwapchainSupportDetails Engine::querySwapchainSupport(VkPhysicalDevice device) {
+SwapchainSupportDetails Renderer::querySwapchainSupport(VkPhysicalDevice device) {
     SwapchainSupportDetails details;
 
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, this->surface, &details.capabilities);
@@ -297,7 +287,7 @@ SwapchainSupportDetails Engine::querySwapchainSupport(VkPhysicalDevice device) {
     return details;
 }
 
-VkSurfaceFormatKHR Engine::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats) {
+VkSurfaceFormatKHR Renderer::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats) {
     VkSurfaceFormatKHR out = availableFormats[0];
 
     for (const auto &availableFormat: availableFormats) {
@@ -314,7 +304,7 @@ VkSurfaceFormatKHR Engine::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFo
     return out;
 }
 
-VkPresentModeKHR Engine::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes) {
+VkPresentModeKHR Renderer::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes) {
     std::cout << "Picked Swapchain Present Mode: ";
     for (const auto &availablePresentMode: availablePresentModes) {
         // Triple Buffering: Override last frame if a new image is rendered before that one has been shown
@@ -329,7 +319,7 @@ VkPresentModeKHR Engine::chooseSwapPresentMode(const std::vector<VkPresentModeKH
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D Engine::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
+VkExtent2D Renderer::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
     VkExtent2D out;
     // If the current extents are set to the maximum values,
     // the window manager is trying to tell us to set it manually.
@@ -357,7 +347,7 @@ VkExtent2D Engine::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities
     return out;
 }
 
-void Engine::createLogicalDevice() {
+void Renderer::createLogicalDevice() {
     QueueFamilyIndices indices = findQueueFamilies(this->physicalDevice);
     if (indices.isUnifiedGraphicsPresentQueue()) {
         std::cout << "Found a queue that supports both graphics and presentation!" << std::endl;
@@ -409,7 +399,7 @@ void Engine::createLogicalDevice() {
     vkGetDeviceQueue(this->logicalDevice, indices.presentFamily.value(), 0, &presentQueue);
 }
 
-void Engine::createSwapchain() {
+void Renderer::createSwapchain() {
     SwapchainSupportDetails swapchainSupport = querySwapchainSupport(physicalDevice);
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapchainSupport.formats);
@@ -472,7 +462,7 @@ void Engine::createSwapchain() {
     this->swapchainExtent = extent;
 }
 
-void Engine::createImageViews() {
+void Renderer::createImageViews() {
     this->swapchainImageViews.resize(this->swapchainImages.size());
 
     for (size_t i = 0; i < this->swapchainImages.size(); i++) {
@@ -501,7 +491,7 @@ void Engine::createImageViews() {
     }
 }
 
-void Engine::createRenderPass() {
+void Renderer::createRenderPass() {
     VkAttachmentDescription colorAttachment{};
     colorAttachment.format = this->swapchainImageFormat;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT; // MSAA
@@ -548,7 +538,7 @@ void Engine::createRenderPass() {
     }
 }
 
-void Engine::createGraphicsPipeline() {
+void Renderer::createGraphicsPipeline() {
     // TODO pull these out of here
     auto vertShaderCode = Importer::readFile("resources/shaders/triangle.vert.spv");
     std::cout << "Loaded vertex shader with byte size: " << vertShaderCode.size() << std::endl;
@@ -719,7 +709,7 @@ void Engine::createGraphicsPipeline() {
     vkDestroyShaderModule(this->logicalDevice, vertShaderModule, nullptr);
 }
 
-void Engine::createFramebuffers() {
+void Renderer::createFramebuffers() {
     this->swapchainFramebuffers.resize(this->swapchainImageViews.size());
 
     for (size_t i = 0; i < this->swapchainImageViews.size(); i++) {
@@ -743,7 +733,7 @@ void Engine::createFramebuffers() {
     }
 }
 
-void Engine::initVulkan() {
+void Renderer::initVulkan() {
     createInstance();
     createSurface();
     pickPhysicalDevice();
@@ -758,19 +748,9 @@ void Engine::initVulkan() {
     createSyncObjects();
 }
 
-void Engine::mainLoop() {
-    while (!glfwWindowShouldClose(window)) {
-        glfwPollEvents();
+void Renderer::destroy() {
+    std::cout<<"Destroying Renderer"<<std::endl;
 
-        drawFrame();
-
-        if (GLFW_PRESS == glfwGetKey(this->window, GLFW_KEY_ESCAPE)) {
-            glfwSetWindowShouldClose(this->window, GLFW_TRUE);
-        }
-    }
-}
-
-void Engine::cleanup() {
     // Wait until resources are not actively being used anymore
     vkDeviceWaitIdle(this->logicalDevice);
 
@@ -802,13 +782,9 @@ void Engine::cleanup() {
     vkDestroySurfaceKHR(this->instance, this->surface, nullptr);
 
     vkDestroyInstance(this->instance, nullptr);
-
-    glfwDestroyWindow(this->window);
-
-    glfwTerminate();
 }
 
-VkShaderModule Engine::createShaderModule(const std::vector<char> &code) {
+VkShaderModule Renderer::createShaderModule(const std::vector<char> &code) {
     VkShaderModuleCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = code.size();
@@ -823,7 +799,7 @@ VkShaderModule Engine::createShaderModule(const std::vector<char> &code) {
     return shaderModule;
 }
 
-void Engine::createCommandPool() {
+void Renderer::createCommandPool() {
     QueueFamilyIndices queueFamilyIndices = findQueueFamilies(this->physicalDevice);
 
     VkCommandPoolCreateInfo poolInfo{};
@@ -837,7 +813,7 @@ void Engine::createCommandPool() {
     }
 }
 
-void Engine::createCommandBuffer() {
+void Renderer::createCommandBuffer() {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.commandPool = this->commandPool;
@@ -851,7 +827,7 @@ void Engine::createCommandBuffer() {
     }
 }
 
-void Engine::createSyncObjects() {
+void Renderer::createSyncObjects() {
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -866,7 +842,7 @@ void Engine::createSyncObjects() {
     }
 }
 
-void Engine::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) {
+void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = 0; // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkCommandBufferUsageFlagBits.html
@@ -916,7 +892,7 @@ void Engine::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) {
     }
 }
 
-void Engine::drawFrame() {
+void Renderer::draw() {
     vkWaitForFences(this->logicalDevice, 1, &this->inFlightFence, VK_TRUE, UINT64_MAX);
     vkResetFences(this->logicalDevice, 1, &this->inFlightFence);
 

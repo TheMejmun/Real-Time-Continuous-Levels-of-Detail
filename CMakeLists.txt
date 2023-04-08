@@ -23,12 +23,19 @@ set(LIB_FOLDER lib)
 # Add files
 # Add any added source/header files here
 set(HEADER_FILES
-        ${HEADER_FOLDER}/engine.h
-        ${HEADER_FOLDER}/importer.h)
+        ${HEADER_FOLDER}/timer.h
+        ${HEADER_FOLDER}/renderer.h
+        ${HEADER_FOLDER}/importer.h
+        ${HEADER_FOLDER}/application.h
+        ${HEADER_FOLDER}/input_manager.h
+        ${HEADER_FOLDER}/window_manager.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
-        ${SOURCE_FOLDER}/engine.cpp
-        ${SOURCE_FOLDER}/importer.cpp)
+        ${SOURCE_FOLDER}/renderer.cpp
+        ${SOURCE_FOLDER}/importer.cpp
+        ${SOURCE_FOLDER}/application.cpp
+        ${SOURCE_FOLDER}/input_manager.cpp
+        ${SOURCE_FOLDER}/window_manager.cpp)
 message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable
 add_executable(Realtime_Cell_Collapse ${SOURCE_FOLDER}/main.cpp ${HEADER_FILES} ${SOURCE_FILES})

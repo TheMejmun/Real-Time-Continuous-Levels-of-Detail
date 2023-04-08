@@ -2,8 +2,8 @@
 // Created by Sam on 2023-03-28.
 //
 
-#ifndef REALTIME_CELL_COLLAPSE_ENGINE_H
-#define REALTIME_CELL_COLLAPSE_ENGINE_H
+#ifndef REALTIME_CELL_COLLAPSE_RENDERER_H
+#define REALTIME_CELL_COLLAPSE_RENDERER_H
 
 #define GLFW_INCLUDE_VULKAN
 
@@ -12,12 +12,12 @@
 #include <utility>
 #include <vector>
 #include <optional>
+#include "timer.h"
 
 #define DYNAMIC_VIEWPORT
 //#define WIREFRAME_MODE
 
-const int32_t DEFAULT_WIDTH = 1280;
-const int32_t DEFAULT_HEIGHT = 720;
+const int MAX_FRAMES_IN_FLIGHT = 2;
 
 const std::vector<const char *> VALIDATION_LAYERS = {
         "VK_LAYER_KHRONOS_validation"
@@ -49,16 +49,17 @@ struct SwapchainSupportDetails {
     std::vector<VkPresentModeKHR> presentModes;
 };
 
-class Engine {
+class Renderer {
 public:
-    explicit Engine(std::string title) : title(std::move(title)) {}
+    void create(const std::string &title, GLFWwindow*  window);
 
-    void run();
+    void draw();
 
-    void run(const int32_t &w, const int32_t &h);
+    void destroy();
+
+    void setResolution(int32_t width, int32_t height);
 
 private:
-    void initWindow();
 
     void createInstance();
 
@@ -80,9 +81,9 @@ private:
 
     SwapchainSupportDetails querySwapchainSupport(VkPhysicalDevice device);
 
-    VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
+    static VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
 
-    VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
+    static VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
 
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
 
@@ -100,10 +101,6 @@ private:
 
     void initVulkan();
 
-    void mainLoop();
-
-    void cleanup();
-
     VkShaderModule createShaderModule(const std::vector<char> &code);
 
     void createCommandPool();
@@ -114,10 +111,10 @@ private:
 
     void recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex);
 
-    void drawFrame();
+    chrono_sec_point lastTimestamp = Timer::now();
 
     std::string title;
-    int32_t width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT;
+
     GLFWwindow *window = nullptr;
 
     // Vulkan
@@ -139,9 +136,9 @@ private:
     VkCommandPool commandPool = nullptr;
     VkCommandBuffer commandBuffer = nullptr;
 
-    VkSemaphore imageAvailableSemaphore;
-    VkSemaphore renderFinishedSemaphore;
-    VkFence inFlightFence;
+    VkSemaphore imageAvailableSemaphore = nullptr;
+    VkSemaphore renderFinishedSemaphore = nullptr;
+    VkFence inFlightFence = nullptr;
 };
 
-#endif //REALTIME_CELL_COLLAPSE_ENGINE_H
+#endif //REALTIME_CELL_COLLAPSE_RENDERER_H
