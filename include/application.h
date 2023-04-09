@@ -27,10 +27,9 @@ private:
 
     void destroy();
 
-    // chrono_sec_point lastTimestamp;
-    std::unique_ptr<Renderer> renderer;
-    std::unique_ptr<WindowManager> windowManager;
-    std::unique_ptr<InputManager> inputManager;
+    Renderer renderer{};
+    WindowManager windowManager{};
+    InputManager inputManager{};
 
     chrono_sec_point lastTimestamp = Timer::now();
     sec currentFrameTime;

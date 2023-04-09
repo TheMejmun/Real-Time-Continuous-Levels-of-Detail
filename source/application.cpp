@@ -13,26 +13,23 @@ void Application::run() {
 void Application::init() {
     std::cout << "Creating Application" << std::endl;
 
-    this->windowManager = std::make_unique<WindowManager>();
-    this->windowManager->create(this->title);
+    this->windowManager.create(this->title);
 
-    this->inputManager = std::make_unique<InputManager>();
-    this->inputManager->create(windowManager->window);
+    this->inputManager.create(this->windowManager.window);
 
-    this->renderer = std::make_unique<Renderer>();
-    this->renderer->create(this->title, windowManager->window);
+    this->renderer.create(this->title, this->windowManager.window);
 }
 
 void Application::mainLoop() {
-    while (!this->windowManager->shouldClose()) {
+    while (!this->windowManager.shouldClose()) {
         // Input
-        this->inputManager->poll();
-        if (this->inputManager->closeWindow) {
-            this->windowManager->close();
+        this->inputManager.poll();
+        if (this->inputManager.closeWindow) {
+            this->windowManager.close();
         }
 
         // Render
-        auto gpuWaitTime = renderer->draw();
+        auto gpuWaitTime = this->renderer.draw();
 
         // Benchmark
         auto time = Timer::now();
