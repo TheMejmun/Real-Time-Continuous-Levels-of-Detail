@@ -13,7 +13,7 @@ void WindowManager::create(const std::string &t) {
     glfwInit();
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
     this->window = glfwCreateWindow(this->width, this->height, this->title.c_str(), nullptr, nullptr);
 }

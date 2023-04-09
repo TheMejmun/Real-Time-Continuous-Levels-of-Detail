@@ -52,16 +52,13 @@ struct SwapchainSupportDetails {
 
 class Renderer {
 public:
-    void create(const std::string &title, GLFWwindow*  window);
+    void create(const std::string &title, GLFWwindow *window);
 
     sec draw();
 
     void destroy();
 
-    void setResolution(int32_t width, int32_t height);
-
 private:
-
     void createInstance();
 
     static void printAvailableInstanceExtensions();
@@ -90,7 +87,13 @@ private:
 
     void createLogicalDevice();
 
-    void createSwapchain();
+    bool shouldRecreateSwapchain();
+
+    bool createSwapchain();
+
+    bool recreateSwapchain();
+
+    void destroySwapchain();
 
     void createImageViews();
 
@@ -113,10 +116,11 @@ private:
     void recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex);
 
     chrono_sec_point lastTimestamp = Timer::now();
+    bool needsNewSwapchain = false;
 
     std::string title;
-
     GLFWwindow *window = nullptr;
+    uint32_t framebufferWidth=0,  framebufferHeight=0;
 
     // Vulkan
     VkInstance instance = nullptr;

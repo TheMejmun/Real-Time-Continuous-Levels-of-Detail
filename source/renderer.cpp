@@ -30,10 +30,6 @@ void Renderer::create(const std::string &t, GLFWwindow *w) {
     this->initVulkan();
 }
 
-void Renderer::setResolution(int32_t w, int32_t h) {
-    throw std::runtime_error("Not implemented!");
-}
-
 void Renderer::createInstance() {
     // App Info
     VkApplicationInfo appInfo{};
@@ -327,7 +323,7 @@ VkExtent2D Renderer::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabiliti
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         out = capabilities.currentExtent;
     } else {
-        int w, h;
+        int w,h;
         glfwGetFramebufferSize(window, &w, &h);
 
         out = {
@@ -342,6 +338,9 @@ VkExtent2D Renderer::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabiliti
                                 capabilities.minImageExtent.height,
                                 capabilities.maxImageExtent.height);
     }
+
+    this->framebufferWidth=out.width;
+    this->framebufferHeight=out.height;
 
     std::cout << "Swapchain extents set to: " << out.width << " * " << out.height << std::endl;
     return out;
@@ -399,12 +398,30 @@ void Renderer::createLogicalDevice() {
     vkGetDeviceQueue(this->logicalDevice, indices.presentFamily.value(), 0, &presentQueue);
 }
 
-void Renderer::createSwapchain() {
+bool Renderer::recreateSwapchain() {
+    std::cout << "Recreate Swapchain" << std::endl;
+
+    // May need to recreate render pass here if e.g. window moves to HDR monitor
+
+    vkDeviceWaitIdle(this->logicalDevice);
+
+    destroySwapchain();
+
+    return createSwapchain();
+}
+
+bool Renderer::createSwapchain() {
     SwapchainSupportDetails swapchainSupport = querySwapchainSupport(physicalDevice);
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapchainSupport.formats);
     VkPresentModeKHR presentMode = chooseSwapPresentMode(swapchainSupport.presentModes);
     VkExtent2D extent = chooseSwapExtent(swapchainSupport.capabilities);
+
+    if (extent.width < 1 || extent.height < 1) {
+        std::cout << "Invalid swapchain extents. Retry later!" << std::endl;
+        this->needsNewSwapchain = true;
+        return false;
+    }
 
     // One more image than the minimum to avoid stalling if the driver is still working on the image
     uint32_t imageCount = swapchainSupport.capabilities.minImageCount + 1;
@@ -460,6 +477,26 @@ void Renderer::createSwapchain() {
     vkGetSwapchainImagesKHR(this->logicalDevice, this->swapchain, &imageCount, this->swapchainImages.data());
     this->swapchainImageFormat = surfaceFormat.format;
     this->swapchainExtent = extent;
+
+    createImageViews();
+    createRenderPass();
+    createFramebuffers();
+
+    return true;
+}
+
+void Renderer::destroySwapchain() {
+    for (auto &swapchainFramebuffer: this->swapchainFramebuffers) {
+        vkDestroyFramebuffer(this->logicalDevice, swapchainFramebuffer, nullptr);
+    }
+
+    vkDestroyRenderPass(this->logicalDevice, this->renderPass, nullptr);
+
+    for (auto &swapchainImageView: this->swapchainImageViews) {
+        vkDestroyImageView(this->logicalDevice, swapchainImageView, nullptr);
+    }
+
+    vkDestroySwapchainKHR(this->logicalDevice, this->swapchain, nullptr);
 }
 
 void Renderer::createImageViews() {
@@ -739,10 +776,7 @@ void Renderer::initVulkan() {
     pickPhysicalDevice();
     createLogicalDevice();
     createSwapchain();
-    createImageViews();
-    createRenderPass();
     createGraphicsPipeline();
-    createFramebuffers();
     createCommandPool();
     createCommandBuffer();
     createSyncObjects();
@@ -760,22 +794,11 @@ void Renderer::destroy() {
 
     vkDestroyCommandPool(this->logicalDevice, this->commandPool, nullptr);
 
-    for (auto framebuffer: this->swapchainFramebuffers) {
-        vkDestroyFramebuffer(this->logicalDevice, framebuffer, nullptr);
-    }
-
     vkDestroyPipeline(this->logicalDevice, this->graphicsPipeline, nullptr);
 
     vkDestroyPipelineLayout(this->logicalDevice, this->pipelineLayout, nullptr);
 
-    vkDestroyRenderPass(this->logicalDevice, this->renderPass, nullptr);
-
-    // Unlike SC images, SC image views were created manually and have to be destroyed manually
-    for (auto imageView: this->swapchainImageViews) {
-        vkDestroyImageView(this->logicalDevice, imageView, nullptr);
-    }
-
-    vkDestroySwapchainKHR(this->logicalDevice, this->swapchain, nullptr);
+    destroySwapchain();
 
     vkDestroyDevice(this->logicalDevice, nullptr);
 
@@ -892,15 +915,50 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
     }
 }
 
+bool Renderer::shouldRecreateSwapchain() {
+    int w, h;
+    glfwGetFramebufferSize(window, &w, &h);
+    bool framebufferChanged = w != this->framebufferWidth || h != this->framebufferHeight;
+
+    return this->needsNewSwapchain || framebufferChanged;
+}
+
 sec Renderer::draw() {
+    if (shouldRecreateSwapchain()) {
+        bool success = recreateSwapchain();
+        if (success) {
+            std::cout << "Created new swapchain" << std::endl;
+            this->needsNewSwapchain = false;
+        } else {
+            std::cout << "Failed to create new swapchain" << std::endl;
+            return 0;
+        }
+    }
+
     auto beforeFence = Timer::now();
     vkWaitForFences(this->logicalDevice, 1, &this->inFlightFence, VK_TRUE, UINT64_MAX);
     auto afterFence = Timer::now();
-    vkResetFences(this->logicalDevice, 1, &this->inFlightFence);
 
     uint32_t imageIndex;
-    vkAcquireNextImageKHR(this->logicalDevice, this->swapchain, UINT64_MAX, this->imageAvailableSemaphore, nullptr,
-                          &imageIndex);
+    auto acquireImageResult = vkAcquireNextImageKHR(this->logicalDevice, this->swapchain, UINT64_MAX,
+                                                    this->imageAvailableSemaphore, nullptr, &imageIndex);
+
+    if (acquireImageResult == VK_ERROR_OUT_OF_DATE_KHR) {
+        std::cout << "Swapchain is out of date" << std::endl;
+        recreateSwapchain();
+        return Timer::duration(beforeFence, afterFence); // Why not
+
+    } else if (acquireImageResult == VK_SUBOPTIMAL_KHR) {
+        std::cout << "Swapchain is suboptimal" << std::endl;
+        this->needsNewSwapchain = true;
+
+    } else if (acquireImageResult != VK_SUCCESS) {
+        throw std::runtime_error("Failed to acquire swapchain image!");
+    }
+
+
+    // Avoid deadlock if recreating -> move to after success check
+    vkResetFences(this->logicalDevice, 1, &this->inFlightFence);
 
     vkResetCommandBuffer(this->commandBuffer, 0); // I am not convinced this is necessary
     recordCommandBuffer(this->commandBuffer, imageIndex);
@@ -936,7 +994,7 @@ sec Renderer::draw() {
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapchains;
     presentInfo.pImageIndices = &imageIndex;
-    presentInfo.pResults = nullptr; // Per swapchain result
+    presentInfo.pResults = nullptr; // Per swapchain acquireImageResult
 
     vkQueuePresentKHR(presentQueue, &presentInfo);
 
