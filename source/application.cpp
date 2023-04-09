@@ -51,7 +51,9 @@ void Application::mainLoop() {
                         std::to_string(this->currentFrameTime) +
                         std::string(" GPU wait time: ") +
                         std::to_string(this->currentGPUWaitTime);
+#ifdef PRINT_PERFORMANCE_METRICS
         std::cout << perfText << std::endl;
+#endif
     }
 }
 

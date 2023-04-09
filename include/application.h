@@ -12,6 +12,7 @@
 #include "window_manager.h"
 #include "input_manager.h"
 
+//#define PRINT_PERFORMANCE_METRICS
 const double SMOOTH_FPS_DISPLAY_BIAS = 100.0;
 
 class Application {
