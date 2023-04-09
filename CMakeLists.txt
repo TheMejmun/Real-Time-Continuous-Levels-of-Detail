@@ -29,14 +29,20 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/application.h
         ${HEADER_FOLDER}/input_manager.h
         ${HEADER_FOLDER}/window_manager.h
-        ${HEADER_FOLDER}/colors.h)
+        ${HEADER_FOLDER}/colors.h
+        ${HEADER_FOLDER}/vertex.h
+        ${HEADER_FOLDER}/triangle.h
+        ${HEADER_FOLDER}/ecs.h
+        ${HEADER_FOLDER}/renderable.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
         ${SOURCE_FOLDER}/renderer.cpp
         ${SOURCE_FOLDER}/importer.cpp
         ${SOURCE_FOLDER}/application.cpp
         ${SOURCE_FOLDER}/input_manager.cpp
-        ${SOURCE_FOLDER}/window_manager.cpp)
+        ${SOURCE_FOLDER}/window_manager.cpp
+        ${SOURCE_FOLDER}/triangle.cpp
+        ${SOURCE_FOLDER}/ecs.cpp)
 message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable
 add_executable(Realtime_Cell_Collapse ${SOURCE_FOLDER}/main.cpp ${HEADER_FILES} ${SOURCE_FILES})
