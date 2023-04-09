@@ -3,7 +3,3 @@
 //
 
 #include "triangle.h"
-
-std::vector<Vertex> Triangle::getVertices() {
-    return ;
-}

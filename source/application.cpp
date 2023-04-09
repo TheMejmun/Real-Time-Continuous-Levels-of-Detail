@@ -13,6 +13,8 @@ void Application::run() {
 void Application::init() {
     std::cout << "Creating Application" << std::endl;
 
+    this->ecs.create(256);
+
     this->windowManager.create(this->title);
 
     this->inputManager.create(this->windowManager.window);
@@ -57,6 +59,6 @@ void Application::mainLoop() {
 void Application::destroy() {
     std::cout << "Destroying Application" << std::endl;
 
-    this->renderer->destroy();
-    this->windowManager->destroy();
+    this->renderer.destroy();
+    this->windowManager.destroy();
 }

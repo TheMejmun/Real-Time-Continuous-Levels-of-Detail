@@ -11,6 +11,7 @@
 #include "timer.h"
 #include "window_manager.h"
 #include "input_manager.h"
+#include "ecs.h"
 
 //#define PRINT_PERFORMANCE_METRICS
 const double SMOOTH_FPS_DISPLAY_BIAS = 100.0;
@@ -27,6 +28,7 @@ private:
 
     void destroy();
 
+    ECS ecs{};
     Renderer renderer{};
     WindowManager windowManager{};
     InputManager inputManager{};

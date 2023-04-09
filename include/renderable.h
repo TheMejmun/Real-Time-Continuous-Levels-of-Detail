@@ -8,8 +8,13 @@
 #include <vector>
 #include "vertex.h"
 
-struct Renderable{
+const uint16_t FLAG_TO_ALLOCATE = 0b1;
+const uint16_t FLAG_TO_DEALLOCATE = 0b10;
+const uint16_t FLAG_TO_RENDER = 0b100;
+
+struct Renderable {
     std::vector<Vertex> vertices;
+    VkBuffer allocatedBuffer = nullptr; // TODO
 };
 
 #endif //REALTIME_CELL_COLLAPSE_RENDERABLE_H
