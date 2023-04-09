@@ -617,7 +617,6 @@ void Renderer::createGraphicsPipeline() {
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     viewportState.viewportCount = 1;
     viewportState.scissorCount = 1;
-#ifdef DYNAMIC_VIEWPORT
     // Optional dynamic state
     std::vector<VkDynamicState> dynamicStates = {
             VK_DYNAMIC_STATE_VIEWPORT,
@@ -628,22 +627,6 @@ void Renderer::createGraphicsPipeline() {
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
     dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
     dynamicState.pDynamicStates = dynamicStates.data();
-#else
-    VkViewport viewport{};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = (float) this->swapchainExtent.width;
-    viewport.height = (float) this->swapchainExtent.height;
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-
-    VkRect2D scissor{};
-    scissor.offset = {0, 0};
-    scissor.extent = this->swapchainExtent;
-
-    viewportState.pViewports = &viewport; // Will be ignored if dynamic -> vkCmdSetViewport before drawing
-    viewportState.pScissors = &scissor; // Will be ignored if dynamic -> vkCmdSetScissor before drawing
-#endif
 
     VkPipelineRasterizationStateCreateInfo rasterizer{};
     rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -725,9 +708,7 @@ void Renderer::createGraphicsPipeline() {
     pipelineInfo.pMultisampleState = &multisampling;
     pipelineInfo.pDepthStencilState = nullptr; // Optional
     pipelineInfo.pColorBlendState = &colorBlending;
-#ifdef DYNAMIC_VIEWPORT
     pipelineInfo.pDynamicState = &dynamicState;
-#endif
     pipelineInfo.layout = this->pipelineLayout;
     pipelineInfo.renderPass = this->renderPass; // https://registry.khronos.org/vulkan/specs/1.3-extensions/html/chap8.html#renderpass-compatibility
     pipelineInfo.subpass = 0; // Subpass index for this pipeline
@@ -793,17 +774,11 @@ void Renderer::destroy() {
     vkDestroyFence(this->logicalDevice, this->inFlightFence, nullptr);
 
     vkDestroyCommandPool(this->logicalDevice, this->commandPool, nullptr);
-
     vkDestroyPipeline(this->logicalDevice, this->graphicsPipeline, nullptr);
-
     vkDestroyPipelineLayout(this->logicalDevice, this->pipelineLayout, nullptr);
-
     destroySwapchain();
-
     vkDestroyDevice(this->logicalDevice, nullptr);
-
     vkDestroySurfaceKHR(this->instance, this->surface, nullptr);
-
     vkDestroyInstance(this->instance, nullptr);
 }
 
@@ -890,7 +865,6 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
 
     vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->graphicsPipeline);
 
-#ifdef DYNAMIC_VIEWPORT
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
@@ -904,7 +878,6 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
     scissor.offset = {0, 0};
     scissor.extent = this->swapchainExtent;
     vkCmdSetScissor(buffer, 0, 1, &scissor);
-#endif
 
     vkCmdDraw(buffer, 3, 1, 0, 0);
 

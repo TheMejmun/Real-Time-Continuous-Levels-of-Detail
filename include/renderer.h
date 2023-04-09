@@ -14,7 +14,6 @@
 #include <optional>
 #include "timer.h"
 
-#define DYNAMIC_VIEWPORT
 //#define WIREFRAME_MODE
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
