@@ -28,7 +28,8 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/importer.h
         ${HEADER_FOLDER}/application.h
         ${HEADER_FOLDER}/input_manager.h
-        ${HEADER_FOLDER}/window_manager.h)
+        ${HEADER_FOLDER}/window_manager.h
+        ${HEADER_FOLDER}/colors.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
         ${SOURCE_FOLDER}/renderer.cpp
