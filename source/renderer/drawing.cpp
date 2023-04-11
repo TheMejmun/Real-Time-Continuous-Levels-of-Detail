@@ -3,6 +3,7 @@
 //
 
 #include "renderer.h"
+#include "printer.h"
 
 void Renderer::createRenderPass() {
     VkAttachmentDescription colorAttachment{};
@@ -54,9 +55,9 @@ void Renderer::createRenderPass() {
 void Renderer::createGraphicsPipeline() {
     // TODO pull these out of here
     auto vertShaderCode = Importer::readFile("resources/shaders/triangle.vert.spv");
-    std::cout << "Loaded vertex shader with byte size: " << vertShaderCode.size() << std::endl;
+    DBG "Loaded vertex shader with byte size: " << vertShaderCode.size() ENDL;
     auto fragShaderCode = Importer::readFile("resources/shaders/triangle.frag.spv");
-    std::cout << "Loaded fragment shader with byte size: " << fragShaderCode.size() << std::endl;
+    DBG "Loaded fragment shader with byte size: " << fragShaderCode.size() ENDL;
 
     VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
     VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -280,7 +281,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
     scissor.extent = this->swapchainExtent;
     vkCmdSetScissor(buffer, 0, 1, &scissor);
 
-    vkCmdDraw(buffer,static_cast<uint32_t>(triangle.renderable.vertices.size()), 1, 0, 0);
+    vkCmdDraw(buffer, static_cast<uint32_t>(triangle.renderable.vertices.size()), 1, 0, 0);
 
     vkCmdEndRenderPass(buffer);
 
@@ -293,10 +294,10 @@ sec Renderer::draw() {
     if (shouldRecreateSwapchain()) {
         bool success = recreateSwapchain();
         if (success) {
-            std::cout << "Created new swapchain" << std::endl;
+            DBG "Created new swapchain" ENDL;
             this->needsNewSwapchain = false;
         } else {
-            std::cout << "Failed to create new swapchain" << std::endl;
+            DBG "Failed to create new swapchain" ENDL;
             return 0;
         }
     }
@@ -310,12 +311,12 @@ sec Renderer::draw() {
                                                     this->imageAvailableSemaphore, nullptr, &imageIndex);
 
     if (acquireImageResult == VK_ERROR_OUT_OF_DATE_KHR) {
-        std::cout << "Swapchain is out of date" << std::endl;
+        DBG "Swapchain is out of date" ENDL;
         recreateSwapchain();
         return Timer::duration(beforeFence, afterFence); // Why not
 
     } else if (acquireImageResult == VK_SUBOPTIMAL_KHR) {
-        std::cout << "Swapchain is suboptimal" << std::endl;
+        DBG "Swapchain is suboptimal" ENDL;
         this->needsNewSwapchain = true;
 
     } else if (acquireImageResult != VK_SUCCESS) {

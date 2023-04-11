@@ -5,9 +5,10 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include "input_manager.h"
+#include "printer.h"
 
-void InputManager::create(GLFWwindow* w) {
-    std::cout<<"Creating InputManager"<<std::endl;
+void InputManager::create(GLFWwindow *w) {
+    INF "Creating InputManager" ENDL;
 
     this->window = w;
 }

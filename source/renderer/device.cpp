@@ -3,6 +3,7 @@
 //
 
 #include "renderer.h"
+#include "printer.h"
 
 void Renderer::printAvailableInstanceExtensions() {
     uint32_t extensionCount = 0;
@@ -11,9 +12,9 @@ void Renderer::printAvailableInstanceExtensions() {
     std::vector<VkExtensionProperties> extensions(extensionCount);
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
 
-    std::cout << "Available instance extensions:" << std::endl;
+    DBG "Available instance extensions:" ENDL;
     for (const auto &extension: extensions) {
-        std::cout << '\t' << extension.extensionName << std::endl;
+        DBG '\t' << extension.extensionName ENDL;
     }
 }
 
@@ -23,12 +24,12 @@ void Renderer::printAvailablePhysicalDevices() {
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(this->instance, &deviceCount, devices.data());
 
-    std::cout << "Available physical devices:" << std::endl;
+    DBG "Available physical devices:" ENDL;
 
     for (const auto &device: devices) {
         VkPhysicalDeviceProperties deviceProperties;
         vkGetPhysicalDeviceProperties(device, &deviceProperties);
-        std::cout << "\t" << deviceProperties.deviceName << std::endl;
+        DBG "\t" << deviceProperties.deviceName ENDL;
     }
 }
 
@@ -57,7 +58,7 @@ void Renderer::pickPhysicalDevice() {
 
     VkPhysicalDeviceProperties deviceProperties;
     vkGetPhysicalDeviceProperties(this->physicalDevice, &deviceProperties);
-    std::cout << "Picked physical device: " << deviceProperties.deviceName << std::endl;
+    INF "Picked physical device: " << deviceProperties.deviceName ENDL;
 
     if (this->physicalDevice == VK_NULL_HANDLE) {
         throw std::runtime_error("Failed to find a suitable GPU!");
@@ -104,10 +105,10 @@ bool Renderer::checkDeviceExtensionSupport(VkPhysicalDevice device) {
     VkPhysicalDeviceProperties deviceProperties;
     vkGetPhysicalDeviceProperties(device, &deviceProperties);
 
-    std::cout << "Available device extensions for " << deviceProperties.deviceName << ":" << std::endl;
+    DBG "Available device extensions for " << deviceProperties.deviceName << ":" ENDL;
 
     for (const auto &extension: availableExtensions) {
-        std::cout << '\t' << extension.extensionName << std::endl;
+        DBG '\t' << extension.extensionName ENDL;
         requiredExtensions.erase(extension.extensionName);
     }
 
@@ -153,7 +154,7 @@ QueueFamilyIndices Renderer::findQueueFamilies(VkPhysicalDevice device) {
 void Renderer::createLogicalDevice() {
     QueueFamilyIndices indices = findQueueFamilies(this->physicalDevice);
     if (indices.isUnifiedGraphicsPresentQueue()) {
-        std::cout << "Found a queue that supports both graphics and presentation!" << std::endl;
+        DBG "Found a queue that supports both graphics and presentation!" ENDL;
     }
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;

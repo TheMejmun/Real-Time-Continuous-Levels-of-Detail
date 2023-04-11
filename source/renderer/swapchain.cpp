@@ -3,6 +3,7 @@
 //
 
 #include "renderer.h"
+#include "printer.h"
 
 void Renderer::createSurface() {
     if (glfwCreateWindowSurface(this->instance, this->window, nullptr, &this->surface) != VK_SUCCESS) {
@@ -42,25 +43,25 @@ VkSurfaceFormatKHR Renderer::chooseSwapSurfaceFormat(const std::vector<VkSurface
         }
     }
 
-    std::cout << "Picked Swapchain Surface Format: " << std::endl;
-    std::cout << "\tFormat: " << out.format << std::endl;
-    std::cout << "\tColor Space: " << out.colorSpace << std::endl;
+    DBG "Picked Swapchain Surface Format: " ENDL;
+    DBG "\tFormat: " << out.format ENDL;
+    DBG "\tColor Space: " << out.colorSpace ENDL;
 
     return out;
 }
 
 VkPresentModeKHR Renderer::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes) {
-    std::cout << "Picked Swapchain Present Mode: ";
+    INF "Picked Swapchain Present Mode: ";
     for (const auto &availablePresentMode: availablePresentModes) {
         // Triple Buffering: Override last frame if a new image is rendered before that one has been shown
         if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
-            std::cout << "Triple-Buffering" << std::endl;
+            INF "Triple-Buffering" ENDL;
             return availablePresentMode;
         }
     }
 
     // VSYNC
-    std::cout << "V-Sync" << std::endl;
+    INF "V-Sync" ENDL;
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
@@ -91,12 +92,12 @@ VkExtent2D Renderer::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabiliti
     this->framebufferWidth = out.width;
     this->framebufferHeight = out.height;
 
-    std::cout << "Swapchain extents set to: " << out.width << " * " << out.height << std::endl;
+    DBG "Swapchain extents set to: " << out.width << " * " << out.height ENDL;
     return out;
 }
 
 bool Renderer::recreateSwapchain() {
-    std::cout << "Recreate Swapchain" << std::endl;
+    DBG "Recreate Swapchain" ENDL;
 
     // May need to recreate render pass here if e.g. window moves to HDR monitor
 
@@ -115,7 +116,7 @@ bool Renderer::createSwapchain() {
     VkExtent2D extent = chooseSwapExtent(swapchainSupport.capabilities);
 
     if (extent.width < 1 || extent.height < 1) {
-        std::cout << "Invalid swapchain extents. Retry later!" << std::endl;
+        DBG "Invalid swapchain extents. Retry later!" ENDL;
         this->needsNewSwapchain = true;
         return false;
     }
@@ -125,7 +126,7 @@ bool Renderer::createSwapchain() {
     if (swapchainSupport.capabilities.maxImageCount > 0 && imageCount > swapchainSupport.capabilities.maxImageCount) {
         imageCount = swapchainSupport.capabilities.maxImageCount;
     }
-    std::cout << "Creating the Swapchain with at least " << imageCount << " images!" << std::endl;
+    DBG "Creating the Swapchain with at least " << imageCount << " images!" ENDL;
 
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;

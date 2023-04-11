@@ -3,6 +3,7 @@
 //
 
 #include "application.h"
+#include "printer.h"
 
 void Application::run() {
     init();
@@ -11,7 +12,7 @@ void Application::run() {
 }
 
 void Application::init() {
-    std::cout << "Creating Application" << std::endl;
+    INF "Creating Application" ENDL;
 
     this->ecs.create(256);
 
@@ -36,30 +37,23 @@ void Application::mainLoop() {
         // Benchmark
         auto time = Timer::now();
         auto frameTime = Timer::duration(this->lastTimestamp, time);
-//        this->currentFrameTime =
-//                ((this->currentFrameTime * SMOOTH_FPS_DISPLAY_BIAS + frameTime) / (SMOOTH_FPS_DISPLAY_BIAS + 1.0));
-//        this->currentGPUWaitTime =
-//                ((this->currentGPUWaitTime * SMOOTH_FPS_DISPLAY_BIAS + gpuWaitTime) / (SMOOTH_FPS_DISPLAY_BIAS + 1.0));
         this->currentFrameTime = frameTime;
         this->currentGPUWaitTime = gpuWaitTime;
         this->currentFPS = (uint32_t) Timer::FPS(this->currentFrameTime);
 
         this->lastTimestamp = time;
 
-        auto perfText = std::string("FPS: ") +
-                        std::to_string(this->currentFPS) +
-                        std::string(" Frame time: ") +
-                        std::to_string(this->currentFrameTime) +
-                        std::string(" GPU wait time: ") +
-                        std::to_string(this->currentGPUWaitTime);
-#ifdef PRINT_PERFORMANCE_METRICS
-        std::cout << perfText << std::endl;
-#endif
+        TRC std::string("FPS: ") +
+            std::to_string(this->currentFPS) +
+            std::string(" Frame time: ") +
+            std::to_string(this->currentFrameTime) +
+            std::string(" GPU wait time: ") +
+            std::to_string(this->currentGPUWaitTime) ENDL;
     }
 }
 
 void Application::destroy() {
-    std::cout << "Destroying Application" << std::endl;
+    INF "Destroying Application" ENDL;
 
     this->renderer.destroy();
     this->windowManager.destroy();

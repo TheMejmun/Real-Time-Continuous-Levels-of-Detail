@@ -4,9 +4,10 @@
 
 #include <iostream>
 #include "window_manager.h"
+#include "printer.h"
 
 void WindowManager::create(const std::string &t) {
-    std::cout << "Creating WindowManager" << std::endl;
+    INF "Creating WindowManager" ENDL;
 
     this->title = t;
 
@@ -34,7 +35,7 @@ void WindowManager::close() const {
 }
 
 void WindowManager::destroy() const {
-    std::cout << "Destroying WindowManager" << std::endl;
+    INF "Destroying WindowManager" ENDL;
 
     glfwDestroyWindow(this->window);
 

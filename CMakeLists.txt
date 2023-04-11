@@ -33,7 +33,7 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/vertex.h
         ${HEADER_FOLDER}/triangle.h
         ${HEADER_FOLDER}/ecs.h
-        ${HEADER_FOLDER}/renderable.h)
+        ${HEADER_FOLDER}/renderable.h include/printer.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
         ${SOURCE_FOLDER}/importer.cpp

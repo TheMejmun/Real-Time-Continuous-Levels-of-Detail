@@ -3,8 +3,10 @@
 //
 
 #include "renderer.h"
+#include "printer.h"
+
 void Renderer::create(const std::string &t, GLFWwindow *w) {
-    std::cout << "Creating Renderer" << std::endl;
+    INF "Creating Renderer" ENDL;
 
     this->window = w;
     this->title = t;
@@ -25,7 +27,7 @@ void Renderer::initVulkan() {
 }
 
 void Renderer::destroy() {
-    std::cout << "Destroying Renderer" << std::endl;
+    INF "Destroying Renderer" ENDL;
 
     // Wait until resources are not actively being used anymore
     vkDeviceWaitIdle(this->logicalDevice);
