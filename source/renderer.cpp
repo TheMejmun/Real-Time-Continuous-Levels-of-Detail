@@ -763,7 +763,7 @@ void Renderer::initVulkan() {
     createSwapchain();
     createGraphicsPipeline();
     createCommandPool();
-    createCommandBuffer();
+    createCommandBuffer(); // Cleaned automatically by command pool clean.
     createVertexBuffer();
     createSyncObjects();
 }
