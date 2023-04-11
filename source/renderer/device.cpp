@@ -39,7 +39,7 @@ void Renderer::pickPhysicalDevice() {
     vkEnumeratePhysicalDevices(this->instance, &deviceCount, nullptr);
 
     if (deviceCount == 0) {
-        throw std::runtime_error("Failed to find GPUs with Vulkan support!");
+        THROW("Failed to find GPUs with Vulkan support!");
     }
 
     std::vector<VkPhysicalDevice> devices(deviceCount);
@@ -60,7 +60,7 @@ void Renderer::pickPhysicalDevice() {
     INF "Picked physical device: " << deviceProperties.deviceName ENDL;
 
     if (this->physicalDevice == VK_NULL_HANDLE) {
-        throw std::runtime_error("Failed to find a suitable GPU!");
+        THROW("Failed to find a suitable GPU!");
     }
 }
 
@@ -194,7 +194,7 @@ void Renderer::createLogicalDevice() {
 #pragma clang diagnostic pop
 
     if (vkCreateDevice(this->physicalDevice, &createInfo, nullptr, &this->logicalDevice) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create logical device!");
+        THROW("Failed to create logical device!");
     }
 
     // Get each queue

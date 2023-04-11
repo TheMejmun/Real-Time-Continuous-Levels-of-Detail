@@ -12,7 +12,7 @@ void Renderer::createVertexBuffer() {
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // Like swap chain images
 
     if (vkCreateBuffer(this->logicalDevice, &bufferInfo, nullptr, &this->vertexBuffer) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create vertex buffer!");
+        THROW("Failed to create vertex buffer!");
     }
 
     VkMemoryRequirements memRequirements;
@@ -27,7 +27,7 @@ void Renderer::createVertexBuffer() {
                                                                                VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
     if (vkAllocateMemory(this->logicalDevice, &allocInfo, nullptr, &this->vertexBufferMemory) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to allocate vertex buffer memory!");
+        THROW("Failed to allocate vertex buffer memory!");
     }
 
     // offset % memRequirements.alignment == 0
@@ -57,7 +57,7 @@ uint32_t Renderer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags pro
         }
     }
 
-    throw std::runtime_error("Failed to find suitable memory type!");
+    THROW("Failed to find suitable memory type!");
 }
 
 void Renderer::createCommandBuffer() {
@@ -70,6 +70,6 @@ void Renderer::createCommandBuffer() {
     allocInfo.commandBufferCount = 1;
 
     if (vkAllocateCommandBuffers(this->logicalDevice, &allocInfo, &this->commandBuffer) != VK_SUCCESS) {
-        throw std::runtime_error("failed to allocate command buffers!");
+        THROW("failed to allocate command buffers!");
     }
 }

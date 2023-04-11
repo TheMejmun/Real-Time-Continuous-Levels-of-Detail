@@ -3,6 +3,7 @@
 //
 
 #include "ecs.h"
+#include "printer.h"
 #include <stdexcept>
 
 void ECS::create(uint32_t size) {
@@ -19,14 +20,14 @@ uint32_t ECS::insert(const Components &entityComponents) {
             return i;
         }
     }
-    throw std::runtime_error("ECS is full. Can not add more entities.");
+    THROW("ECS is full. Can not add more entities.");
 }
 
 void ECS::remove(uint32_t index) {
     if (this->isOccupied[index]) {
         this->isOccupied[index] = false;
     } else {
-        throw std::runtime_error("Attempted to remove non-existent entity from ECS.");
+        THROW("Attempted to remove non-existent entity from ECS.");
     }
 }
 

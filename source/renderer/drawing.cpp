@@ -47,7 +47,7 @@ void Renderer::createRenderPass() {
     renderPassInfo.pDependencies = &dependency;
 
     if (vkCreateRenderPass(this->logicalDevice, &renderPassInfo, nullptr, &this->renderPass) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create render pass!");
+        THROW("Failed to create render pass!");
     }
 }
 
@@ -172,7 +172,7 @@ void Renderer::createGraphicsPipeline() {
 
     if (vkCreatePipelineLayout(this->logicalDevice, &pipelineLayoutInfo, nullptr, &this->pipelineLayout) !=
         VK_SUCCESS) {
-        throw std::runtime_error("Failed to create pipeline layout!");
+        THROW("Failed to create pipeline layout!");
     }
 
     VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -197,7 +197,7 @@ void Renderer::createGraphicsPipeline() {
 
     if (vkCreateGraphicsPipelines(this->logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
                                   &this->graphicsPipeline) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create graphics pipeline!");
+        THROW("Failed to create graphics pipeline!");
     }
 
     // Once the pipeline is created, we don't need this anymore
@@ -215,7 +215,7 @@ void Renderer::createCommandPool() {
     poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 
     if (vkCreateCommandPool(this->logicalDevice, &poolInfo, nullptr, &this->commandPool) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create command pool!");
+        THROW("Failed to create command pool!");
     }
 }
 
@@ -230,7 +230,7 @@ void Renderer::createSyncObjects() {
     if (vkCreateSemaphore(this->logicalDevice, &semaphoreInfo, nullptr, &this->imageAvailableSemaphore) != VK_SUCCESS ||
         vkCreateSemaphore(this->logicalDevice, &semaphoreInfo, nullptr, &this->renderFinishedSemaphore) != VK_SUCCESS ||
         vkCreateFence(this->logicalDevice, &fenceInfo, nullptr, &this->inFlightFence) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create semaphores and/or fences!");
+        THROW("Failed to create semaphores and/or fences!");
     }
 }
 
@@ -241,7 +241,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
     beginInfo.pInheritanceInfo = nullptr; // Optional
 
     if (vkBeginCommandBuffer(buffer, &beginInfo) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to begin recording command buffer!");
+        THROW("Failed to begin recording command buffer!");
     }
 
     VkRenderPassBeginInfo renderPassInfo{};
@@ -285,7 +285,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
     vkCmdEndRenderPass(buffer);
 
     if (vkEndCommandBuffer(buffer) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to record command buffer!");
+        THROW("Failed to record command buffer!");
     }
 }
 
@@ -319,7 +319,7 @@ sec Renderer::draw() {
         this->needsNewSwapchain = true;
 
     } else if (acquireImageResult != VK_SUCCESS) {
-        throw std::runtime_error("Failed to acquire swapchain image!");
+        THROW("Failed to acquire swapchain image!");
     }
 
 
@@ -347,7 +347,7 @@ sec Renderer::draw() {
     submitInfo.pSignalSemaphores = signalSemaphores;
 
     if (vkQueueSubmit(this->graphicsQueue, 1, &submitInfo, this->inFlightFence) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to submit draw command buffer!");
+        THROW("Failed to submit draw command buffer!");
     }
 
     VkPresentInfoKHR presentInfo{};

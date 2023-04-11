@@ -6,7 +6,7 @@
 
 void Renderer::createSurface() {
     if (glfwCreateWindowSurface(this->instance, this->window, nullptr, &this->surface) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create window surface!");
+        THROW("Failed to create window surface!");
     }
 }
 
@@ -165,7 +165,7 @@ bool Renderer::createSwapchain() {
     createInfo.oldSwapchain = nullptr; // Put previous swapchain here if overridden, e.g. if window size changed
 
     if (vkCreateSwapchainKHR(this->logicalDevice, &createInfo, nullptr, &this->swapchain) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create swap chain!");
+        THROW("Failed to create swap chain!");
     }
 
     // imageCount only specified a minimum!
@@ -220,7 +220,7 @@ void Renderer::createImageViews() {
         createInfo.subresourceRange.layerCount = 1; // No 3D
 
         if (vkCreateImageView(this->logicalDevice, &createInfo, nullptr, &this->swapchainImageViews[i]) != VK_SUCCESS) {
-            throw std::runtime_error("Failed to create image views!");
+            THROW("Failed to create image views!");
         }
     }
 }
@@ -244,7 +244,7 @@ void Renderer::createFramebuffers() {
 
         if (vkCreateFramebuffer(this->logicalDevice, &framebufferInfo, nullptr, &this->swapchainFramebuffers[i]) !=
             VK_SUCCESS) {
-            throw std::runtime_error("Failed to create framebuffer!");
+            THROW("Failed to create framebuffer!");
         }
     }
 }

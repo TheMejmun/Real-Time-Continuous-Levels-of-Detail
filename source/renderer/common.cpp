@@ -84,7 +84,7 @@ void Renderer::createInstance() {
 #pragma ide diagnostic ignored "UnreachableCode"
     if (ENABLE_VALIDATION_LAYERS) {
         if (!checkValidationLayerSupport()) {
-            throw std::runtime_error("Validation layers not available!");
+            THROW("Validation layers not available!");
         }
         createInfo.enabledLayerCount = static_cast<uint32_t>(VALIDATION_LAYERS.size());
         createInfo.ppEnabledLayerNames = VALIDATION_LAYERS.data();
@@ -96,6 +96,6 @@ void Renderer::createInstance() {
     // Done
     VkResult result = vkCreateInstance(&createInfo, nullptr, &this->instance);
     if (result != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create instance!");
+        THROW("Failed to create instance!");
     }
 }

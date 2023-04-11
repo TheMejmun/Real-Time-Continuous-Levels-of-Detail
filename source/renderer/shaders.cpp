@@ -13,7 +13,7 @@ VkShaderModule Renderer::createShaderModule(const std::vector<char> &code) {
 
     VkShaderModule shaderModule;
     if (vkCreateShaderModule(this->logicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create shader module!");
+        THROW("Failed to create shader module!");
     }
 
     return shaderModule;

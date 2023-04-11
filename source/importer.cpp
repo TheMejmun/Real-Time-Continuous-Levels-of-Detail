@@ -4,12 +4,13 @@
 
 #include <fstream>
 #include "importer.h"
+#include "printer.h"
 
 std::vector<char> Importer::readFile(const std::string &filename) {
     std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
     if (!file.is_open()) {
-        throw std::runtime_error("Failed to open file " + filename);
+        THROW("Failed to open file " + filename);
     }
 
     auto fileSize = file.tellg();

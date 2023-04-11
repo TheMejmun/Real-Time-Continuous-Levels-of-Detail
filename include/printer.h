@@ -5,9 +5,8 @@
 #ifndef REALTIME_CELL_COLLAPSE_PRINTER_H
 #define REALTIME_CELL_COLLAPSE_PRINTER_H
 
-#include <string>
-#include <sstream>
 #include <iostream>
+#include <stdexcept>
 
 #define INFO_PRINTING
 #define DEBUG_PRINTING
@@ -15,6 +14,7 @@
 
 #define COUT std::cout <<
 #define ENDL << std::endl
+#define THROW(message) throw std::runtime_error(message)
 
 #if(defined(NDEBUG) || !defined(INFO_PRINTING))
 #define INF if(false) COUT
