@@ -7,6 +7,7 @@
 
 #include <vector>
 #include "vertex.h"
+#include <vulkan/vulkan.h>
 
 const uint16_t FLAG_TO_ALLOCATE = 0b1;
 const uint16_t FLAG_TO_DEALLOCATE = 0b10;

@@ -108,6 +108,10 @@ private:
 
     void createCommandPool();
 
+    void createVertexBuffer();
+
+    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
     void createCommandBuffer();
 
     void createSyncObjects();
@@ -119,7 +123,7 @@ private:
 
     std::string title;
     GLFWwindow *window = nullptr;
-    uint32_t framebufferWidth=0,  framebufferHeight=0;
+    uint32_t framebufferWidth = 0, framebufferHeight = 0;
 
     // Vulkan
     VkInstance instance = nullptr;
@@ -139,6 +143,8 @@ private:
     std::vector<VkFramebuffer> swapchainFramebuffers;
     VkCommandPool commandPool = nullptr;
     VkCommandBuffer commandBuffer = nullptr;
+    VkBuffer vertexBuffer = nullptr;
+    VkDeviceMemory vertexBufferMemory = nullptr;
 
     VkSemaphore imageAvailableSemaphore = nullptr;
     VkSemaphore renderFinishedSemaphore = nullptr;

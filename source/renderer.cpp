@@ -11,6 +11,8 @@
 #include <algorithm> // Necessary for std::clamp
 #include "renderer.h"
 #include "importer.h"
+#include "vertex.h"
+#include "triangle.h"
 
 bool QueueFamilyIndices::isComplete() const {
     return this->graphicsFamily.has_value() &&
@@ -323,7 +325,7 @@ VkExtent2D Renderer::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabiliti
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         out = capabilities.currentExtent;
     } else {
-        int w,h;
+        int w, h;
         glfwGetFramebufferSize(window, &w, &h);
 
         out = {
@@ -339,8 +341,8 @@ VkExtent2D Renderer::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabiliti
                                 capabilities.maxImageExtent.height);
     }
 
-    this->framebufferWidth=out.width;
-    this->framebufferHeight=out.height;
+    this->framebufferWidth = out.width;
+    this->framebufferHeight = out.height;
 
     std::cout << "Swapchain extents set to: " << out.width << " * " << out.height << std::endl;
     return out;
@@ -603,10 +605,12 @@ void Renderer::createGraphicsPipeline() {
     // Vertex input format info
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertexInputInfo.vertexBindingDescriptionCount = 0;
-    vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional array of structs
-    vertexInputInfo.vertexAttributeDescriptionCount = 0;
-    vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional array of structs
+    auto bindingDescription = Vertex::getBindingDescription();
+    auto attributeDescriptions = Vertex::getAttributeDescriptions();
+    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+    vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -760,6 +764,7 @@ void Renderer::initVulkan() {
     createGraphicsPipeline();
     createCommandPool();
     createCommandBuffer();
+    createVertexBuffer();
     createSyncObjects();
 }
 
@@ -773,6 +778,8 @@ void Renderer::destroy() {
     vkDestroySemaphore(this->logicalDevice, this->renderFinishedSemaphore, nullptr);
     vkDestroyFence(this->logicalDevice, this->inFlightFence, nullptr);
 
+    vkFreeMemory(this->logicalDevice, this->vertexBufferMemory, nullptr);
+    vkDestroyBuffer(this->logicalDevice, this->vertexBuffer, nullptr);
     vkDestroyCommandPool(this->logicalDevice, this->commandPool, nullptr);
     vkDestroyPipeline(this->logicalDevice, this->graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(this->logicalDevice, this->pipelineLayout, nullptr);
@@ -809,6 +816,62 @@ void Renderer::createCommandPool() {
     if (vkCreateCommandPool(this->logicalDevice, &poolInfo, nullptr, &this->commandPool) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create command pool!");
     }
+}
+
+void Renderer::createVertexBuffer() {
+    VkBufferCreateInfo bufferInfo{};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = sizeof(Vertex) * 3;
+    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT; // Can be and-ed with other use cases
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // Like swap chain images
+
+    if (vkCreateBuffer(this->logicalDevice, &bufferInfo, nullptr, &this->vertexBuffer) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create vertex buffer!");
+    }
+
+    VkMemoryRequirements memRequirements;
+    vkGetBufferMemoryRequirements(this->logicalDevice, this->vertexBuffer, &memRequirements);
+
+    // Malloc
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    // Is visible and coherent when viewing from host
+    allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                                                               VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+    if (vkAllocateMemory(this->logicalDevice, &allocInfo, nullptr, &this->vertexBufferMemory) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to allocate vertex buffer memory!");
+    }
+
+    // offset % memRequirements.alignment == 0
+    vkBindBufferMemory(this->logicalDevice, this->vertexBuffer, this->vertexBufferMemory, 0);
+
+    void *data;
+    // Size can also be VK_WHOLE_SIZE -> Entire buffer past the offset
+    vkMapMemory(this->logicalDevice, this->vertexBufferMemory, 0, bufferInfo.size, 0, &data);
+
+    // TODO
+    Triangle triangle{};
+    memcpy(data, triangle.renderable.vertices.data(), (size_t) bufferInfo.size);
+    vkUnmapMemory(this->logicalDevice, this->vertexBufferMemory);
+}
+
+uint32_t Renderer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+    VkPhysicalDeviceMemoryProperties memProperties;
+    vkGetPhysicalDeviceMemoryProperties(this->physicalDevice, &memProperties);
+
+    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+        // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkPhysicalDeviceMemoryProperties.html
+        // Look for first memory of type with required properties (-> Fastest)
+        const bool isRequiredMemoryType = (typeFilter & (1 << i));
+        const bool hasRequiredProperties = (memProperties.memoryTypes[i].propertyFlags & properties) == properties;
+        if (isRequiredMemoryType && hasRequiredProperties) {
+            return i;
+        }
+    }
+
+    throw std::runtime_error("Failed to find suitable memory type!");
 }
 
 void Renderer::createCommandBuffer() {
@@ -865,6 +928,13 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
 
     vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->graphicsPipeline);
 
+    VkBuffer vertexBuffers[] = {this->vertexBuffer};
+    VkDeviceSize offsets[] = {0};
+    // Offset and number of bindings, buffers, and byte offsets from those buffers
+    vkCmdBindVertexBuffers(buffer, 0, 1, vertexBuffers, offsets);
+    // TODO
+    Triangle triangle{};
+
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
@@ -879,7 +949,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
     scissor.extent = this->swapchainExtent;
     vkCmdSetScissor(buffer, 0, 1, &scissor);
 
-    vkCmdDraw(buffer, 3, 1, 0, 0);
+    vkCmdDraw(buffer,static_cast<uint32_t>(triangle.renderable.vertices.size()), 1, 0, 0);
 
     vkCmdEndRenderPass(buffer);
 
