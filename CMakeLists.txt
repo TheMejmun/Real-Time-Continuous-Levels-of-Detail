@@ -36,13 +36,17 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/renderable.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
-        ${SOURCE_FOLDER}/renderer.cpp
         ${SOURCE_FOLDER}/importer.cpp
         ${SOURCE_FOLDER}/application.cpp
         ${SOURCE_FOLDER}/input_manager.cpp
         ${SOURCE_FOLDER}/window_manager.cpp
         ${SOURCE_FOLDER}/triangle.cpp
-        ${SOURCE_FOLDER}/ecs.cpp)
+        ${SOURCE_FOLDER}/ecs.cpp
+        ${SOURCE_FOLDER}/renderer/drawing.cpp
+        ${SOURCE_FOLDER}/renderer/memory.cpp
+        ${SOURCE_FOLDER}/renderer/device.cpp
+        ${SOURCE_FOLDER}/renderer/swapchain.cpp
+        ${SOURCE_FOLDER}/renderer/queue_family_indices.cpp source/renderer/debug.cpp source/renderer/common.cpp source/renderer/shaders.cpp)
 message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable
 add_executable(Realtime_Cell_Collapse ${SOURCE_FOLDER}/main.cpp ${HEADER_FILES} ${SOURCE_FILES})

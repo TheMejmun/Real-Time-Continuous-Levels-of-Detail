@@ -12,6 +12,16 @@
 #include <utility>
 #include <vector>
 #include <optional>
+#include <stdexcept>
+#include <iostream>
+#include <cstring>
+#include <set>
+#include <limits> // Necessary for std::numeric_limits
+#include <algorithm> // Necessary for std::clamp
+#include "renderer.h"
+#include "importer.h"
+#include "vertex.h"
+#include "triangle.h"
 #include "timer.h"
 
 //#define WIREFRAME_MODE
