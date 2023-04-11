@@ -3,7 +3,6 @@
 //
 
 #include "renderer.h"
-#include "printer.h"
 
 void Renderer::createSurface() {
     if (glfwCreateWindowSurface(this->instance, this->window, nullptr, &this->surface) != VK_SUCCESS) {

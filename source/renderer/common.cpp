@@ -3,7 +3,6 @@
 //
 
 #include "renderer.h"
-#include "printer.h"
 
 void Renderer::create(const std::string &t, GLFWwindow *w) {
     INF "Creating Renderer" ENDL;

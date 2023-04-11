@@ -3,7 +3,6 @@
 //
 
 #include "renderer.h"
-#include "printer.h"
 
 void Renderer::createRenderPass() {
     VkAttachmentDescription colorAttachment{};

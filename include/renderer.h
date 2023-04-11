@@ -23,6 +23,7 @@
 #include "vertex.h"
 #include "triangle.h"
 #include "timer.h"
+#include "printer.h"
 
 //#define WIREFRAME_MODE
 
