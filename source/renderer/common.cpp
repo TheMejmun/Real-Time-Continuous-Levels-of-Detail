@@ -22,7 +22,7 @@ void Renderer::initVulkan() {
     createCommandPool();
     createCommandBuffer(); // Cleaned automatically by command pool clean.
     createVertexBuffer();
-    createIndexBuffer();
+//    createIndexBuffer();
     createSyncObjects();
 }
 

@@ -41,25 +41,25 @@ void Renderer::createVertexBuffer() {
     vkUnmapMemory(this->logicalDevice, this->vertexBufferMemory);
 }
 
-void Renderer::createIndexBuffer() {
-    VkDeviceSize bufferSize = sizeof(uint32_t) * triangle.renderable.vertices.size();
-
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-    void* data;
-    vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, indices.data(), (size_t) bufferSize);
-    vkUnmapMemory(device, stagingBufferMemory);
-
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
-
-    copyBuffer(stagingBuffer, indexBuffer, bufferSize);
-
-    vkDestroyBuffer(device, stagingBuffer, nullptr);
-    vkFreeMemory(device, stagingBufferMemory, nullptr);
-}
+//void Renderer::createIndexBuffer() {
+//    VkDeviceSize bufferSize = sizeof(uint32_t) * triangle.renderable.vertices.size();
+//
+//    VkBuffer stagingBuffer;
+//    VkDeviceMemory stagingBufferMemory;
+//    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+//
+//    void* data;
+//    vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+//    memcpy(data, indices.data(), (size_t) bufferSize);
+//    vkUnmapMemory(device, stagingBufferMemory);
+//
+//    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+//
+//    copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+//
+//    vkDestroyBuffer(device, stagingBuffer, nullptr);
+//    vkFreeMemory(device, stagingBufferMemory, nullptr);
+//}
 
 uint32_t Renderer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
     VkPhysicalDeviceMemoryProperties memProperties;
