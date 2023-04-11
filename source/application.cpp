@@ -36,10 +36,12 @@ void Application::mainLoop() {
         // Benchmark
         auto time = Timer::now();
         auto frameTime = Timer::duration(this->lastTimestamp, time);
-        this->currentFrameTime =
-                ((this->currentFrameTime * SMOOTH_FPS_DISPLAY_BIAS + frameTime) / (SMOOTH_FPS_DISPLAY_BIAS + 1.0));
-        this->currentGPUWaitTime =
-                ((this->currentGPUWaitTime * SMOOTH_FPS_DISPLAY_BIAS + gpuWaitTime) / (SMOOTH_FPS_DISPLAY_BIAS + 1.0));
+//        this->currentFrameTime =
+//                ((this->currentFrameTime * SMOOTH_FPS_DISPLAY_BIAS + frameTime) / (SMOOTH_FPS_DISPLAY_BIAS + 1.0));
+//        this->currentGPUWaitTime =
+//                ((this->currentGPUWaitTime * SMOOTH_FPS_DISPLAY_BIAS + gpuWaitTime) / (SMOOTH_FPS_DISPLAY_BIAS + 1.0));
+        this->currentFrameTime = frameTime;
+        this->currentGPUWaitTime = gpuWaitTime;
         this->currentFPS = (uint32_t) Timer::FPS(this->currentFrameTime);
 
         this->lastTimestamp = time;
