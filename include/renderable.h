@@ -15,7 +15,7 @@ const uint16_t FLAG_RENDERABLE_TO_RENDER = 0b100;
 
 struct Renderable {
     std::vector<Vertex> vertices;
-    VkBuffer allocatedBuffer = nullptr; // TODO
+    std::vector<uint32_t> indices;
 };
 
 #endif //REALTIME_CELL_COLLAPSE_RENDERABLE_H

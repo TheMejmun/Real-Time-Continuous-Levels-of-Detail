@@ -39,15 +39,15 @@ std::vector<Renderable *>  ECS::requestRenderables(uint16_t flags) {
         bool use = false;
 
         if ((flags & FLAG_RENDERABLE_TO_ALLOCATE) > 0) {
-            use |= (this->isOccupied[i] && (this->renderables[i]->allocatedBuffer == nullptr));
+//            use |= (this->isOccupied[i] && (this->renderables[i]->allocatedBuffer == nullptr));
         }
 
         if ((flags & FLAG_RENDERABLE_TO_DEALLOCATE) > 0) {
-            use |=  (!this->isOccupied[i] && (this->renderables[i]->allocatedBuffer != nullptr));
+//            use |=  (!this->isOccupied[i] && (this->renderables[i]->allocatedBuffer != nullptr));
         }
 
         if ((flags & FLAG_RENDERABLE_TO_RENDER) > 0) {
-            use |= (this->isOccupied[i] && (this->renderables[i]->allocatedBuffer != nullptr));
+//            use |= (this->isOccupied[i] && (this->renderables[i]->allocatedBuffer != nullptr));
         }
 
         if(use){

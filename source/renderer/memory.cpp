@@ -7,7 +7,7 @@
 void Renderer::createVertexBuffer() {
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = sizeof(Vertex) * 3;
+    bufferInfo.size = sizeof(Vertex) * triangle.renderable.vertices.size();
     bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT; // Can be and-ed with other use cases
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // Like swap chain images
 
@@ -37,10 +37,28 @@ void Renderer::createVertexBuffer() {
     // Size can also be VK_WHOLE_SIZE -> Entire buffer past the offset
     vkMapMemory(this->logicalDevice, this->vertexBufferMemory, 0, bufferInfo.size, 0, &data);
 
-    // TODO
-    Triangle triangle{};
-    memcpy(data, triangle.renderable.vertices.data(), (size_t) bufferInfo.size);
+    memcpy(data, this->triangle.renderable.vertices.data(), (size_t) bufferInfo.size);
     vkUnmapMemory(this->logicalDevice, this->vertexBufferMemory);
+}
+
+void Renderer::createIndexBuffer() {
+    VkDeviceSize bufferSize = sizeof(uint32_t) * triangle.renderable.vertices.size();
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+    void* data;
+    vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+    memcpy(data, indices.data(), (size_t) bufferSize);
+    vkUnmapMemory(device, stagingBufferMemory);
+
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+
+    copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+
+    vkDestroyBuffer(device, stagingBuffer, nullptr);
+    vkFreeMemory(device, stagingBufferMemory, nullptr);
 }
 
 uint32_t Renderer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {

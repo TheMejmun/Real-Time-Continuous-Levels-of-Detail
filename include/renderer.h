@@ -69,6 +69,8 @@ public:
     void destroy();
 
 private:
+    Triangle triangle{}; // TODO
+
     void createInstance();
 
     static void printAvailableInstanceExtensions();
@@ -121,6 +123,8 @@ private:
 
     void createVertexBuffer();
 
+    void createIndexBuffer();
+
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
     void createCommandBuffer();
@@ -154,8 +158,11 @@ private:
     std::vector<VkFramebuffer> swapchainFramebuffers;
     VkCommandPool commandPool = nullptr;
     VkCommandBuffer commandBuffer = nullptr;
+
     VkBuffer vertexBuffer = nullptr;
     VkDeviceMemory vertexBufferMemory = nullptr;
+    VkBuffer indexBuffer;
+    VkDeviceMemory indexBufferMemory;
 
     VkSemaphore imageAvailableSemaphore = nullptr;
     VkSemaphore renderFinishedSemaphore = nullptr;
