@@ -22,7 +22,7 @@ public:
 
     void remove(uint32_t index);
 
-    std::tuple<std::vector<bool>, std::vector<Renderable *>> requestRenderables(uint16_t flags);
+   std::vector<Renderable *> requestRenderables(uint16_t flags);
 
 private:
     uint32_t max_entities;

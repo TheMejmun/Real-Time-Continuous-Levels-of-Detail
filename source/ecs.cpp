@@ -30,21 +30,29 @@ void ECS::remove(uint32_t index) {
     }
 }
 
-std::tuple<std::vector<bool>, std::vector<Renderable *>> ECS::requestRenderables(uint16_t flags) {
-    std::vector<bool> out{};
-    out.resize(this->max_entities);
+std::vector<Renderable *>  ECS::requestRenderables(uint16_t flags) {
+    std::vector<Renderable *> out{};
+    out.reserve(this->max_entities);
 
     for (uint32_t i = 0; i < this->max_entities; ++i) {
-        if ((flags & FLAG_TO_ALLOCATE) > 0) {
-            out[i] = out[i] || (this->isOccupied[i] && (this->renderables[i]->allocatedBuffer == nullptr));
+        bool use = false;
+
+        if ((flags & FLAG_RENDERABLE_TO_ALLOCATE) > 0) {
+            use |= (this->isOccupied[i] && (this->renderables[i]->allocatedBuffer == nullptr));
         }
 
-        if ((flags & FLAG_TO_DEALLOCATE) > 0) {
-            out[i] = out[i] || (!this->isOccupied[i] && (this->renderables[i]->allocatedBuffer != nullptr));
+        if ((flags & FLAG_RENDERABLE_TO_DEALLOCATE) > 0) {
+            use |=  (!this->isOccupied[i] && (this->renderables[i]->allocatedBuffer != nullptr));
         }
 
-        if ((flags & FLAG_TO_RENDER) > 0) {
-            out[i] = out[i] || (this->isOccupied[i] && (this->renderables[i]->allocatedBuffer != nullptr));
+        if ((flags & FLAG_RENDERABLE_TO_RENDER) > 0) {
+            use |= (this->isOccupied[i] && (this->renderables[i]->allocatedBuffer != nullptr));
+        }
+
+        if(use){
+            out.push_back(this->renderables[i]);
         }
     }
+
+    return out;
 }
