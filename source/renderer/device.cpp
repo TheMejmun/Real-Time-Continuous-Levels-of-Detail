@@ -55,6 +55,8 @@ void Renderer::pickPhysicalDevice() {
         }
     }
 
+    this->queueFamilyIndices = Renderer::findQueueFamilies(this->physicalDevice);
+
     VkPhysicalDeviceProperties deviceProperties;
     vkGetPhysicalDeviceProperties(this->physicalDevice, &deviceProperties);
     INF "Picked physical device: " << deviceProperties.deviceName ENDL;
@@ -62,6 +64,8 @@ void Renderer::pickPhysicalDevice() {
     if (this->physicalDevice == VK_NULL_HANDLE) {
         THROW("Failed to find a suitable GPU!");
     }
+
+    this->queueFamilyIndices.print();
 }
 
 bool Renderer::isDeviceSuitable(VkPhysicalDevice device, bool strictMode) {
@@ -128,20 +132,22 @@ QueueFamilyIndices Renderer::findQueueFamilies(VkPhysicalDevice device) {
         VkBool32 presentSupport = false;
         vkGetPhysicalDeviceSurfaceSupportKHR(device, i, this->surface, &presentSupport);
 
-        // Better performance if a queue supports all features together -> break if found.
-        if ((queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) &&
-            (presentSupport)) {
-            indices.graphicsFamily = i;
-            indices.presentFamily = i;
-
-            break;
+        // Look for transfer queue that is not a graphics queue
+        if ((queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) &&
+            !(queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)) {
+            indices.transferFamily = i;
         }
 
-        if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-            indices.graphicsFamily = i;
-        }
-        if (presentSupport) {
-            indices.presentFamily = i;
+        // Better performance if a queue supports all features together
+        // Do not execute if a unified family has already been found
+        if (!indices.isUnifiedGraphicsPresentQueue()) {
+            if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+                indices.graphicsFamily = i;
+            }
+
+            if (presentSupport) {
+                indices.presentFamily = i;
+            }
         }
 
         ++i;
@@ -151,7 +157,7 @@ QueueFamilyIndices Renderer::findQueueFamilies(VkPhysicalDevice device) {
 }
 
 void Renderer::createLogicalDevice() {
-    QueueFamilyIndices indices = findQueueFamilies(this->physicalDevice);
+    auto indices = this->queueFamilyIndices;
     if (indices.isUnifiedGraphicsPresentQueue()) {
         DBG "Found a queue that supports both graphics and presentation!" ENDL;
     }

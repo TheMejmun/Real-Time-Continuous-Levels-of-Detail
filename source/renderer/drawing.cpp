@@ -206,13 +206,11 @@ void Renderer::createGraphicsPipeline() {
 }
 
 void Renderer::createCommandPool() {
-    QueueFamilyIndices queueFamilyIndices = findQueueFamilies(this->physicalDevice);
-
     VkCommandPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // for vkResetCommandBuffer
     // Use VK_COMMAND_POOL_CREATE_TRANSIENT_BIT if buffer is very short-lived
-    poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+    poolInfo.queueFamilyIndex = this->queueFamilyIndices.graphicsFamily.value();
 
     if (vkCreateCommandPool(this->logicalDevice, &poolInfo, nullptr, &this->commandPool) != VK_SUCCESS) {
         THROW("Failed to create command pool!");

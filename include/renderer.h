@@ -49,10 +49,13 @@ const bool ENABLE_VALIDATION_LAYERS = true;
 struct QueueFamilyIndices {
     std::optional<uint32_t> graphicsFamily;
     std::optional<uint32_t> presentFamily;
+    std::optional<uint32_t> transferFamily;
 
     [[nodiscard]] bool isComplete() const;
 
     [[nodiscard]] bool isUnifiedGraphicsPresentQueue() const;
+
+    void print();
 };
 
 struct SwapchainSupportDetails {
@@ -146,6 +149,7 @@ private:
     // Vulkan
     VkInstance instance = nullptr;
     VkPhysicalDevice physicalDevice = nullptr;
+    QueueFamilyIndices queueFamilyIndices{};
     VkDevice logicalDevice = nullptr;
     VkQueue graphicsQueue = nullptr;
     VkQueue presentQueue = nullptr;

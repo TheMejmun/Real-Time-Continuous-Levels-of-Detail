@@ -138,13 +138,12 @@ bool Renderer::createSwapchain() {
     // TODO switch to VK_IMAGE_USAGE_TRANSFER_DST_BIT for post processing, instead of directly rendering to the SC
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    QueueFamilyIndices indices = findQueueFamilies(this->physicalDevice);
-    uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+    uint32_t queueIndices[] = {this->queueFamilyIndices.graphicsFamily.value(), this->queueFamilyIndices.presentFamily.value()};
 
-    if (!indices.isUnifiedGraphicsPresentQueue()) {
+    if (!this->queueFamilyIndices.isUnifiedGraphicsPresentQueue()) {
         createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT; // Image is shared between queues -> no transfers!
         createInfo.queueFamilyIndexCount = 2; // Concurrent mode requires at least two indices
-        createInfo.pQueueFamilyIndices = queueFamilyIndices; // Share image between these queues
+        createInfo.pQueueFamilyIndices = queueIndices; // Share image between these queues
     } else {
         createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE; // Image is owned by one queue at a time -> Perf+
         createInfo.queueFamilyIndexCount = 0; // Optional
