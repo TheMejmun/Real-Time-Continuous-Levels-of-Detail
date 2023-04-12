@@ -35,7 +35,7 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/ecs.h
         ${HEADER_FOLDER}/renderable.h
         ${HEADER_FOLDER}/printer.h
-        ${HEADER_FOLDER}/vbuffer_manager.h)
+        ${HEADER_FOLDER}/vbuffer_manager.h include/queue_family_indices.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
         ${SOURCE_FOLDER}/importer.cpp
@@ -45,10 +45,10 @@ set(SOURCE_FILES
         ${SOURCE_FOLDER}/triangle.cpp
         ${SOURCE_FOLDER}/ecs.cpp
         ${SOURCE_FOLDER}/renderer/drawing.cpp
-        ${SOURCE_FOLDER}/renderer/memory.cpp
+#        ${SOURCE_FOLDER}/renderer/memory.cpp
         ${SOURCE_FOLDER}/renderer/device.cpp
         ${SOURCE_FOLDER}/renderer/swapchain.cpp
-        ${SOURCE_FOLDER}/renderer/queue_family_indices.cpp
+        ${SOURCE_FOLDER}/queue_family_indices.cpp
         ${SOURCE_FOLDER}/renderer/debug.cpp
         ${SOURCE_FOLDER}/renderer/common.cpp
         ${SOURCE_FOLDER}/renderer/shaders.cpp

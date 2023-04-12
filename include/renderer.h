@@ -25,6 +25,7 @@
 #include "timer.h"
 #include "printer.h"
 #include "vbuffer_manager.h"
+#include "queue_family_indices.h"
 
 //#define WIREFRAME_MODE
 
@@ -45,18 +46,6 @@ const bool ENABLE_VALIDATION_LAYERS = false;
 #else
 const bool ENABLE_VALIDATION_LAYERS = true;
 #endif
-
-struct QueueFamilyIndices {
-    std::optional<uint32_t> graphicsFamily;
-    std::optional<uint32_t> presentFamily;
-    std::optional<uint32_t> transferFamily;
-
-    [[nodiscard]] bool isComplete() const;
-
-    [[nodiscard]] bool isUnifiedGraphicsPresentQueue() const;
-
-    void print();
-};
 
 struct SwapchainSupportDetails {
     VkSurfaceCapabilitiesKHR capabilities;
@@ -125,14 +114,6 @@ private:
 
     void createCommandPool();
 
-    void createVertexBuffer();
-
-    void createIndexBuffer();
-
-    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-
-    void createCommandBuffer();
-
     void createSyncObjects();
 
     void recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex);
@@ -153,6 +134,7 @@ private:
     VkDevice logicalDevice = nullptr;
     VkQueue graphicsQueue = nullptr;
     VkQueue presentQueue = nullptr;
+    VkQueue transferQueue = nullptr;
     VkSurfaceKHR surface = nullptr;
     VkSwapchainKHR swapchain = nullptr;
     std::vector<VkImage> swapchainImages;

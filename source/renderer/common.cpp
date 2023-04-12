@@ -17,7 +17,7 @@ void Renderer::initVulkan() {
     createSurface();
     pickPhysicalDevice();
     createLogicalDevice();
-    this->bufferManager.create(this->physicalDevice, this->logicalDevice);
+    this->bufferManager.create(this->physicalDevice, this->logicalDevice, this->queueFamilyIndices);
     createSwapchain();
     createGraphicsPipeline();
     createCommandPool();

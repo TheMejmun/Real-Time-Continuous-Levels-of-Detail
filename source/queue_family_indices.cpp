@@ -2,7 +2,8 @@
 // Created by Sam on 2023-04-11.
 //
 
-#include "renderer.h"
+#include "queue_family_indices.h"
+#include "printer.h"
 
 bool QueueFamilyIndices::isComplete() const {
     return this->graphicsFamily.has_value() &&

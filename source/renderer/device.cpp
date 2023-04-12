@@ -158,13 +158,10 @@ QueueFamilyIndices Renderer::findQueueFamilies(VkPhysicalDevice device) {
 
 void Renderer::createLogicalDevice() {
     auto indices = this->queueFamilyIndices;
-    if (indices.isUnifiedGraphicsPresentQueue()) {
-        DBG "Found a queue that supports both graphics and presentation!" ENDL;
-    }
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     // If the indices are the same, the set will merge them -> Only one single queue creation.
-    std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+    std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value(), indices.transferFamily.value()};
 
     float queuePriority = 1.0f;
     for (uint32_t queueFamily: uniqueQueueFamilies) {
@@ -206,4 +203,5 @@ void Renderer::createLogicalDevice() {
     // Get each queue
     vkGetDeviceQueue(this->logicalDevice, indices.graphicsFamily.value(), 0, &graphicsQueue);
     vkGetDeviceQueue(this->logicalDevice, indices.presentFamily.value(), 0, &presentQueue);
+    vkGetDeviceQueue(this->logicalDevice, indices.transferFamily.value(), 0, &transferQueue);
 }
