@@ -264,6 +264,8 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
     // Offset and number of bindings, buffers, and byte offsets from those buffers
     vkCmdBindVertexBuffers(buffer, 0, 1, vertexBuffers, offsets);
 
+    vkCmdBindIndexBuffer(buffer, this->bufferManager.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
@@ -278,7 +280,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
     scissor.extent = this->swapchainExtent;
     vkCmdSetScissor(buffer, 0, 1, &scissor);
 
-    vkCmdDraw(buffer, static_cast<uint32_t>(this->triangle.renderable.vertices.size()), 1, 0, 0);
+    vkCmdDrawIndexed(buffer, static_cast<uint32_t>(this->triangle.renderable.indices.size()), 1, 0, 0, 0);
 
     vkCmdEndRenderPass(buffer);
 

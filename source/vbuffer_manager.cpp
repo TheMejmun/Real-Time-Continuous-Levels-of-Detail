@@ -25,6 +25,8 @@ void VBufferManager::create(VkPhysicalDevice physicalDevice, VkDevice device, Qu
     vkGetDeviceQueue(this->logicalDevice, indices.transferFamily.value(), 0, &this->transferQueue);
 
     createTransferCommandPool();
+    createVertexBuffer();
+    createIndexBuffer();
 }
 
 void VBufferManager::destroy() {
@@ -32,6 +34,10 @@ void VBufferManager::destroy() {
 
     vkFreeMemory(this->logicalDevice, this->vertexBufferMemory, nullptr);
     vkDestroyBuffer(this->logicalDevice, this->vertexBuffer, nullptr);
+
+    vkFreeMemory(this->logicalDevice, this->indexBufferMemory, nullptr);
+    vkDestroyBuffer(this->logicalDevice, this->indexBuffer, nullptr);
+
     vkDestroyCommandPool(this->logicalDevice, this->transferCommandPool, nullptr);
 }
 
@@ -55,6 +61,29 @@ void VBufferManager::createVertexBuffer() {
     copyBuffer(stagingBuffer, this->vertexBuffer, bufferSize);
 
     // Cleanup
+    vkDestroyBuffer(this->logicalDevice, stagingBuffer, nullptr);
+    vkFreeMemory(this->logicalDevice, stagingBufferMemory, nullptr);
+}
+
+void VBufferManager::createIndexBuffer() {
+    VkDeviceSize bufferSize = sizeof(uint32_t) * triangle.renderable.indices.size();
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer,
+                 &stagingBufferMemory);
+
+    void *data;
+    vkMapMemory(this->logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+    memcpy(data, triangle.renderable.indices.data(), (size_t) bufferSize);
+    vkUnmapMemory(this->logicalDevice, stagingBufferMemory);
+
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &this->indexBuffer, &this->indexBufferMemory);
+
+    copyBuffer(stagingBuffer, this->indexBuffer, bufferSize);
+
     vkDestroyBuffer(this->logicalDevice, stagingBuffer, nullptr);
     vkFreeMemory(this->logicalDevice, stagingBufferMemory, nullptr);
 }

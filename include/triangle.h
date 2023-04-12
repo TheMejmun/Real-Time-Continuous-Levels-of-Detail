@@ -21,7 +21,7 @@ public:
                             {1.0f, 1.0f, 1.0f}}
             },
             .indices{
-                    0, 1, 2, 2, 3, 0
+                    0, 1, 2, 2, 1, 3 // Culled if backwards facing polygon
             }};
 };
 
