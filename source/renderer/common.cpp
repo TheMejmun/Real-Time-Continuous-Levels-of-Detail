@@ -21,7 +21,7 @@ void Renderer::initVulkan() {
     createSwapchain();
     createGraphicsPipeline();
     createCommandPool();
-    this->bufferManager.createVertexBuffer(this->triangle);
+    this->bufferManager.createVertexBuffer();
 //    createIndexBuffer();
     createSyncObjects();
 }

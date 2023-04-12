@@ -17,7 +17,7 @@ public:
 
     void createCommandBuffer(VkCommandPool commandPool);
 
-    void createVertexBuffer(Triangle triangle);
+    void createVertexBuffer();
 
     void createIndexBuffer();
 
@@ -43,6 +43,8 @@ private:
     VkPhysicalDeviceMemoryProperties memProperties{};
     VkCommandPool transferCommandPool = nullptr;
     VkCommandBuffer transferCommandBuffer = nullptr; // Cleaned automatically by command pool clean.
+
+    Triangle triangle{}; // TODO
 };
 
 #endif //REALTIME_CELL_COLLAPSE_VBUFFER_MANAGER_H
