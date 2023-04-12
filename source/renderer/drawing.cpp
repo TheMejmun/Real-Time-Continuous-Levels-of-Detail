@@ -217,6 +217,8 @@ void Renderer::createCommandPool() {
     if (vkCreateCommandPool(this->logicalDevice, &poolInfo, nullptr, &this->commandPool) != VK_SUCCESS) {
         THROW("Failed to create command pool!");
     }
+
+    this->bufferManager.createCommandBuffer(this->commandPool);
 }
 
 void Renderer::createSyncObjects() {
@@ -259,7 +261,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
 
     vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->graphicsPipeline);
 
-    VkBuffer vertexBuffers[] = {this->vertexBuffer};
+    VkBuffer vertexBuffers[] = {this->bufferManager.vertexBuffer};
     VkDeviceSize offsets[] = {0};
     // Offset and number of bindings, buffers, and byte offsets from those buffers
     vkCmdBindVertexBuffers(buffer, 0, 1, vertexBuffers, offsets);
@@ -324,8 +326,10 @@ sec Renderer::draw() {
     // Avoid deadlock if recreating -> move to after success check
     vkResetFences(this->logicalDevice, 1, &this->inFlightFence);
 
-    vkResetCommandBuffer(this->commandBuffer, 0); // I am not convinced this is necessary
-    recordCommandBuffer(this->commandBuffer, imageIndex);
+    auto commandBuffer = this->bufferManager.commandBuffer;
+
+    vkResetCommandBuffer(commandBuffer, 0); // I am not convinced this is necessary
+    recordCommandBuffer(commandBuffer, imageIndex);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -338,7 +342,7 @@ sec Renderer::draw() {
     submitInfo.pWaitDstStageMask = waitStages;
 
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &this->commandBuffer;
+    submitInfo.pCommandBuffers = &commandBuffer;
 
     VkSemaphore signalSemaphores[] = {this->renderFinishedSemaphore};
     submitInfo.signalSemaphoreCount = 1;

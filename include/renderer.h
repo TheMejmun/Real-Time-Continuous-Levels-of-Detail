@@ -24,6 +24,7 @@
 #include "triangle.h"
 #include "timer.h"
 #include "printer.h"
+#include "vbuffer_manager.h"
 
 //#define WIREFRAME_MODE
 
@@ -140,6 +141,8 @@ private:
     GLFWwindow *window = nullptr;
     uint32_t framebufferWidth = 0, framebufferHeight = 0;
 
+    VBufferManager bufferManager{};
+
     // Vulkan
     VkInstance instance = nullptr;
     VkPhysicalDevice physicalDevice = nullptr;
@@ -157,12 +160,6 @@ private:
     VkPipeline graphicsPipeline = nullptr;
     std::vector<VkFramebuffer> swapchainFramebuffers;
     VkCommandPool commandPool = nullptr;
-    VkCommandBuffer commandBuffer = nullptr;
-
-    VkBuffer vertexBuffer = nullptr;
-    VkDeviceMemory vertexBufferMemory = nullptr;
-    VkBuffer indexBuffer;
-    VkDeviceMemory indexBufferMemory;
 
     VkSemaphore imageAvailableSemaphore = nullptr;
     VkSemaphore renderFinishedSemaphore = nullptr;

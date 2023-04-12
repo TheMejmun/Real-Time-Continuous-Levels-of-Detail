@@ -33,7 +33,9 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/vertex.h
         ${HEADER_FOLDER}/triangle.h
         ${HEADER_FOLDER}/ecs.h
-        ${HEADER_FOLDER}/renderable.h include/printer.h)
+        ${HEADER_FOLDER}/renderable.h
+        ${HEADER_FOLDER}/printer.h
+        ${HEADER_FOLDER}/vbuffer_manager.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
         ${SOURCE_FOLDER}/importer.cpp
@@ -46,7 +48,11 @@ set(SOURCE_FILES
         ${SOURCE_FOLDER}/renderer/memory.cpp
         ${SOURCE_FOLDER}/renderer/device.cpp
         ${SOURCE_FOLDER}/renderer/swapchain.cpp
-        ${SOURCE_FOLDER}/renderer/queue_family_indices.cpp source/renderer/debug.cpp source/renderer/common.cpp source/renderer/shaders.cpp)
+        ${SOURCE_FOLDER}/renderer/queue_family_indices.cpp
+        ${SOURCE_FOLDER}/renderer/debug.cpp
+        ${SOURCE_FOLDER}/renderer/common.cpp
+        ${SOURCE_FOLDER}/renderer/shaders.cpp
+        ${SOURCE_FOLDER}/vbuffer_manager.cpp)
 message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable
 add_executable(Realtime_Cell_Collapse ${SOURCE_FOLDER}/main.cpp ${HEADER_FILES} ${SOURCE_FILES})

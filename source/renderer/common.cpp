@@ -17,11 +17,11 @@ void Renderer::initVulkan() {
     createSurface();
     pickPhysicalDevice();
     createLogicalDevice();
+    this->bufferManager.create(this->physicalDevice, this->logicalDevice);
     createSwapchain();
     createGraphicsPipeline();
     createCommandPool();
-    createCommandBuffer(); // Cleaned automatically by command pool clean.
-    createVertexBuffer();
+    this->bufferManager.createVertexBuffer(this->triangle);
 //    createIndexBuffer();
     createSyncObjects();
 }
@@ -36,8 +36,8 @@ void Renderer::destroy() {
     vkDestroySemaphore(this->logicalDevice, this->renderFinishedSemaphore, nullptr);
     vkDestroyFence(this->logicalDevice, this->inFlightFence, nullptr);
 
-    vkFreeMemory(this->logicalDevice, this->vertexBufferMemory, nullptr);
-    vkDestroyBuffer(this->logicalDevice, this->vertexBuffer, nullptr);
+    this->bufferManager.destroy();
+
     vkDestroyCommandPool(this->logicalDevice, this->commandPool, nullptr);
     vkDestroyPipeline(this->logicalDevice, this->graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(this->logicalDevice, this->pipelineLayout, nullptr);
