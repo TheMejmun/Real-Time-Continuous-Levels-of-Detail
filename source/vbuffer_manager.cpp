@@ -7,13 +7,15 @@
 #include "queue_family_indices.h"
 
 void VBufferManager::create(VkPhysicalDevice physicalDevice, VkDevice device, QueueFamilyIndices indices) {
-    INF "VBufferManager Renderer" ENDL;
+    INF "Creating VBufferManager" ENDL;
 
     this->logicalDevice = device;
     this->queueFamilyIndices = indices;
 
     VkPhysicalDeviceProperties deviceProperties;
     vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
+
+    // TODO get max allocation size VkPhysicalDeviceMaintenance3Properties
 
     this->maxAllocations = deviceProperties.limits.maxMemoryAllocationCount;
     DBG "Maximum memory allocation count: " << this->maxAllocations ENDL;
@@ -26,7 +28,7 @@ void VBufferManager::create(VkPhysicalDevice physicalDevice, VkDevice device, Qu
 }
 
 void VBufferManager::destroy() {
-    INF "VBufferManager Renderer" ENDL;
+    INF "Destroying VBufferManager" ENDL;
 
     vkFreeMemory(this->logicalDevice, this->vertexBufferMemory, nullptr);
     vkDestroyBuffer(this->logicalDevice, this->vertexBuffer, nullptr);
