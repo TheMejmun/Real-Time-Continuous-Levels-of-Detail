@@ -134,7 +134,6 @@ private:
     VkDevice logicalDevice = nullptr;
     VkQueue graphicsQueue = nullptr;
     VkQueue presentQueue = nullptr;
-    VkQueue transferQueue = nullptr;
     VkSurfaceKHR surface = nullptr;
     VkSwapchainKHR swapchain = nullptr;
     std::vector<VkImage> swapchainImages;

@@ -29,18 +29,21 @@ public:
     VkDeviceMemory indexBufferMemory = nullptr;
 
 private:
-    void createCommandBuffer(VkCommandPool commandPool, VkCommandBuffer *buffer);
+    void createCommandBuffer(VkCommandPool commandPool, VkCommandBuffer *pBuffer);
 
     void createTransferCommandPool();
 
-    void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer,
-                      VkDeviceMemory &bufferMemory);
+    void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer *pBuffer,
+                      VkDeviceMemory *pBufferMemory);
 
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+    void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
     VkDevice logicalDevice = nullptr;
     QueueFamilyIndices queueFamilyIndices{};
     VkPhysicalDeviceMemoryProperties memProperties{};
+    VkQueue transferQueue = nullptr;
     VkCommandPool transferCommandPool = nullptr;
     VkCommandBuffer transferCommandBuffer = nullptr; // Cleaned automatically by command pool clean.
 

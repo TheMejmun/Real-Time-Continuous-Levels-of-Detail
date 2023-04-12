@@ -201,7 +201,6 @@ void Renderer::createLogicalDevice() {
     }
 
     // Get each queue
-    vkGetDeviceQueue(this->logicalDevice, indices.graphicsFamily.value(), 0, &graphicsQueue);
-    vkGetDeviceQueue(this->logicalDevice, indices.presentFamily.value(), 0, &presentQueue);
-    vkGetDeviceQueue(this->logicalDevice, indices.transferFamily.value(), 0, &transferQueue);
+    vkGetDeviceQueue(this->logicalDevice, indices.graphicsFamily.value(), 0, &this->graphicsQueue);
+    vkGetDeviceQueue(this->logicalDevice, indices.presentFamily.value(), 0, &this->presentQueue);
 }

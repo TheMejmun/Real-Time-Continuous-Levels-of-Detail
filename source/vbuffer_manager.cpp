@@ -20,6 +20,8 @@ void VBufferManager::create(VkPhysicalDevice physicalDevice, VkDevice device, Qu
 
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &this->memProperties);
 
+    vkGetDeviceQueue(this->logicalDevice, indices.transferFamily.value(), 0, &this->transferQueue);
+
     createTransferCommandPool();
 }
 
@@ -33,13 +35,26 @@ void VBufferManager::destroy() {
 
 void VBufferManager::createVertexBuffer() {
     VkDeviceSize bufferSize = sizeof(Vertex) * triangle.renderable.vertices.size();
-    createBuffer(bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, this->vertexBuffer, this->vertexBufferMemory);
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer,
+                 &stagingBufferMemory);
 
     void *data;
-    // Size can also be VK_WHOLE_SIZE -> Entire buffer past the offset
-    vkMapMemory(this->logicalDevice, this->vertexBufferMemory, 0, bufferSize, 0, &data);
+    vkMapMemory(this->logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
     memcpy(data, triangle.renderable.vertices.data(), (size_t) bufferSize);
-    vkUnmapMemory(this->logicalDevice, this->vertexBufferMemory);
+    vkUnmapMemory(this->logicalDevice, stagingBufferMemory);
+
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &this->vertexBuffer, &this->vertexBufferMemory);
+
+    copyBuffer(stagingBuffer, this->vertexBuffer, bufferSize);
+
+    // Cleanup
+    vkDestroyBuffer(this->logicalDevice, stagingBuffer, nullptr);
+    vkFreeMemory(this->logicalDevice, stagingBufferMemory, nullptr);
 }
 
 uint32_t VBufferManager::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
@@ -62,7 +77,7 @@ void VBufferManager::createCommandBuffer(VkCommandPool commandPool) {
     createCommandBuffer(commandPool, &this->commandBuffer);
 }
 
-void VBufferManager::createCommandBuffer(VkCommandPool commandPool, VkCommandBuffer *buffer) {
+void VBufferManager::createCommandBuffer(VkCommandPool commandPool, VkCommandBuffer *pBuffer) {
     VkCommandBufferAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocInfo.commandPool = commandPool;
@@ -71,7 +86,7 @@ void VBufferManager::createCommandBuffer(VkCommandPool commandPool, VkCommandBuf
     // VK_COMMAND_BUFFER_LEVEL_SECONDARY can not be submitted, but called from other command buffers
     allocInfo.commandBufferCount = 1;
 
-    if (vkAllocateCommandBuffers(this->logicalDevice, &allocInfo, buffer) != VK_SUCCESS) {
+    if (vkAllocateCommandBuffers(this->logicalDevice, &allocInfo, pBuffer) != VK_SUCCESS) {
         THROW("Failed to allocate command buffers!");
     }
 }
@@ -91,7 +106,7 @@ void VBufferManager::createTransferCommandPool() {
 }
 
 void VBufferManager::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
-                                  VkBuffer &buffer, VkDeviceMemory &bufferMemory) {
+                                  VkBuffer *pBuffer, VkDeviceMemory *pBufferMemory) {
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.size = size;
@@ -103,12 +118,12 @@ void VBufferManager::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, V
                                this->queueFamilyIndices.transferFamily.value()};
     bufferInfo.pQueueFamilyIndices = queueIndices;
 
-    if (vkCreateBuffer(this->logicalDevice, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+    if (vkCreateBuffer(this->logicalDevice, &bufferInfo, nullptr, pBuffer) != VK_SUCCESS) {
         THROW("Failed to create vertex buffer!");
     }
 
     VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(this->logicalDevice, buffer, &memRequirements);
+    vkGetBufferMemoryRequirements(this->logicalDevice, *pBuffer, &memRequirements);
 
     // Malloc
     VkMemoryAllocateInfo allocInfo{};
@@ -117,10 +132,45 @@ void VBufferManager::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, V
     // Is visible and coherent when viewing from host
     allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 
-    if (vkAllocateMemory(this->logicalDevice, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+    if (vkAllocateMemory(this->logicalDevice, &allocInfo, nullptr, pBufferMemory) != VK_SUCCESS) {
         THROW("Failed to allocate vertex buffer memory!");
     }
 
     // offset % memRequirements.alignment == 0
-    vkBindBufferMemory(this->logicalDevice, buffer, bufferMemory, 0);
+    vkBindBufferMemory(this->logicalDevice, *pBuffer, *pBufferMemory, 0);
+}
+
+void VBufferManager::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
+    VkCommandBufferAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocInfo.commandPool = this->transferCommandPool;
+    allocInfo.commandBufferCount = 1;
+
+//    VkCommandBuffer transferBuffer;
+//    vkAllocateCommandBuffers(this->logicalDevice, &allocInfo, &transferBuffer);
+
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    vkBeginCommandBuffer(this->transferCommandBuffer, &beginInfo);
+
+    VkBufferCopy copyRegion{};
+    copyRegion.srcOffset = 0; // Optional
+    copyRegion.dstOffset = 0; // Optional
+    copyRegion.size = size; // VK_WHOLE_SIZE  not allowed here!
+    vkCmdCopyBuffer(this->transferCommandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+    vkEndCommandBuffer(this->transferCommandBuffer);
+
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &this->transferCommandBuffer;
+
+    vkQueueSubmit(this->transferQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(this->transferQueue); // TODO replace with fence
+
+//    vkFreeCommandBuffers(this->logicalDevice, this->transferCommandPool, 1, &this->transferCommandBuffer);
 }
