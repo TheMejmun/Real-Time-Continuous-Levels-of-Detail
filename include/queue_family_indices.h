@@ -19,6 +19,8 @@ struct QueueFamilyIndices {
 
     [[nodiscard]] bool isUnifiedGraphicsPresentQueue() const;
 
+    [[nodiscard]] bool hasUniqueTransferQueue() const;
+
     void print();
 };
 

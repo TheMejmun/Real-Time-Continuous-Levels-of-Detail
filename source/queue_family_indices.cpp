@@ -18,6 +18,13 @@ bool QueueFamilyIndices::isUnifiedGraphicsPresentQueue() const {
     return this->graphicsFamily.value() == this->presentFamily.value();
 }
 
+bool QueueFamilyIndices::hasUniqueTransferQueue() const {
+    if (!this->graphicsFamily.has_value() ||
+        !this->presentFamily.has_value())
+        return false;
+    return !(this->graphicsFamily.value() == this->transferFamily.value());
+}
+
 void QueueFamilyIndices::print() {
     DBG
             "QueueFamilyIndices:"

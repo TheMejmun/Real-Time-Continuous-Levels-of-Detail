@@ -38,8 +38,9 @@ const std::vector<const char *> VALIDATION_LAYERS = {
 
 const std::vector<const char *> REQUIRED_DEVICE_EXTENSIONS = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-
 };
+
+const std::string PORTABILITY_EXTENSION= "VK_KHR_portability_subset";
 
 #ifdef NDEBUG
 const bool ENABLE_VALIDATION_LAYERS = false;
@@ -79,6 +80,8 @@ private:
     bool isDeviceSuitable(VkPhysicalDevice device, bool strictMode);
 
     static bool checkDeviceExtensionSupport(VkPhysicalDevice device);
+
+    static bool checkDevicePortabilityMode(VkPhysicalDevice device);
 
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 

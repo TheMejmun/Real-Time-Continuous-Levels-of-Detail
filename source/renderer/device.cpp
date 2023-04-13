@@ -55,8 +55,6 @@ void Renderer::pickPhysicalDevice() {
         }
     }
 
-    this->queueFamilyIndices = Renderer::findQueueFamilies(this->physicalDevice);
-
     VkPhysicalDeviceProperties deviceProperties;
     vkGetPhysicalDeviceProperties(this->physicalDevice, &deviceProperties);
     INF "Picked physical device: " << deviceProperties.deviceName ENDL;
@@ -64,6 +62,8 @@ void Renderer::pickPhysicalDevice() {
     if (this->physicalDevice == VK_NULL_HANDLE) {
         THROW("Failed to find a suitable GPU!");
     }
+
+    this->queueFamilyIndices = Renderer::findQueueFamilies(this->physicalDevice);
 
     this->queueFamilyIndices.print();
 }
@@ -118,6 +118,22 @@ bool Renderer::checkDeviceExtensionSupport(VkPhysicalDevice device) {
     return requiredExtensions.empty();
 }
 
+bool Renderer::checkDevicePortabilityMode(VkPhysicalDevice device) {
+    uint32_t extensionCount;
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+    std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+    for (const auto &extension: availableExtensions) {
+        if (PORTABILITY_EXTENSION == extension.extensionName) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 QueueFamilyIndices Renderer::findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
 
@@ -133,8 +149,8 @@ QueueFamilyIndices Renderer::findQueueFamilies(VkPhysicalDevice device) {
         vkGetPhysicalDeviceSurfaceSupportKHR(device, i, this->surface, &presentSupport);
 
         // Look for transfer queue that is not a graphics queue
-        if ((queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) &&
-            !(queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)) {
+        if (queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT &&
+            (!(queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) || !indices.transferFamily.has_value())) {
             indices.transferFamily = i;
         }
 
@@ -161,7 +177,8 @@ void Renderer::createLogicalDevice() {
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     // If the indices are the same, the set will merge them -> Only one single queue creation.
-    std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value(), indices.transferFamily.value()};
+    std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value(),
+                                              indices.transferFamily.value()};
 
     float queuePriority = 1.0f;
     for (uint32_t queueFamily: uniqueQueueFamilies) {
@@ -183,8 +200,13 @@ void Renderer::createLogicalDevice() {
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
     createInfo.pEnabledFeatures = &deviceFeatures;
 
-    createInfo.enabledExtensionCount = static_cast<uint32_t>(REQUIRED_DEVICE_EXTENSIONS.size());
-    createInfo.ppEnabledExtensionNames = REQUIRED_DEVICE_EXTENSIONS.data();
+    std::vector<const char *> requiredExtensions = REQUIRED_DEVICE_EXTENSIONS;
+    if (checkDevicePortabilityMode(this->physicalDevice)) {
+        requiredExtensions.push_back(PORTABILITY_EXTENSION.c_str());
+    }
+
+    createInfo.enabledExtensionCount = (uint32_t) requiredExtensions.size();
+    createInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "UnreachableCode"

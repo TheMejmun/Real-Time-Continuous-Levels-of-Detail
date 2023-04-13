@@ -142,12 +142,15 @@ void VBufferManager::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, V
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.size = size;
     bufferInfo.usage = usage; // Can be and-ed with other use cases
-//    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // Like swap chain images
-    bufferInfo.sharingMode = VK_SHARING_MODE_CONCURRENT; // TODO Switch to memory barriers
-    bufferInfo.queueFamilyIndexCount = 2;
-    uint32_t queueIndices[] = {this->queueFamilyIndices.graphicsFamily.value(),
-                               this->queueFamilyIndices.transferFamily.value()};
-    bufferInfo.pQueueFamilyIndices = queueIndices;
+    if (this->queueFamilyIndices.hasUniqueTransferQueue()) {
+        bufferInfo.sharingMode = VK_SHARING_MODE_CONCURRENT; // TODO Switch to memory barriers
+        bufferInfo.queueFamilyIndexCount = 2;
+        uint32_t queueIndices[] = {this->queueFamilyIndices.graphicsFamily.value(),
+                                   this->queueFamilyIndices.transferFamily.value()};
+        bufferInfo.pQueueFamilyIndices = queueIndices;
+    } else {
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // Like swap chain images
+    }
 
     if (vkCreateBuffer(this->logicalDevice, &bufferInfo, nullptr, pBuffer) != VK_SUCCESS) {
         THROW("Failed to create vertex buffer!");
