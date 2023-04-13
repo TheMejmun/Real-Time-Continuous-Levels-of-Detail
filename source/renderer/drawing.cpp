@@ -297,7 +297,7 @@ sec Renderer::draw() {
             this->needsNewSwapchain = false;
         } else {
             DBG "Failed to create new swapchain" ENDL;
-            return 0;
+            return -1;
         }
     }
 
@@ -313,7 +313,6 @@ sec Renderer::draw() {
         DBG "Swapchain is out of date" ENDL;
         recreateSwapchain();
         return Timer::duration(beforeFence, afterFence); // Why not
-
     } else if (acquireImageResult == VK_SUBOPTIMAL_KHR) {
         DBG "Swapchain is suboptimal" ENDL;
         this->needsNewSwapchain = true;
@@ -321,7 +320,6 @@ sec Renderer::draw() {
     } else if (acquireImageResult != VK_SUCCESS) {
         THROW("Failed to acquire swapchain image!");
     }
-
 
     // Avoid deadlock if recreating -> move to after success check
     vkResetFences(this->logicalDevice, 1, &this->inFlightFence);
@@ -348,9 +346,11 @@ sec Renderer::draw() {
     submitInfo.signalSemaphoreCount = 1;
     submitInfo.pSignalSemaphores = signalSemaphores;
 
+//    START_TRACE
     if (vkQueueSubmit(this->graphicsQueue, 1, &submitInfo, this->inFlightFence) != VK_SUCCESS) {
         THROW("Failed to submit draw command buffer!");
     }
+//    END_TRACE("QUEUE SUBMIT")
 
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;

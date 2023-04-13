@@ -31,6 +31,8 @@ void Application::mainLoop() {
             this->windowManager.close();
         }
 
+        this->lastTimestamp = Timer::now();
+
         // Render
         auto gpuWaitTime = this->renderer.draw();
 

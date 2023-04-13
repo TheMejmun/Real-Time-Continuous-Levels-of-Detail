@@ -41,7 +41,12 @@
 #define FPS COUT
 #endif
 
-
+#define START_TRACE auto _trace_before = Timer::now();
+#define END_TRACE(name) { \
+    auto _trace_after = Timer::now(); \
+    auto _duration = std::to_string(Timer::duration(_trace_before, _trace_after)); \
+    TRC name << ": " << _duration ENDL; \
+}
 
 
 #endif //REALTIME_CELL_COLLAPSE_PRINTER_H

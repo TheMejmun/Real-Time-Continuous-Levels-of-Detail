@@ -50,18 +50,28 @@ VkSurfaceFormatKHR Renderer::chooseSwapSurfaceFormat(const std::vector<VkSurface
 }
 
 VkPresentModeKHR Renderer::chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes) {
-    INF "Picked Swapchain Present Mode: ";
+    const std::vector<VkPresentModeKHR> presentModePreferences = {
+            VK_PRESENT_MODE_FIFO_KHR,
+            VK_PRESENT_MODE_IMMEDIATE_KHR,
+            VK_PRESENT_MODE_MAILBOX_KHR
+    };
+    const std::vector<std::string> presentModeNames = {
+            "V-Sync",
+            "Uncapped",
+            "Triple-Buffering"
+    };
+    uint32_t currentIndex = 0;
+
     for (const auto &availablePresentMode: availablePresentModes) {
-        // Triple Buffering: Override last frame if a new image is rendered before that one has been shown
-        if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
-            INF "Triple-Buffering" ENDL;
-            return availablePresentMode;
+        for (uint32_t i = 0; i < presentModePreferences.size(); ++i) {
+            if (availablePresentMode == presentModePreferences[i] && i > currentIndex) {
+                currentIndex = i;
+            }
         }
     }
 
-    // VSYNC
-    INF "V-Sync" ENDL;
-    return VK_PRESENT_MODE_FIFO_KHR;
+    INF "Picked Swapchain Present Mode: " << presentModeNames[currentIndex] ENDL;
+    return presentModePreferences[currentIndex];
 }
 
 VkExtent2D Renderer::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) {
@@ -138,7 +148,8 @@ bool Renderer::createSwapchain() {
     // TODO switch to VK_IMAGE_USAGE_TRANSFER_DST_BIT for post processing, instead of directly rendering to the SC
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    uint32_t queueIndices[] = {this->queueFamilyIndices.graphicsFamily.value(), this->queueFamilyIndices.presentFamily.value()};
+    uint32_t queueIndices[] = {this->queueFamilyIndices.graphicsFamily.value(),
+                               this->queueFamilyIndices.presentFamily.value()};
 
     if (!this->queueFamilyIndices.isUnifiedGraphicsPresentQueue()) {
         createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT; // Image is shared between queues -> no transfers!
