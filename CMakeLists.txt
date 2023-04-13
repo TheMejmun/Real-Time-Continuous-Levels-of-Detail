@@ -52,7 +52,8 @@ set(SOURCE_FILES
         ${SOURCE_FOLDER}/renderer/debug.cpp
         ${SOURCE_FOLDER}/renderer/common.cpp
         ${SOURCE_FOLDER}/renderer/shaders.cpp
-        ${SOURCE_FOLDER}/vbuffer_manager.cpp)
+        ${SOURCE_FOLDER}/vbuffer_manager.cpp
+        ${SOURCE_FOLDER}/colors.cpp)
 message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable
 add_executable(Realtime_Cell_Collapse ${SOURCE_FOLDER}/main.cpp ${HEADER_FILES} ${SOURCE_FILES})

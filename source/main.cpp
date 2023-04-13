@@ -4,8 +4,13 @@
 
 #include <iostream>
 #include "application.h"
+#include "colors.h"
 
 int main() {
+//    auto color = Color::fromRGB({0.0f, 1.0f, 0.0f}).setLumaLab(0.5);
+//    std::cout << color.toString() << std::endl;
+//    return 0;
+
     Application app{};
     app.title = "Hello World!";
 
