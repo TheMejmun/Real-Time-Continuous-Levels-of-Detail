@@ -13,15 +13,15 @@ public:
     Renderable renderable{
             .vertices{
                     {{0.0f,  0.0f,  0.0f},
-                            Color::fromRGB({1.0f, 1.0f, 1.0f}).getLAB()},
+                            Color::fromRGB({1.0f, 1.0f, 1.0f}).setLumaLab(0.9).getLAB()},
                     {{0.5f,  -0.5f, 0.0f},
-                            Color::fromRGB({0.0f, 0.0f, 1.0f}).setLumaLab(0.5).getLAB()},
+                            Color::fromRGB({0.0f, 0.0f, 1.0f}).setLumaLab(0.4).getLAB()},
                     {{0.5f,  0.5f,  0.0f},
-                            Color::fromRGB({1.0f, 0.0f, 0.0f}).setLumaLab(0.5).getLAB()},
+                            Color::fromRGB({1.0f, 0.0f, 0.0f}).setLumaLab(0.4).getLAB()},
                     {{-0.5f, -0.5f, 0.0f},
-                            Color::fromRGB({1.0f, 0.0f, 0.0f}).setLumaLab(0.5).getLAB()},
+                            Color::fromRGB({1.0f, 0.0f, 0.0f}).setLumaLab(0.4).getLAB()},
                     {{-0.5f, 0.5f,  0.0f},
-                            Color::fromRGB({0.0f, 0.0f, 1.0f}).setLumaLab(0.5).getLAB()}
+                            Color::fromRGB({0.0f, 0.0f, 1.0f}).setLumaLab(0.4).getLAB()}
             },
             .indices{
                     0, 3, 1,
