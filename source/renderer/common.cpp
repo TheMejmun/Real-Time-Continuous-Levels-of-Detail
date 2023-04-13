@@ -36,6 +36,7 @@ void Renderer::destroy() {
 
     this->bufferManager.destroy();
 
+//    this->bufferManager.destroyCommandBuffer(this->commandPool);
     vkDestroyCommandPool(this->logicalDevice, this->commandPool, nullptr);
     vkDestroyPipeline(this->logicalDevice, this->graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(this->logicalDevice, this->pipelineLayout, nullptr);
@@ -53,7 +54,7 @@ void Renderer::createInstance() {
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = nullptr;
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = VK_API_VERSION_1_3;
+    appInfo.apiVersion = VK_API_VERSION_1_2;
 
     // Info on which extensions and features we need
     VkInstanceCreateInfo createInfo{};

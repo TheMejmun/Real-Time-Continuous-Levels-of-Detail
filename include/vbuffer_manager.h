@@ -17,6 +17,8 @@ public:
 
     void createCommandBuffer(VkCommandPool commandPool);
 
+    void destroyCommandBuffer(VkCommandPool commandPool);
+
     void createVertexBuffer();
 
     void createIndexBuffer();

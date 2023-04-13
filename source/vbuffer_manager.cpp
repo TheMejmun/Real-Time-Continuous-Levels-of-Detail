@@ -32,13 +32,18 @@ void VBufferManager::create(VkPhysicalDevice physicalDevice, VkDevice device, Qu
 void VBufferManager::destroy() {
     INF "Destroying VBufferManager" ENDL;
 
-    vkFreeMemory(this->logicalDevice, this->vertexBufferMemory, nullptr);
     vkDestroyBuffer(this->logicalDevice, this->vertexBuffer, nullptr);
+    vkFreeMemory(this->logicalDevice, this->vertexBufferMemory, nullptr);
 
-    vkFreeMemory(this->logicalDevice, this->indexBufferMemory, nullptr);
     vkDestroyBuffer(this->logicalDevice, this->indexBuffer, nullptr);
+    vkFreeMemory(this->logicalDevice, this->indexBufferMemory, nullptr);
 
     vkDestroyCommandPool(this->logicalDevice, this->transferCommandPool, nullptr);
+//    vkFreeCommandBuffers(this->logicalDevice, this->transferCommandPool, 1, &this->transferCommandBuffer);
+}
+
+void VBufferManager::destroyCommandBuffer(VkCommandPool commandPool) {
+    vkFreeCommandBuffers(this->logicalDevice, commandPool, 1, &this->commandBuffer);
 }
 
 void VBufferManager::createVertexBuffer() {
