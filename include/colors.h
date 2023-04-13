@@ -9,6 +9,8 @@
 #include <cmath>
 #include <string>
 
+// TODO implement CIELUV and CIELCh_uv
+
 class Color {
 public:
     static Color fromRGB(const double &r, const double &g, const double &b);
