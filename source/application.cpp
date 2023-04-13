@@ -39,11 +39,11 @@ void Application::mainLoop() {
         auto frameTime = Timer::duration(this->lastTimestamp, time);
         this->currentFrameTime = frameTime;
         this->currentGPUWaitTime = gpuWaitTime;
-        this->currentFPS = (uint32_t) Timer::FPS(this->currentFrameTime);
+        this->currentFPS = (uint32_t) Timer::fps(this->currentFrameTime);
 
         this->lastTimestamp = time;
 
-        TRC std::string("FPS: ") +
+        FPS std::string("FPS: ") +
             std::to_string(this->currentFPS) +
             std::string(" Frame time: ") +
             std::to_string(this->currentFrameTime) +

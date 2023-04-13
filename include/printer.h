@@ -10,7 +10,8 @@
 
 #define INFO_PRINTING
 #define DEBUG_PRINTING
-//#define TRACE_PRINTING
+#define TRACE_PRINTING
+#define FPS_PRINTING
 
 #define COUT std::cout <<
 #define ENDL << std::endl
@@ -32,6 +33,12 @@
 #define TRC if(false) COUT
 #else
 #define TRC COUT
+#endif
+
+#if(defined(NDEBUG) || !defined(FPS_PRINTING))
+#define FPS if(false) COUT
+#else
+#define FPS COUT
 #endif
 
 

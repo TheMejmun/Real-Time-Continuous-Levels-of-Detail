@@ -23,12 +23,12 @@ namespace Timer {
         return std::abs((sec) (time1 - time2).count());
     }
 
-    inline uint32_t FPS(sec frameTimeSec) {
+    inline uint32_t fps(sec frameTimeSec) {
         return (int) (1.0 / frameTimeSec);
     }
 
-    inline uint32_t FPS(const chrono_sec_point &time1, const chrono_sec_point &time2) {
-        return FPS(duration(time1, time2));
+    inline uint32_t fps(const chrono_sec_point &time1, const chrono_sec_point &time2) {
+        return fps(duration(time1, time2));
     }
 };
 
