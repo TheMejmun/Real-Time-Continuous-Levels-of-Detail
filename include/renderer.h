@@ -27,7 +27,7 @@
 #include "vbuffer_manager.h"
 #include "queue_family_indices.h"
 
-//#define WIREFRAME_MODE
+#define WIREFRAME_MODE
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 // TODO https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
@@ -133,6 +133,7 @@ private:
     // Vulkan
     VkInstance instance = nullptr;
     VkPhysicalDevice physicalDevice = nullptr;
+    bool supportsWireframeMode=false;
     QueueFamilyIndices queueFamilyIndices{};
     VkDevice logicalDevice = nullptr;
     VkQueue graphicsQueue = nullptr;

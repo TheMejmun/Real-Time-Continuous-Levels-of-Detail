@@ -64,8 +64,11 @@ void Renderer::pickPhysicalDevice() {
     }
 
     this->queueFamilyIndices = Renderer::findQueueFamilies(this->physicalDevice);
-
     this->queueFamilyIndices.print();
+
+    VkPhysicalDeviceFeatures deviceFeatures;
+    vkGetPhysicalDeviceFeatures(this->physicalDevice, &deviceFeatures);
+    this->supportsWireframeMode = deviceFeatures.fillModeNonSolid;
 }
 
 bool Renderer::isDeviceSuitable(VkPhysicalDevice device, bool strictMode) {
@@ -192,6 +195,7 @@ void Renderer::createLogicalDevice() {
 
     // Define the features we will use as queried in isDeviceSuitable
     VkPhysicalDeviceFeatures deviceFeatures{};
+    deviceFeatures.fillModeNonSolid = this->supportsWireframeMode;
 
     VkDeviceCreateInfo createInfo{};
 
