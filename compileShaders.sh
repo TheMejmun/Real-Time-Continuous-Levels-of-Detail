@@ -1,4 +1,2 @@
-echo TODO
-
-/home/user/VulkanSDK/x.x.x.x/x86_64/bin/glslc shader.vert -o vert.spv
-/home/user/VulkanSDK/x.x.x.x/x86_64/bin/glslc shader.frag -o frag.spv
+#!/bin/bash
+find . -type f \( -name "*.frag" -o -name "*.vert" \) -exec sh -c '$HOME/VulkanSDK/1.3.239.0/macOS/bin/glslc {} -o  $PWD/resources/shaders/$(basename {}).spv' \;
