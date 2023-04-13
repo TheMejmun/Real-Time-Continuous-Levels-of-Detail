@@ -42,10 +42,8 @@ set(SOURCE_FILES
         ${SOURCE_FOLDER}/application.cpp
         ${SOURCE_FOLDER}/input_manager.cpp
         ${SOURCE_FOLDER}/window_manager.cpp
-        ${SOURCE_FOLDER}/triangle.cpp
         ${SOURCE_FOLDER}/ecs.cpp
         ${SOURCE_FOLDER}/renderer/drawing.cpp
-#        ${SOURCE_FOLDER}/renderer/memory.cpp
         ${SOURCE_FOLDER}/renderer/device.cpp
         ${SOURCE_FOLDER}/renderer/swapchain.cpp
         ${SOURCE_FOLDER}/queue_family_indices.cpp
