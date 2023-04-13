@@ -35,6 +35,7 @@ private:
     sec currentFrameTime;
     sec currentGPUWaitTime;
     uint32_t currentFPS = 0;
+    sec deltaTime = 0;
 };
 
 #endif //REALTIME_CELL_COLLAPSE_APPLICATION_H

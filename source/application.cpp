@@ -2,6 +2,7 @@
 // Created by Sam on 2023-04-08.
 //
 
+#include <iomanip>
 #include "application.h"
 #include "printer.h"
 
@@ -38,19 +39,19 @@ void Application::mainLoop() {
 
         // Benchmark
         auto time = Timer::now();
-        auto frameTime = Timer::duration(this->lastTimestamp, time);
-        this->currentFrameTime = frameTime;
+        this->deltaTime = Timer::duration(this->lastTimestamp, time);
         this->currentGPUWaitTime = gpuWaitTime;
-        this->currentFPS = (uint32_t) Timer::fps(this->currentFrameTime);
+        this->currentFPS = (uint32_t) Timer::fps(this->deltaTime);
 
         this->lastTimestamp = time;
 
-        FPS std::string("FPS: ") +
-            std::to_string(this->currentFPS) +
-            std::string(" Frame time: ") +
-            std::to_string(this->currentFrameTime) +
-            std::string(" GPU wait time: ") +
-            std::to_string(this->currentGPUWaitTime) ENDL;
+        FPS std::fixed << std::setprecision(7) <<
+                       "FPS: " <<
+                       this->currentFPS <<
+                       " Frame time: " <<
+                       this->deltaTime <<
+                       " GPU wait time: " <<
+                       this->currentGPUWaitTime ENDL;
     }
 }
 
