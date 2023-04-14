@@ -35,7 +35,7 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/ecs.h
         ${HEADER_FOLDER}/renderable.h
         ${HEADER_FOLDER}/printer.h
-        ${HEADER_FOLDER}/vbuffer_manager.h include/queue_family_indices.h)
+        ${HEADER_FOLDER}/vbuffer_manager.h include/queue_family_indices.h include/uniform_buffer_object.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
         ${SOURCE_FOLDER}/importer.cpp

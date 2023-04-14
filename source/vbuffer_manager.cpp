@@ -5,6 +5,7 @@
 #include "vbuffer_manager.h"
 #include "printer.h"
 #include "queue_family_indices.h"
+#include "uniform_buffer_object.h"
 
 void VBufferManager::create(VkPhysicalDevice physicalDevice, VkDevice device, QueueFamilyIndices indices) {
     INF "Creating VBufferManager" ENDL;
@@ -27,10 +28,16 @@ void VBufferManager::create(VkPhysicalDevice physicalDevice, VkDevice device, Qu
     createTransferCommandPool();
     createVertexBuffer();
     createIndexBuffer();
+    createUniformBuffers();
 }
 
 void VBufferManager::destroy() {
     INF "Destroying VBufferManager" ENDL;
+
+    for (size_t i = 0; i < UBO_BUFFER_COUNT; i++) {
+        vkDestroyBuffer(this->logicalDevice, this->uniformBuffers[i], nullptr);
+        vkFreeMemory(this->logicalDevice, this->uniformBuffersMemory[i], nullptr);
+    }
 
     vkDestroyBuffer(this->logicalDevice, this->vertexBuffer, nullptr);
     vkFreeMemory(this->logicalDevice, this->vertexBufferMemory, nullptr);
@@ -44,6 +51,22 @@ void VBufferManager::destroy() {
 
 void VBufferManager::destroyCommandBuffer(VkCommandPool commandPool) {
     vkFreeCommandBuffers(this->logicalDevice, commandPool, 1, &this->commandBuffer);
+}
+
+void VBufferManager::nextUniformBuffer() {
+    this->uniformBufferIndex = (this->uniformBufferIndex + 1) % UBO_BUFFER_COUNT;
+}
+
+void *VBufferManager::getCurrentUniformBufferMapping() {
+    return this->uniformBuffersMapped[this->uniformBufferIndex];
+}
+
+VkBuffer VBufferManager::getCurrentUniformBuffer() {
+    return this->uniformBuffers[this->uniformBufferIndex];
+}
+
+VkBuffer VBufferManager::getUniformBuffer(uint32_t i) {
+    return this->uniformBuffers[i];
 }
 
 void VBufferManager::createVertexBuffer() {
@@ -91,6 +114,26 @@ void VBufferManager::createIndexBuffer() {
 
     vkDestroyBuffer(this->logicalDevice, stagingBuffer, nullptr);
     vkFreeMemory(this->logicalDevice, stagingBufferMemory, nullptr);
+}
+
+void VBufferManager::createUniformBuffers() {
+    VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+
+    // One to be written, one to be read!
+    this->uniformBuffers.resize(UBO_BUFFER_COUNT);
+    this->uniformBuffersMemory.resize(UBO_BUFFER_COUNT);
+    this->uniformBuffersMapped.resize(UBO_BUFFER_COUNT);
+
+    for (size_t i = 0; i < UBO_BUFFER_COUNT; i++) {
+        // Instead of memcopy, because it is written to every frame!
+        createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                     &this->uniformBuffers[i], &this->uniformBuffersMemory[i]);
+
+        // Persistent mapping:
+        vkMapMemory(this->logicalDevice, this->uniformBuffersMemory[i], 0, bufferSize, 0,
+                    &this->uniformBuffersMapped[i]);
+    }
 }
 
 uint32_t VBufferManager::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {

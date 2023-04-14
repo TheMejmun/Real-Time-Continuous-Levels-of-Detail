@@ -3,6 +3,7 @@
 //
 
 #include "renderer.h"
+#include "uniform_buffer_object.h"
 
 void Renderer::createRenderPass() {
     VkAttachmentDescription colorAttachment{};
@@ -165,8 +166,8 @@ void Renderer::createGraphicsPipeline() {
     // Define uniforms
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 0; // Optional
-    pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
+    pipelineLayoutInfo.setLayoutCount = 1;
+    pipelineLayoutInfo.pSetLayouts = &this->descriptorSetLayout;
     pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
     pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
@@ -203,6 +204,102 @@ void Renderer::createGraphicsPipeline() {
     // Once the pipeline is created, we don't need this anymore
     vkDestroyShaderModule(this->logicalDevice, fragShaderModule, nullptr);
     vkDestroyShaderModule(this->logicalDevice, vertShaderModule, nullptr);
+}
+
+void Renderer::createDescriptorSetLayout() {
+    VkDescriptorSetLayoutBinding uboLayoutBinding{};
+    uboLayoutBinding.binding = 0;
+    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    uboLayoutBinding.descriptorCount = 1;
+    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT; // Can also be all shader stages: VK_SHADER_STAGE_ALL_GRAPHICS
+    uboLayoutBinding.pImmutableSamplers = nullptr; // Relevant for image sampling
+
+    VkDescriptorSetLayoutCreateInfo layoutInfo{};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.bindingCount = 1;
+    layoutInfo.pBindings = &uboLayoutBinding;
+
+    if (vkCreateDescriptorSetLayout(this->logicalDevice, &layoutInfo, nullptr, &this->descriptorSetLayout) !=
+        VK_SUCCESS) {
+        throw std::runtime_error("Failed to create descriptor set layout!");
+    }
+}
+
+void Renderer::updateUniformBuffer() {
+    // TODO
+    UniformBufferObject ubo{};
+    ubo.model = glm::mat4(1.0f); // Identity
+    ubo.view = glm::mat4(1.0f); // Identity
+    ubo.proj = glm::perspective(
+            glm::radians(45.0f),
+            static_cast<float >(this->swapchainExtent.width) / static_cast<float >(this->swapchainExtent.height),
+            0.01f,
+            100.0f);
+    ubo.proj = glm::translate(ubo.proj, glm::vec3(0, 0, -5));
+
+    // TODO replace with push constants for small objects:
+    // https://registry.khronos.org/vulkan/site/guide/latest/push_constants.html
+
+    this->bufferManager.nextUniformBuffer();
+    memcpy(this->bufferManager.getCurrentUniformBufferMapping(), &ubo, sizeof(ubo));
+}
+
+void Renderer::createDescriptorPool() {
+    // Can have multiple pools, with multiple buffers each
+    VkDescriptorPoolSize poolSize{};
+    poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSize.descriptorCount = static_cast<uint32_t>(VBufferManager::UBO_BUFFER_COUNT);
+
+    VkDescriptorPoolCreateInfo poolInfo{};
+    poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolInfo.poolSizeCount = 1;
+    poolInfo.pPoolSizes = &poolSize;
+    poolInfo.maxSets = static_cast<uint32_t>(VBufferManager::UBO_BUFFER_COUNT);
+    // poolInfo.flags = 0; // Investigate VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT
+    // Would mean that Descriptor sets could individually be freed to their pools
+    // Would allow vkFreeDescriptorSets
+    // Otherwise only vkAllocateDescriptorSets and vkResetDescriptorPool
+
+    if (vkCreateDescriptorPool(this->logicalDevice, &poolInfo, nullptr, &this->descriptorPool) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to create descriptor pool!");
+    }
+}
+
+void Renderer::createDescriptorSets() {
+    std::vector<VkDescriptorSetLayout> layouts(VBufferManager::UBO_BUFFER_COUNT, this->descriptorSetLayout);
+    VkDescriptorSetAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = this->descriptorPool;
+    allocInfo.descriptorSetCount = static_cast<uint32_t>(VBufferManager::UBO_BUFFER_COUNT);
+    allocInfo.pSetLayouts = layouts.data();
+
+    this->descriptorSets.resize(VBufferManager::UBO_BUFFER_COUNT);
+    if (vkAllocateDescriptorSets(this->logicalDevice, &allocInfo, this->descriptorSets.data()) != VK_SUCCESS) {
+        throw std::runtime_error("Failed to allocate descriptor sets!");
+    }
+
+    for (size_t i = 0; i < VBufferManager::UBO_BUFFER_COUNT; i++) {
+        VkDescriptorBufferInfo bufferInfo{};
+        bufferInfo.buffer = this->bufferManager.getUniformBuffer(i);
+        bufferInfo.offset = 0;
+        bufferInfo.range = sizeof(UniformBufferObject); // Or VK_WHOLE_SIZE
+
+        VkWriteDescriptorSet descriptorWrite{};
+        descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrite.dstSet = this->descriptorSets[i];
+        descriptorWrite.dstBinding = 0;
+        descriptorWrite.dstArrayElement = 0; // Descriptors can be arrays! -> index 0 here
+        descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptorWrite.descriptorCount = 1; // starting at .dstArrayElement
+
+        // Specify one of these three, depending on the type of descriptor this is
+        descriptorWrite.pBufferInfo = &bufferInfo;
+        descriptorWrite.pImageInfo = nullptr; // Optional
+        descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+        // Optional VkCopyDescriptorSet to copy between descriptors
+        vkUpdateDescriptorSets(this->logicalDevice, 1, &descriptorWrite, 0, nullptr);
+    }
 }
 
 void Renderer::createCommandPool() {
@@ -280,6 +377,11 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
     scissor.extent = this->swapchainExtent;
     vkCmdSetScissor(buffer, 0, 1, &scissor);
 
+    // TODO Do not directly access uniform buffer index like this
+//    DBG this->bufferManager.uniformBufferIndex ENDL;
+    vkCmdBindDescriptorSets(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipelineLayout, 0, 1,
+                            &this->descriptorSets[this->bufferManager.uniformBufferIndex], 0, nullptr);
+
     vkCmdDrawIndexed(buffer, static_cast<uint32_t>(this->triangle.renderable.indices.size()), 1, 0, 0, 0);
 
     vkCmdEndRenderPass(buffer);
@@ -325,6 +427,8 @@ sec Renderer::draw() {
     vkResetFences(this->logicalDevice, 1, &this->inFlightFence);
 
     auto commandBuffer = this->bufferManager.commandBuffer;
+
+    updateUniformBuffer();
 
     vkResetCommandBuffer(commandBuffer, 0); // I am not convinced this is necessary
     recordCommandBuffer(commandBuffer, imageIndex);

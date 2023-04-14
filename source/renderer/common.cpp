@@ -17,9 +17,12 @@ void Renderer::initVulkan() {
     createSurface();
     pickPhysicalDevice();
     createLogicalDevice();
-    this->bufferManager.create(this->physicalDevice, this->logicalDevice, this->queueFamilyIndices);
     createSwapchain();
+    createDescriptorSetLayout();
     createGraphicsPipeline();
+    this->bufferManager.create(this->physicalDevice, this->logicalDevice, this->queueFamilyIndices);
+    createDescriptorPool();
+    createDescriptorSets();
     createCommandPool();
     createSyncObjects();
 }
@@ -38,6 +41,8 @@ void Renderer::destroy() {
 
 //    this->bufferManager.destroyCommandBuffer(this->commandPool);
     vkDestroyCommandPool(this->logicalDevice, this->commandPool, nullptr);
+    vkDestroyDescriptorPool(this->logicalDevice, this->descriptorPool, nullptr);
+    vkDestroyDescriptorSetLayout(this->logicalDevice, this->descriptorSetLayout, nullptr);
     vkDestroyPipeline(this->logicalDevice, this->graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(this->logicalDevice, this->pipelineLayout, nullptr);
     destroySwapchain();

@@ -26,10 +26,11 @@
 #include "printer.h"
 #include "vbuffer_manager.h"
 #include "queue_family_indices.h"
+#include <glm/gtc/matrix_transform.hpp> // For mat transforms
 
-#define WIREFRAME_MODE
+//#define WIREFRAME_MODE
 
-const int MAX_FRAMES_IN_FLIGHT = 2;
+//const int MAX_FRAMES_IN_FLIGHT = 2;
 // TODO https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
 
 const std::vector<const char *> VALIDATION_LAYERS = {
@@ -40,7 +41,7 @@ const std::vector<const char *> REQUIRED_DEVICE_EXTENSIONS = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 };
 
-const std::string PORTABILITY_EXTENSION= "VK_KHR_portability_subset";
+const std::string PORTABILITY_EXTENSION = "VK_KHR_portability_subset";
 
 #ifdef NDEBUG
 const bool ENABLE_VALIDATION_LAYERS = false;
@@ -109,7 +110,15 @@ private:
 
     void createGraphicsPipeline();
 
+    void createDescriptorSetLayout();
+
     void createFramebuffers();
+
+    void updateUniformBuffer();
+
+    void createDescriptorPool();
+
+    void createDescriptorSets();
 
     void initVulkan();
 
@@ -133,18 +142,23 @@ private:
     // Vulkan
     VkInstance instance = nullptr;
     VkPhysicalDevice physicalDevice = nullptr;
-    bool supportsWireframeMode=false;
+    bool supportsWireframeMode = false;
     QueueFamilyIndices queueFamilyIndices{};
     VkDevice logicalDevice = nullptr;
     VkQueue graphicsQueue = nullptr;
     VkQueue presentQueue = nullptr;
+
     VkSurfaceKHR surface = nullptr;
     VkSwapchainKHR swapchain = nullptr;
     std::vector<VkImage> swapchainImages;
     VkFormat swapchainImageFormat{};
     VkExtent2D swapchainExtent{};
     std::vector<VkImageView> swapchainImageViews;
+
     VkRenderPass renderPass = nullptr;
+    VkDescriptorSetLayout descriptorSetLayout = nullptr;
+    VkDescriptorPool descriptorPool = nullptr;
+    std::vector<VkDescriptorSet> descriptorSets{}; // Will be cleaned up with pool
     VkPipelineLayout pipelineLayout = nullptr;
     VkPipeline graphicsPipeline = nullptr;
     std::vector<VkFramebuffer> swapchainFramebuffers;
