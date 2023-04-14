@@ -34,6 +34,20 @@ void WindowManager::close() const {
     glfwSetWindowShouldClose(this->window, GLFW_TRUE);
 }
 
+void WindowManager::toggleFullscreen() {
+    this->isMaximized = !this->isMaximized;
+    if (this->isMaximized) {
+        DBG "Max" ENDL;
+        glfwGetWindowPos(this->window, &this->posX, &this->posY);
+        glfwSetWindowMonitor(this->window, glfwGetPrimaryMonitor(), 0, 0, this->width, this->height, GLFW_DONT_CARE);
+    } else {
+        DBG "Min" ENDL;
+        glfwSetWindowMonitor(this->window, nullptr,
+                             this->posX, this->posY,
+                             this->width, this->height, GLFW_DONT_CARE);
+    }
+}
+
 void WindowManager::destroy() const {
     INF "Destroying WindowManager" ENDL;
 

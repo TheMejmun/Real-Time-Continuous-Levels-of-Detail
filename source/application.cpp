@@ -28,8 +28,12 @@ void Application::mainLoop() {
     while (!this->windowManager.shouldClose()) {
         // Input
         this->inputManager.poll();
-        if (this->inputManager.closeWindow) {
+        if (this->inputManager.getKeyState(IM_CLOSE_WINDOW) == IM_DOWN_EVENT) {
             this->windowManager.close();
+        }
+
+        if (this->inputManager.consumeKeyState(IM_FULLSCREEN) == IM_DOWN_EVENT) {
+            this->windowManager.toggleFullscreen();
         }
 
         this->lastTimestamp = Timer::now();

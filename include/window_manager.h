@@ -24,9 +24,14 @@ public:
 
     void close() const;
 
+    void toggleFullscreen();
+
     GLFWwindow *window = nullptr;
+
+    bool isMaximized = false;
 private:
     int32_t width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT;
+    int posX = 0, posY = 0; // TODO
     std::string title;
 };
 
