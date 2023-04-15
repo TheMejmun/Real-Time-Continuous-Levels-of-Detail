@@ -36,8 +36,6 @@ void Application::mainLoop() {
             this->windowManager.toggleFullscreen();
         }
 
-        this->lastTimestamp = Timer::now();
-
         // Render
         auto gpuWaitTime = this->renderer.draw(this->deltaTime);
 
@@ -49,12 +47,12 @@ void Application::mainLoop() {
 
         this->lastTimestamp = time;
 
-        FPS std::fixed << std::setprecision(7) <<
+        FPS std::fixed << std::setprecision(6) <<
                        "FPS: " <<
                        this->currentFPS <<
-                       " Frame time: " <<
+                       "\tFrame time: " <<
                        this->deltaTime <<
-                       " GPU wait time: " <<
+                       "\tGPU wait time: " <<
                        this->currentGPUWaitTime ENDL;
     }
 }
