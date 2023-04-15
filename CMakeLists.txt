@@ -35,7 +35,10 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/ecs.h
         ${HEADER_FOLDER}/renderable.h
         ${HEADER_FOLDER}/printer.h
-        ${HEADER_FOLDER}/vbuffer_manager.h include/queue_family_indices.h include/uniform_buffer_object.h)
+        ${HEADER_FOLDER}/vbuffer_manager.h
+        ${HEADER_FOLDER}/queue_family_indices.h
+        ${HEADER_FOLDER}/uniform_buffer_object.h
+        ${HEADER_FOLDER}/transformer.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
         ${SOURCE_FOLDER}/importer.cpp
@@ -51,7 +54,8 @@ set(SOURCE_FILES
         ${SOURCE_FOLDER}/renderer/common.cpp
         ${SOURCE_FOLDER}/renderer/shaders.cpp
         ${SOURCE_FOLDER}/vbuffer_manager.cpp
-        ${SOURCE_FOLDER}/colors.cpp)
+        ${SOURCE_FOLDER}/colors.cpp
+        ${SOURCE_FOLDER}/transformer.cpp)
 message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable
 add_executable(Realtime_Cell_Collapse ${SOURCE_FOLDER}/main.cpp ${HEADER_FILES} ${SOURCE_FILES})

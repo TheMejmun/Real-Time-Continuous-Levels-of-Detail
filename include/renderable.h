@@ -7,6 +7,7 @@
 
 #include <vector>
 #include "vertex.h"
+#include "transformer.h"
 #include <vulkan/vulkan.h>
 
 const uint16_t FLAG_RENDERABLE_TO_ALLOCATE = 0b1;
@@ -16,7 +17,7 @@ const uint16_t FLAG_RENDERABLE_TO_RENDER = 0b100;
 struct Renderable {
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
-    glm::mat4 model=glm::mat4(1.0f);
+    Transformer4 model{};
 };
 
 #endif //REALTIME_CELL_COLLAPSE_RENDERABLE_H

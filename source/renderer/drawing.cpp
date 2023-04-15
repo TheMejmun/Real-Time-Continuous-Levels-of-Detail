@@ -228,10 +228,10 @@ void Renderer::createDescriptorSetLayout() {
 void Renderer::updateUniformBuffer(sec delta) {
     // TODO
     UniformBufferObject ubo{};
-    this->triangle.renderable.model = glm::rotate(this->triangle.renderable.model,
-                                                  glm::radians(30.0f * static_cast<float >(delta)),
-                                                  glm::vec3(0, 1, 0));
-    ubo.model = this->triangle.renderable.model; // Identity
+    this->triangle.renderable.model.rotate(
+            glm::radians(30.0f * static_cast<float >(delta)),
+            glm::vec3(0, 1, 0));
+    ubo.model = this->triangle.renderable.model.forward; // Identity
     ubo.view = glm::mat4(1.0f); // Identity
     ubo.proj = glm::perspective(
             glm::radians(45.0f),
