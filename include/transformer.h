@@ -7,11 +7,15 @@
 
 #include <glm/glm.hpp>
 
-class Transformer4{
+class Transformer4 {
 public:
-    void rotate(float radians, glm::vec3 axis);
-
     void translate(glm::vec3 translation);
+
+    void scale(float scale);
+
+    void scale(glm::vec3 scale);
+
+    void rotate(float radians, glm::vec3 axis);
 
     glm::mat4 forward{1.0f}, inverse{1.0f};
 };
