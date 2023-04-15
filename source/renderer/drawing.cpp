@@ -231,14 +231,11 @@ void Renderer::updateUniformBuffer(sec delta) {
     this->triangle.renderable.model.rotate(
             glm::radians(30.0f * static_cast<float >(delta)),
             glm::vec3(0, 1, 0));
-    ubo.model = this->triangle.renderable.model.forward; // Identity
-    ubo.view = glm::mat4(1.0f); // Identity
-    ubo.proj = glm::perspective(
-            glm::radians(45.0f),
-            static_cast<float >(this->swapchainExtent.width) / static_cast<float >(this->swapchainExtent.height),
-            0.01f,
-            100.0f);
-    ubo.proj = glm::translate(ubo.proj, glm::vec3(0, 0, -5));
+    ubo.model = this->triangle.renderable.model.forward;
+
+    ubo.view = this->camera.view.forward; // Identity
+
+    ubo.proj = this->camera.getProjection(static_cast<float >(this->swapchainExtent.width) / static_cast<float >(this->swapchainExtent.height));
 
     // TODO replace with push constants for small objects:
     // https://registry.khronos.org/vulkan/site/guide/latest/push_constants.html

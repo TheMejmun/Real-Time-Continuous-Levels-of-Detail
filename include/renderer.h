@@ -26,6 +26,7 @@
 #include "printer.h"
 #include "vbuffer_manager.h"
 #include "queue_family_indices.h"
+#include "camera.h"
 #include <glm/gtc/matrix_transform.hpp> // For mat transforms
 
 //#define WIREFRAME_MODE
@@ -65,6 +66,7 @@ public:
 
 private:
     Triangle triangle{}; // TODO
+    Camera camera{}; // TODO
 
     void createInstance();
 

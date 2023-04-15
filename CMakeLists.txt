@@ -38,7 +38,7 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/vbuffer_manager.h
         ${HEADER_FOLDER}/queue_family_indices.h
         ${HEADER_FOLDER}/uniform_buffer_object.h
-        ${HEADER_FOLDER}/transformer.h)
+        ${HEADER_FOLDER}/transformer.h include/camera.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
         ${SOURCE_FOLDER}/importer.cpp
@@ -55,7 +55,7 @@ set(SOURCE_FILES
         ${SOURCE_FOLDER}/renderer/shaders.cpp
         ${SOURCE_FOLDER}/vbuffer_manager.cpp
         ${SOURCE_FOLDER}/colors.cpp
-        ${SOURCE_FOLDER}/transformer.cpp)
+        ${SOURCE_FOLDER}/transformer.cpp source/camera.cpp)
 message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable
 add_executable(Realtime_Cell_Collapse ${SOURCE_FOLDER}/main.cpp ${HEADER_FILES} ${SOURCE_FILES})

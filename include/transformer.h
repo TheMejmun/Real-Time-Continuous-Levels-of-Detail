@@ -11,6 +11,8 @@ class Transformer4{
 public:
     void rotate(float radians, glm::vec3 axis);
 
+    void translate(glm::vec3 translation);
+
     glm::mat4 forward{1.0f}, inverse{1.0f};
 };
 

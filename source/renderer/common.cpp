@@ -7,6 +7,8 @@
 void Renderer::create(const std::string &t, GLFWwindow *w) {
     INF "Creating Renderer" ENDL;
 
+    camera.view.translate(glm::vec3(0, 0, -5));
+
     this->window = w;
     this->title = t;
     this->initVulkan();

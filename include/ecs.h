@@ -16,7 +16,7 @@ struct Components {
 
 class ECS {
 public:
-    void create(uint32_t size);
+    void create();
 
     uint32_t insert(const Components &entityComponents);
 
@@ -25,7 +25,6 @@ public:
    std::vector<Renderable *> requestRenderables(uint16_t flags);
 
 private:
-    uint32_t max_entities;
     std::vector<bool> isOccupied{};
     std::vector<Renderable *> renderables{};
 };

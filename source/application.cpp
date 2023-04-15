@@ -15,7 +15,7 @@ void Application::run() {
 void Application::init() {
     INF "Creating Application" ENDL;
 
-    this->ecs.create(256);
+    this->ecs.create();
 
     this->windowManager.create(this->title);
 
