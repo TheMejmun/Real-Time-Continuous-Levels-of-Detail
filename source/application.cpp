@@ -39,7 +39,7 @@ void Application::mainLoop() {
         this->lastTimestamp = Timer::now();
 
         // Render
-        auto gpuWaitTime = this->renderer.draw();
+        auto gpuWaitTime = this->renderer.draw(this->deltaTime);
 
         // Benchmark
         auto time = Timer::now();

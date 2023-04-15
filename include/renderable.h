@@ -16,6 +16,7 @@ const uint16_t FLAG_RENDERABLE_TO_RENDER = 0b100;
 struct Renderable {
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
+    glm::mat4 model=glm::mat4(1.0f);
 };
 
 #endif //REALTIME_CELL_COLLAPSE_RENDERABLE_H

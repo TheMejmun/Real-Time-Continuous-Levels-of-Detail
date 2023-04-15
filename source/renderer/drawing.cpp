@@ -225,10 +225,13 @@ void Renderer::createDescriptorSetLayout() {
     }
 }
 
-void Renderer::updateUniformBuffer() {
+void Renderer::updateUniformBuffer(sec delta) {
     // TODO
     UniformBufferObject ubo{};
-    ubo.model = glm::mat4(1.0f); // Identity
+    this->triangle.renderable.model = glm::rotate(this->triangle.renderable.model,
+                                                  glm::radians(30.0f * static_cast<float >(delta)),
+                                                  glm::vec3(0, 1, 0));
+    ubo.model = this->triangle.renderable.model; // Identity
     ubo.view = glm::mat4(1.0f); // Identity
     ubo.proj = glm::perspective(
             glm::radians(45.0f),
@@ -391,7 +394,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
     }
 }
 
-sec Renderer::draw() {
+sec Renderer::draw(sec delta) {
     if (shouldRecreateSwapchain()) {
         bool success = recreateSwapchain();
         if (success) {
@@ -428,7 +431,7 @@ sec Renderer::draw() {
 
     auto commandBuffer = this->bufferManager.commandBuffer;
 
-    updateUniformBuffer();
+    updateUniformBuffer(delta);
 
     vkResetCommandBuffer(commandBuffer, 0); // I am not convinced this is necessary
     recordCommandBuffer(commandBuffer, imageIndex);

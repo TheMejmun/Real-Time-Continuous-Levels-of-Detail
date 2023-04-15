@@ -59,7 +59,7 @@ class Renderer {
 public:
     void create(const std::string &title, GLFWwindow *window);
 
-    sec draw();
+    sec draw(sec delta);
 
     void destroy();
 
@@ -114,7 +114,7 @@ private:
 
     void createFramebuffers();
 
-    void updateUniformBuffer();
+    void updateUniformBuffer(sec delta);
 
     void createDescriptorPool();
 
