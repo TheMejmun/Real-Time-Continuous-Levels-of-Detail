@@ -22,22 +22,24 @@ void Application::init() {
     this->inputManager.create(this->windowManager.window);
 
     this->renderer.create(this->title, this->windowManager.window);
+
+    this->camera.view.translate(glm::vec3(0, 0, -5));
 }
 
 void Application::mainLoop() {
     while (!this->windowManager.shouldClose()) {
+
         // Input
         this->inputManager.poll();
         if (this->inputManager.getKeyState(IM_CLOSE_WINDOW) == IM_DOWN_EVENT) {
             this->windowManager.close();
         }
-
         if (this->inputManager.consumeKeyState(IM_FULLSCREEN) == IM_DOWN_EVENT) {
             this->windowManager.toggleFullscreen();
         }
 
         // Render
-        auto gpuWaitTime = this->renderer.draw(this->deltaTime);
+        auto gpuWaitTime = this->renderer.draw(this->deltaTime, this->camera, this->ecs);
 
         // Benchmark
         auto time = Timer::now();

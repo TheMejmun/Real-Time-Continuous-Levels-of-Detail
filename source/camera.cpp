@@ -4,7 +4,7 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include "camera.h"
 
-glm::mat4 Camera::getProjection(float aspectRatio) {
+glm::mat4 Camera::getProjection(float aspectRatio) const {
    return glm::perspective(
             this->fovYRadians,
             aspectRatio,

@@ -225,7 +225,7 @@ void Renderer::createDescriptorSetLayout() {
     }
 }
 
-void Renderer::updateUniformBuffer(sec delta) {
+void Renderer::updateUniformBuffer(const sec &delta, const Camera &camera, const ECS &ecs) {
     // TODO
     UniformBufferObject ubo{};
     this->triangle.renderable.model.rotate(
@@ -233,9 +233,10 @@ void Renderer::updateUniformBuffer(sec delta) {
             glm::vec3(0, 1, 0));
     ubo.model = this->triangle.renderable.model.forward;
 
-    ubo.view = this->camera.view.forward; // Identity
+    ubo.view = camera.view.forward; // Identity
 
-    ubo.proj = this->camera.getProjection(static_cast<float >(this->swapchainExtent.width) / static_cast<float >(this->swapchainExtent.height));
+    ubo.proj = camera.getProjection(
+            static_cast<float >(this->swapchainExtent.width) / static_cast<float >(this->swapchainExtent.height));
 
     // TODO replace with push constants for small objects:
     // https://registry.khronos.org/vulkan/site/guide/latest/push_constants.html
@@ -391,7 +392,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
     }
 }
 
-sec Renderer::draw(sec delta) {
+sec Renderer::draw(const sec &delta, const Camera &camera, const ECS &ecs) {
     if (shouldRecreateSwapchain()) {
         bool success = recreateSwapchain();
         if (success) {
@@ -428,7 +429,7 @@ sec Renderer::draw(sec delta) {
 
     auto commandBuffer = this->bufferManager.commandBuffer;
 
-    updateUniformBuffer(delta);
+    updateUniformBuffer(delta, camera, ecs);
 
     vkResetCommandBuffer(commandBuffer, 0); // I am not convinced this is necessary
     recordCommandBuffer(commandBuffer, imageIndex);

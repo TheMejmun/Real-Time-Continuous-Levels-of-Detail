@@ -14,7 +14,7 @@ struct Camera{
     float zNear = 0.01f;
     float zFar = 100.0f;
 
-    glm::mat4 getProjection(float aspectRatio);
+    [[nodiscard]] glm::mat4 getProjection(float aspectRatio) const;
 };
 
 #endif //REALTIME_CELL_COLLAPSE_CAMERA_H

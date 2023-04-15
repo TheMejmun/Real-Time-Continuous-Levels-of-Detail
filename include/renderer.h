@@ -27,6 +27,7 @@
 #include "vbuffer_manager.h"
 #include "queue_family_indices.h"
 #include "camera.h"
+#include "ecs.h"
 #include <glm/gtc/matrix_transform.hpp> // For mat transforms
 
 //#define WIREFRAME_MODE
@@ -60,13 +61,12 @@ class Renderer {
 public:
     void create(const std::string &title, GLFWwindow *window);
 
-    sec draw(sec delta);
+    sec draw(const sec &delta, const Camera &camera, const ECS &ecs);
 
     void destroy();
 
 private:
     Triangle triangle{}; // TODO
-    Camera camera{}; // TODO
 
     void createInstance();
 
@@ -116,7 +116,7 @@ private:
 
     void createFramebuffers();
 
-    void updateUniformBuffer(sec delta);
+    void updateUniformBuffer(const sec &delta, const Camera &camera, const ECS &ecs); // TODO Take out delta time
 
     void createDescriptorPool();
 

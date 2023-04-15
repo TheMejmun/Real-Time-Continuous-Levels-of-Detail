@@ -26,6 +26,7 @@ private:
 
     void destroy();
 
+    Camera camera{};
     ECS ecs{};
     Renderer renderer{};
     WindowManager windowManager{};
