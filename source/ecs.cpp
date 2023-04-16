@@ -9,53 +9,50 @@
 void ECS::create() {
 }
 
-uint32_t ECS::insert(const Components &entityComponents) {
-    for (uint32_t i = 0; i < this->isOccupied.size(); ++i) {
-        if (!this->isOccupied[i]) {
-            this->renderables[i] = entityComponents.renderable;
-            this->isOccupied[i] = true;
-            return i;
-        }
-    }
+uint32_t ECS::insert(const Components& entityComponents) {
+	for (uint32_t i = 0; i < this->isOccupied.size(); ++i) {
+		if (!this->isOccupied[i]) {
+			destroyReferences(i); // Clean up old references before overriding pointers
+			this->renderables[i] = std::move(entityComponents.renderable); // Move reference here
+			this->isOccupied[i] = true;
+			return i;
+		}
+	}
 
-    this->isOccupied.push_back(true);
-    this->renderables.push_back(entityComponents.renderable);
-    return isOccupied.size() - 1;
+	this->isOccupied.push_back(true);
+	this->renderables.push_back(entityComponents.renderable);
+	return isOccupied.size() - 1;
 }
 
-void ECS::remove(uint32_t index) {
-    if (this->isOccupied[index]) {
-        this->isOccupied[index] = false;
-    } else {
-        THROW("Attempted to remove non-existent entity from ECS.");
-    }
+void ECS::destroy() {
+	for (uint32_t i = 0; i < this->isOccupied.size(); ++i) {
+		destroyReferences(i);
+	}
 }
 
-std::vector<Renderable *> ECS::requestRenderables(uint16_t flags) {
-    std::vector<Renderable *> out{};
+void ECS::remove(const uint32_t& index) {
+	if (this->isOccupied[index]) {
+		this->isOccupied[index] = false;
+	}
+	else {
+		THROW("Attempted to remove non-existent entity from ECS.");
+	}
+}
 
-    for (uint32_t i = 0; i < this->isOccupied.size(); ++i) {
-        bool use = false;
+void ECS::destroyReferences(const uint32_t& index) {
+	if (this->renderables[index] != nullptr) delete this->renderables[index];
+	this->renderables[index] = nullptr;
+}
 
-        if ((flags & FLAG_RENDERABLE_TO_ALLOCATE) > 0) {
-            // use |= (this->isOccupied[i] && (this->renderables[i]->allocatedBuffer == nullptr));
-            THROW("TODO");
-        }
+template<typename Evaluator>
+std::vector<Renderable*> ECS::requestRenderables(const Evaluator& evaluator) {
+	std::vector<Renderable*> out{};
 
-        if ((flags & FLAG_RENDERABLE_TO_DEALLOCATE) > 0) {
-            // use |=  (!this->isOccupied[i] && (this->renderables[i]->allocatedBuffer != nullptr));
-            THROW("TODO");
-        }
+	for (uint32_t i = 0; i < this->isOccupied.size(); ++i) {
+		if (evaluator(this->renderables[i])) {
+			out.push_back(this->renderables[i]);
+		}
+	}
 
-        if ((flags & FLAG_RENDERABLE_TO_RENDER) > 0) {
-            // use |= (this->isOccupied[i] && (this->renderables[i]->allocatedBuffer != nullptr));
-            THROW("TODO");
-        }
-
-        if (use) {
-            out.push_back(this->renderables[i]);
-        }
-    }
-
-    return out;
+	return out;
 }

@@ -8,25 +8,33 @@
 #include <vector>
 #include <optional>
 #include <tuple>
+#include <memory>
 #include "renderable.h"
 
 struct Components {
-    Renderable *renderable;
+	Renderable* renderable;
 };
 
 class ECS {
 public:
-    void create();
+	void create();
 
-    uint32_t insert(const Components &entityComponents);
+	void destroy();
 
-    void remove(uint32_t index);
+	uint32_t insert(const Components& entityComponents);
 
-   std::vector<Renderable *> requestRenderables(uint16_t flags);
+	void remove(const uint32_t& index);
+
+	// auto e = [&](std::shared_ptr<Renderable> r) -> bool { return TODO };
+
+	template<typename Evaluator>
+	std::vector<Renderable*> requestRenderables(const Evaluator& evaluator);
 
 private:
-    std::vector<bool> isOccupied{};
-    std::vector<Renderable *> renderables{};
+	void destroyReferences(const uint32_t& index);
+
+	std::vector<bool> isOccupied{};
+	std::vector<Renderable*> renderables{};
 };
 
 #endif //REALTIME_CELL_COLLAPSE_ECS_H
