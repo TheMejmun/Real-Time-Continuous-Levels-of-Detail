@@ -15,7 +15,9 @@ elseif (UNIX)
     message(STATUS "VULKAN_SDK: $ENV{VULKAN_SDK}")
 endif ()
 
-set(ASSIMP_NO_EXPORT  ON)
+OPTION(ASSIMP_INSTALL ON)
+OPTION(USE_STATIC_CRT ON)
+#ADD_COMPILE_OPTIONS(-lassimp)
 
 set(HEADER_FOLDER include)
 set(SOURCE_FOLDER source)
@@ -77,17 +79,21 @@ target_link_libraries(Realtime_Cell_Collapse PRIVATE glm::glm)
 find_package(Vulkan REQUIRED)
 target_link_libraries(Realtime_Cell_Collapse PRIVATE Vulkan::Vulkan)
 # vulkan hpp
-find_path(VULKAN_HPP_INCLUDE_DIRS "vulkan/vulkan.hpp")
-target_include_directories(Realtime_Cell_Collapse PRIVATE ${VULKAN_HPP_INCLUDE_DIRS})
+#find_path(VULKAN_HPP_INCLUDE_DIRS "vulkan/vulkan.hpp")
+#target_include_directories(Realtime_Cell_Collapse PRIVATE ${VULKAN_HPP_INCLUDE_DIRS})
 # imgui
-find_package(imgui CONFIG REQUIRED)
-target_link_libraries(Realtime_Cell_Collapse PRIVATE imgui::imgui)
+#find_package(imgui CONFIG REQUIRED)
+#target_link_libraries(Realtime_Cell_Collapse PRIVATE imgui::imgui)
 # assimp
-find_package(assimp CONFIG REQUIRED)
-target_link_libraries(Realtime_Cell_Collapse PRIVATE assimp::assimp)
+#find_package(assimp CONFIG REQUIRED)
+#target_link_libraries(Realtime_Cell_Collapse PRIVATE assimp::assimp)
 # stb
-find_package(Stb REQUIRED)
-target_include_directories(Realtime_Cell_Collapse PRIVATE ${Stb_INCLUDE_DIR})
+#find_package(Stb REQUIRED)
+#target_include_directories(Realtime_Cell_Collapse PRIVATE ${Stb_INCLUDE_DIR})
+
+# vcpkg failed to include assimp in clion. Use a submodule for now
+#add_subdirectory(${EXTERNAL_FOLDER}/assimp)
+#target_link_libraries(Realtime_Cell_Collapse PRIVATE assimp::assimp)
 
 # output
 get_target_property(LL Realtime_Cell_Collapse LINK_LIBRARIES)
