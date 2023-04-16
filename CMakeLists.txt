@@ -15,6 +15,8 @@ elseif (UNIX)
     message(STATUS "VULKAN_SDK: $ENV{VULKAN_SDK}")
 endif ()
 
+set(ASSIMP_NO_EXPORT  ON)
+
 set(HEADER_FOLDER include)
 set(SOURCE_FOLDER source)
 set(EXTERNAL_FOLDER external)
@@ -83,6 +85,9 @@ target_link_libraries(Realtime_Cell_Collapse PRIVATE imgui::imgui)
 # assimp
 find_package(assimp CONFIG REQUIRED)
 target_link_libraries(Realtime_Cell_Collapse PRIVATE assimp::assimp)
+# stb
+find_package(Stb REQUIRED)
+target_include_directories(Realtime_Cell_Collapse PRIVATE ${Stb_INCLUDE_DIR})
 
 # output
 get_target_property(LL Realtime_Cell_Collapse LINK_LIBRARIES)

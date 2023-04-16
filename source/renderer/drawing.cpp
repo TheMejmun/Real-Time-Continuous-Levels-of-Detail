@@ -54,9 +54,9 @@ void Renderer::createRenderPass() {
 
 void Renderer::createGraphicsPipeline() {
     // TODO pull these out of here
-    auto vertShaderCode = Importer::readFile("resources/shaders/triangle.vert.spv");
+    auto vertShaderCode = Importinator::readFile("resources/shaders/triangle.vert.spv");
     DBG "Loaded vertex shader with byte size: " << vertShaderCode.size() ENDL;
-    auto fragShaderCode = Importer::readFile("resources/shaders/triangle.frag.spv");
+    auto fragShaderCode = Importinator::readFile("resources/shaders/triangle.frag.spv");
     DBG "Loaded fragment shader with byte size: " << fragShaderCode.size() ENDL;
 
     VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);

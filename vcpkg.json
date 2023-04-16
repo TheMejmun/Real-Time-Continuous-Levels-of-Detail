@@ -28,6 +28,11 @@
     "$comment" : "    # this is heuristically generated, and may not be correct\n\n    find_package(imgui CONFIG REQUIRED)\n\n    target_link_libraries(main PRIVATE imgui::imgui)\n"
   }, {
     "name" : "assimp",
-    "version>=" : "5.2.5"
+    "version>=" : "5.2.5",
+    "$comment" : "    # this is heuristically generated, and may not be correct\n\n    find_package(assimp CONFIG REQUIRED)\n\n    target_link_libraries(main PRIVATE assimp::assimp)\n"
+  }, {
+    "name" : "stb",
+    "version>=" : "2023-04-11#1",
+    "$comment" : "    find_package(Stb REQUIRED)\n\n    target_include_directories(main PRIVATE ${Stb_INCLUDE_DIR})\n"
   } ]
 }
