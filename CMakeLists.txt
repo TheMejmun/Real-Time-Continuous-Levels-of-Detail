@@ -15,10 +15,6 @@ elseif (UNIX)
     message(STATUS "VULKAN_SDK: $ENV{VULKAN_SDK}")
 endif ()
 
-OPTION(ASSIMP_INSTALL ON)
-OPTION(USE_STATIC_CRT ON)
-#ADD_COMPILE_OPTIONS(-lassimp)
-
 set(HEADER_FOLDER include)
 set(SOURCE_FOLDER source)
 set(EXTERNAL_FOLDER external)
