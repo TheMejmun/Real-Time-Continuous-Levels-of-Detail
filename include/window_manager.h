@@ -14,25 +14,32 @@ const int32_t DEFAULT_HEIGHT = 720;
 
 class WindowManager {
 public:
-    void create(const std::string &title);
+	void create(const std::string& title);
 
-    void updateTitle(const std::string &title);
+	void updateTitle(const std::string& title);
 
-    void destroy() const;
+	void destroy() const;
 
-    [[nodiscard]] bool shouldClose() const;
+	[[nodiscard]] bool shouldClose() const;
 
-    void close() const;
+	void close() const;
 
-    void toggleFullscreen();
+	void toggleFullscreen();
 
-    GLFWwindow *window = nullptr;
+	GLFWwindow* window = nullptr;
 
-    bool isMaximized = false;
+	bool isMaximized = false;
 private:
-    int32_t width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT;
-    int posX = 0, posY = 0; // TODO
-    std::string title;
+	void pollMonitorResolution();
+
+	void pollWindowPosition();
+
+	int32_t width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT;
+	int windowPosX = 0, windowPosY = 0; 
+
+	GLFWmonitor* monitor=nullptr;
+	const GLFWvidmode* monitorParams = nullptr;
+	std::string title;
 };
 
 #endif //REALTIME_CELL_COLLAPSE_WINDOW_MANAGER_H
