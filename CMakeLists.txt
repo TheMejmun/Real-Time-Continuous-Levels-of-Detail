@@ -3,6 +3,8 @@ project(Realtime_Cell_Collapse)
 
 set(CMAKE_CXX_STANDARD 20)
 
+add_link_options("-v")
+
 if (WIN32)
     message(STATUS "Windows mode")
     set(VK_FOLDER "C:/VulkanSDK/1.3.239.0")
@@ -71,21 +73,12 @@ target_link_libraries(Realtime_Cell_Collapse PRIVATE glfw)
 # glm
 find_package(glm CONFIG REQUIRED)
 target_link_libraries(Realtime_Cell_Collapse PRIVATE glm::glm)
+# assimp
+find_package(assimp CONFIG REQUIRED)
+target_link_libraries(Realtime_Cell_Collapse PRIVATE assimp::assimp)
 # vulkan
 find_package(Vulkan REQUIRED)
 target_link_libraries(Realtime_Cell_Collapse PRIVATE Vulkan::Vulkan)
-# vulkan hpp
-#find_path(VULKAN_HPP_INCLUDE_DIRS "vulkan/vulkan.hpp")
-#target_include_directories(Realtime_Cell_Collapse PRIVATE ${VULKAN_HPP_INCLUDE_DIRS})
-# imgui
-#find_package(imgui CONFIG REQUIRED)
-#target_link_libraries(Realtime_Cell_Collapse PRIVATE imgui::imgui)
-# assimp
-#find_package(assimp CONFIG REQUIRED)
-#target_link_libraries(Realtime_Cell_Collapse PRIVATE assimp::assimp)
-# stb
-#find_package(Stb REQUIRED)
-#target_include_directories(Realtime_Cell_Collapse PRIVATE ${Stb_INCLUDE_DIR})
 
 # vcpkg failed to include assimp in clion. Use a submodule for now
 #add_subdirectory(${EXTERNAL_FOLDER}/assimp)
