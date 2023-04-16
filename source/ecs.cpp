@@ -9,11 +9,11 @@
 void ECS::create() {
 }
 
-uint32_t ECS::insert(const Components& entityComponents) {
+uint32_t ECS::insert(Components& entityComponents) {
 	for (uint32_t i = 0; i < this->isOccupied.size(); ++i) {
 		if (!this->isOccupied[i]) {
 			destroyReferences(i); // Clean up old references before overriding pointers
-			this->renderables[i] = std::move(entityComponents.renderable); // Move reference here
+			this->renderables[i] = std::move(entityComponents.renderable); // Move reference here -> param cant be const
 			this->isOccupied[i] = true;
 			return i;
 		}

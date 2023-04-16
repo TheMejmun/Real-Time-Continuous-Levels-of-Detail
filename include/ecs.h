@@ -21,7 +21,7 @@ public:
 
 	void destroy();
 
-	uint32_t insert(const Components& entityComponents);
+	uint32_t insert(Components& entityComponents);
 
 	void remove(const uint32_t& index);
 
