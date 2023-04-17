@@ -1,14 +1,22 @@
 {
-  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
-  "name": "realtime-cell-collapse",
-  "version-string": "1.0.0",
-  "builtin-baseline": "501db0f17ef6df184fcdbfbe0f87cde2313b6ab1",
-  "dependencies": [
-    "glfw3",
-    "glm",
-    "vcpkg-cmake-config",
-    "vcpkg-cmake",
-    "vulkan",
-    "assimp"
-  ]
+  "$schema" : "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name" : "realtime-cell-collapse",
+  "version-string" : "1.0.0",
+  "builtin-baseline" : "501db0f17ef6df184fcdbfbe0f87cde2313b6ab1",
+  "dependencies" : [ {
+    "name" : "assimp",
+    "version>=" : "5.2.5"
+  }, {
+    "name" : "glfw3",
+    "version>=" : "3.3.8#2"
+  }, {
+    "name" : "glm",
+    "version>=" : "0.9.9.8#2"
+  }, {
+    "name" : "vcpkg-cmake-config",
+    "version>=" : "2022-02-06#1"
+  }, {
+    "name" : "vcpkg-cmake",
+    "version>=" : "2022-12-22"
+  } ]
 }
