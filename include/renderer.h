@@ -57,6 +57,11 @@ struct SwapchainSupportDetails {
     std::vector<VkPresentModeKHR> presentModes;
 };
 
+struct OptionalFeatures{
+    bool supportsWireframeMode = false;
+    bool physicalDeviceFeatures2 = false;
+};
+
 class Renderer {
 public:
     void create(const std::string &title, GLFWwindow *window);
@@ -67,6 +72,8 @@ public:
 
 private:
     Triangle triangle{}; // TODO
+
+    void pollOptionalInstanceExtensions();
 
     void createInstance();
 
@@ -144,11 +151,11 @@ private:
     // Vulkan
     VkInstance instance = nullptr;
     VkPhysicalDevice physicalDevice = nullptr;
-    bool supportsWireframeMode = false;
     QueueFamilyIndices queueFamilyIndices{};
     VkDevice logicalDevice = nullptr;
     VkQueue graphicsQueue = nullptr;
     VkQueue presentQueue = nullptr;
+    OptionalFeatures optionalFeatures{};
 
     VkSurfaceKHR surface = nullptr;
     VkSwapchainKHR swapchain = nullptr;

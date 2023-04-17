@@ -51,6 +51,19 @@ void Renderer::destroy() {
     vkDestroyInstance(this->instance, nullptr);
 }
 
+void Renderer::printAvailableInstanceExtensions() {
+    uint32_t extensionCount = 0;
+    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+
+    std::vector<VkExtensionProperties> extensions(extensionCount);
+    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+
+    DBG "Available instance extensions:" ENDL;
+    for (const auto &extension: extensions) {
+        DBG '\t' << extension.extensionName ENDL;
+    }
+}
+
 void Renderer::createInstance() {
     // App Info
     VkApplicationInfo appInfo{};

@@ -4,19 +4,6 @@
 
 #include "renderer.h"
 
-void Renderer::printAvailableInstanceExtensions() {
-    uint32_t extensionCount = 0;
-    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-
-    std::vector<VkExtensionProperties> extensions(extensionCount);
-    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
-
-    DBG "Available instance extensions:" ENDL;
-    for (const auto &extension: extensions) {
-        DBG '\t' << extension.extensionName ENDL;
-    }
-}
-
 void Renderer::printAvailablePhysicalDevices() {
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(this->instance, &deviceCount, nullptr);
@@ -68,7 +55,7 @@ void Renderer::pickPhysicalDevice() {
 
     VkPhysicalDeviceFeatures deviceFeatures;
     vkGetPhysicalDeviceFeatures(this->physicalDevice, &deviceFeatures);
-    this->supportsWireframeMode = deviceFeatures.fillModeNonSolid;
+    this->optionalFeatures.supportsWireframeMode = deviceFeatures.fillModeNonSolid;
 }
 
 bool Renderer::isDeviceSuitable(VkPhysicalDevice device, bool strictMode) {
@@ -195,7 +182,7 @@ void Renderer::createLogicalDevice() {
 
     // Define the features we will use as queried in isDeviceSuitable
     VkPhysicalDeviceFeatures deviceFeatures{};
-    deviceFeatures.fillModeNonSolid = this->supportsWireframeMode;
+    deviceFeatures.fillModeNonSolid = this->optionalFeatures.supportsWireframeMode;
 
     VkDeviceCreateInfo createInfo{};
 
