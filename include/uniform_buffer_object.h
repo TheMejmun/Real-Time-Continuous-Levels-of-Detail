@@ -8,9 +8,9 @@
 #include <glm/glm.hpp>
 
 struct UniformBufferObject {
-    glm::mat4 model;
-    glm::mat4 view;
-    glm::mat4 proj;
+    alignas(16) glm::mat4 model;
+    alignas(16) glm::mat4 view;
+    alignas(16) glm::mat4 proj;
 };
 
 #endif //REALTIME_CELL_COLLAPSE_UNIFORM_BUFFER_OBJECT_H

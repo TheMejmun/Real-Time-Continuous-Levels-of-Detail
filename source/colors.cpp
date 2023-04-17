@@ -4,6 +4,7 @@
 #include "colors.h"
 #include <sstream>
 #include <iomanip>
+#include <random>
 
 glm::vec3 White = {1.0f, 1.0f, 1.0f};
 
@@ -39,6 +40,15 @@ constexpr double FOUR_29TH = 4.0 / 29.0;
 constexpr double FIVEHUNDREDTH = 1.0 / 500.0;
 constexpr double TWOHUNDREDTH = 1.0 / 200.0;
 constexpr double ONEHUNDREDSIXTEENTH = 1.0 / 116.0;
+
+Color Color::random() {
+    std::random_device device;
+    std::default_random_engine engine(device());
+    std::uniform_real_distribution<float> distribution(0.0f, 1.0f);
+
+    // From RGB, to avoid because all colors 0 .. 1 are displayable
+    return Color::fromRGB(distribution(engine), distribution(engine), distribution(engine));
+}
 
 Color::Color(glm::vec3 xyz) {
     this->xyz = xyz;

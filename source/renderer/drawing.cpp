@@ -228,10 +228,10 @@ void Renderer::createDescriptorSetLayout() {
 void Renderer::updateUniformBuffer(const sec &delta, const Camera &camera, const ECS &ecs) {
     // TODO
     UniformBufferObject ubo{};
-    this->triangle.renderable.model.rotate(
+    this->world.renderable.model.rotate(
             glm::radians(30.0f * static_cast<float >(delta)),
             glm::vec3(0, 1, 0));
-    ubo.model = this->triangle.renderable.model.forward;
+    ubo.model = this->world.renderable.model.forward;
 
     ubo.view = camera.view.forward; // Identity
 
@@ -383,7 +383,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
     vkCmdBindDescriptorSets(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipelineLayout, 0, 1,
                             &this->descriptorSets[this->bufferManager.uniformBufferIndex], 0, nullptr);
 
-    vkCmdDrawIndexed(buffer, static_cast<uint32_t>(this->triangle.renderable.indices.size()), 1, 0, 0, 0);
+    vkCmdDrawIndexed(buffer, static_cast<uint32_t>(this->world.renderable.indices.size()), 1, 0, 0, 0);
 
     vkCmdEndRenderPass(buffer);
 

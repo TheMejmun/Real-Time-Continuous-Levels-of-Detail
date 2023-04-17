@@ -10,7 +10,8 @@
 #include <array>
 #include "colors.h"
 
-struct Vertex{
+// https://vulkan-tutorial.com/Uniform_buffers/Descriptor_pool_and_sets
+struct Vertex {
     glm::vec3 pos;
     glm::vec3 color;
     glm::vec3 normal;

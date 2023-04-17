@@ -10,6 +10,8 @@
 void VBufferManager::create(VkPhysicalDevice physicalDevice, VkDevice device, QueueFamilyIndices indices) {
     INF "Creating VBufferManager" ENDL;
 
+    this->world.create();
+
     this->logicalDevice = device;
     this->queueFamilyIndices = indices;
 
@@ -70,7 +72,7 @@ VkBuffer VBufferManager::getUniformBuffer(uint32_t i) {
 }
 
 void VBufferManager::createVertexBuffer() {
-    VkDeviceSize bufferSize = sizeof(Vertex) * triangle.renderable.vertices.size();
+    VkDeviceSize bufferSize = sizeof(Vertex) * world.renderable.vertices.size();
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
@@ -80,7 +82,7 @@ void VBufferManager::createVertexBuffer() {
 
     void *data;
     vkMapMemory(this->logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, triangle.renderable.vertices.data(), (size_t) bufferSize);
+    memcpy(data, world.renderable.vertices.data(), (size_t) bufferSize);
     vkUnmapMemory(this->logicalDevice, stagingBufferMemory);
 
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
@@ -94,7 +96,7 @@ void VBufferManager::createVertexBuffer() {
 }
 
 void VBufferManager::createIndexBuffer() {
-    VkDeviceSize bufferSize = sizeof(uint32_t) * triangle.renderable.indices.size();
+    VkDeviceSize bufferSize = sizeof(uint32_t) * world.renderable.indices.size();
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
@@ -104,7 +106,7 @@ void VBufferManager::createIndexBuffer() {
 
     void *data;
     vkMapMemory(this->logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, triangle.renderable.indices.data(), (size_t) bufferSize);
+    memcpy(data, world.renderable.indices.data(), (size_t) bufferSize);
     vkUnmapMemory(this->logicalDevice, stagingBufferMemory);
 
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,

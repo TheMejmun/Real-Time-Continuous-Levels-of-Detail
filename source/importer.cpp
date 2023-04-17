@@ -43,6 +43,8 @@ Importinator::Mesh Importinator::importMesh(const std::string &filename) {
 
     if (scene == nullptr) {
         THROW(importer.GetErrorString());
+    } else {
+        DBG "Read mesh " << filename ENDL;
     }
 
     for (uint32_t meshIndex = 0; meshIndex < (scene->mNumMeshes); ++meshIndex) {
@@ -85,6 +87,8 @@ Importinator::Mesh Importinator::importMesh(const std::string &filename) {
             out.indices[i * 3 + 2] = (*(face.mIndices + 2));
         }
     }
+    DBG "\tIndices: " << out.indices.size() ENDL;
+    DBG "\tVertices: " << out.vertices.size() ENDL;
 
     return out;
 }

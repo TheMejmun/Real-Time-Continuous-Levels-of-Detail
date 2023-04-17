@@ -13,6 +13,8 @@
 
 class Color {
 public:
+    static Color random();
+
     static Color fromRGB(const double &r, const double &g, const double &b);
 
     static Color fromRGB(const glm::vec3 &rgb);

@@ -8,6 +8,7 @@
 #include <vulkan/vulkan.h>
 #include "triangle.h"
 #include "queue_family_indices.h"
+#include "world.h"
 
 class VBufferManager {
 public:
@@ -68,7 +69,7 @@ private:
     VkCommandPool transferCommandPool = nullptr;
     VkCommandBuffer transferCommandBuffer = nullptr; // Cleaned automatically by command pool clean.
 
-    Triangle triangle{}; // TODO
+    World world{}; // TODO
 };
 
 #endif //REALTIME_CELL_COLLAPSE_VBUFFER_MANAGER_H

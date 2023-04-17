@@ -28,9 +28,10 @@
 #include "queue_family_indices.h"
 #include "camera.h"
 #include "ecs.h"
+#include "world.h"
 #include <glm/gtc/matrix_transform.hpp> // For mat transforms
 
-//#define WIREFRAME_MODE
+#define WIREFRAME_MODE
 
 //const int MAX_FRAMES_IN_FLIGHT = 2;
 // TODO https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
@@ -71,9 +72,7 @@ public:
     void destroy();
 
 private:
-    Triangle triangle{}; // TODO
-
-    void pollOptionalInstanceExtensions();
+    World world{}; // TODO
 
     void createInstance();
 
