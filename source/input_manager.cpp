@@ -25,9 +25,32 @@ void InputManager::_callback(GLFWwindow *window, int key, int scancode, int acti
 void InputManager::processInput(GLFWwindow *w, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_ESCAPE) InputManager::handleKey(&this->closeWindow, action);
     if (key == GLFW_KEY_M) InputManager::handleKey(&this->toggleFullscreen, action);
+    if (key == GLFW_KEY_W) InputManager::handleKey(&this->moveForward, action);
+    if (key == GLFW_KEY_S) InputManager::handleKey(&this->moveBackward, action);
 }
 
-void InputManager::handleKey(uint8_t *key, int actionCode) {
+KeyState *InputManager::keySwitch(const KeyCode &key) {
+    KeyState *out;
+    switch (key) {
+        case IM_CLOSE_WINDOW:
+            out = &this->closeWindow;
+            break;
+        case IM_FULLSCREEN:
+            out = &this->toggleFullscreen;
+            break;
+        case IM_MOVE_FORWARD:
+            out = &this->moveForward;
+            break;
+        case IM_MOVE_BACKWARD:
+            out = &this->moveBackward;
+            break;
+        default:
+            return nullptr;
+    }
+    return out;
+}
+
+void InputManager::handleKey(KeyState *key, const int &actionCode) {
     switch (actionCode) {
         case GLFW_PRESS:
         case GLFW_REPEAT:
@@ -72,40 +95,22 @@ void InputManager::handleKey(uint8_t *key, int actionCode) {
     }
 }
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "readability-convert-member-functions-to-static"
+
 void InputManager::poll() {
     glfwPollEvents();
 }
 
-uint8_t InputManager::getKeyState(uint8_t key) {
-    uint8_t out;
-    switch (key) {
-        case IM_CLOSE_WINDOW:
-            out = this->closeWindow;
-            break;
-        case IM_FULLSCREEN:
-            out = this->toggleFullscreen;
-            break;
-        default:
-            out = IM_RELEASED;
-            break;
-    }
-    return out;
+#pragma clang diagnostic pop
+
+KeyState InputManager::getKeyState(const KeyCode &key) {
+    return *keySwitch(key);;
 }
 
-uint8_t InputManager::consumeKeyState(uint8_t key) {
-    uint8_t out;
-    switch (key) {
-        case IM_CLOSE_WINDOW:
-            out = this->closeWindow;
-            InputManager::handleKey(&this->closeWindow, -1);
-            break;
-        case IM_FULLSCREEN:
-            out = this->toggleFullscreen;
-            InputManager::handleKey(&this->toggleFullscreen, -1);
-            break;
-        default:
-            out = IM_RELEASED;
-            break;
-    }
+KeyState InputManager::consumeKeyState(const KeyCode &key) {
+    auto keyRef = keySwitch(key);
+    auto out = *keyRef;
+    InputManager::handleKey(keyRef, -1);
     return out;
 }

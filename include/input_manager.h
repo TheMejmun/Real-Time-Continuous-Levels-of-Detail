@@ -14,6 +14,11 @@
 
 #define IM_CLOSE_WINDOW 0x0
 #define IM_FULLSCREEN 0x1
+#define IM_MOVE_FORWARD 0x2
+#define IM_MOVE_BACKWARD 0x3
+
+using KeyState = uint8_t;
+using KeyCode = uint16_t;
 
 class InputManager {
 public:
@@ -21,21 +26,25 @@ public:
 
     void poll();
 
-    uint8_t getKeyState(uint8_t key);
+    KeyState getKeyState(const KeyCode &key);
 
-    uint8_t consumeKeyState(uint8_t key);
+    KeyState consumeKeyState(const KeyCode &key);
 
 private:
     static void _callback(GLFWwindow *window, int key, int scancode, int action, int mods);
 
     void processInput(GLFWwindow *window, int key, int scancode, int action, int mods);
 
-    static void handleKey(uint8_t *key, int actionCode);
+    static void handleKey(KeyState *key, const int &actionCode);
+
+    KeyState *keySwitch(const KeyCode &key);
 
     GLFWwindow *window = nullptr;
 
-    uint8_t closeWindow = IM_RELEASED;
-    uint8_t toggleFullscreen = IM_RELEASED;
+    KeyState closeWindow = IM_RELEASED;
+    KeyState toggleFullscreen = IM_RELEASED;
+    KeyState moveForward = IM_RELEASED;
+    KeyState moveBackward = IM_RELEASED;
 };
 
 #endif //REALTIME_CELL_COLLAPSE_INPUT_MANAGER_H
