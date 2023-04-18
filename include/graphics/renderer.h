@@ -30,7 +30,7 @@
 #include "ecs/ecs.h"
 #include <glm/gtc/matrix_transform.hpp> // For mat transforms
 
-#define WIREFRAME_MODE
+//#define WIREFRAME_MODE
 
 //const int MAX_FRAMES_IN_FLIGHT = 2;
 // TODO https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight

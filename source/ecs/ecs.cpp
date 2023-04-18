@@ -6,12 +6,13 @@
 #include "io/printer.h"
 #include <stdexcept>
 #include "ecs/world.h"
+#include "ecs/dense_sphere.h"
 
 void ECS::create() {
     INF "Creating ECS" ENDL;
 
-    World world{};
-    world.upload(*this);
+    DenseSphere sphere{};
+    sphere.upload(*this);
 }
 
 uint32_t ECS::insert(Components &entityComponents) {

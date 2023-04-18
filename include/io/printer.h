@@ -11,7 +11,7 @@
 //#define INFO_PRINTING
 #define DEBUG_PRINTING
 //#define VERBOSE_PRINTING
-//#define FPS_PRINTING
+#define FPS_PRINTING
 
 #define COUT std::cout <<
 #define ENDL << std::endl
