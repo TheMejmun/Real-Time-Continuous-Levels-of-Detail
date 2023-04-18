@@ -42,9 +42,9 @@ VkSurfaceFormatKHR Renderer::chooseSwapSurfaceFormat(const std::vector<VkSurface
         }
     }
 
-    DBG "Picked Swapchain Surface Format: " ENDL;
-    DBG "\tFormat: " << out.format ENDL;
-    DBG "\tColor Space: " << out.colorSpace ENDL;
+    VRB "Picked Swapchain Surface Format: " ENDL;
+    VRB "\tFormat: " << out.format ENDL;
+    VRB "\tColor Space: " << out.colorSpace ENDL;
 
     return out;
 }
@@ -101,6 +101,8 @@ VkExtent2D Renderer::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabiliti
     this->framebufferWidth = out.width;
     this->framebufferHeight = out.height;
 
+//    out.width /= 10;
+//    out.height /= 10;
     DBG "Swapchain extents set to: " << out.width << " * " << out.height ENDL;
     return out;
 }
@@ -135,7 +137,7 @@ bool Renderer::createSwapchain() {
     if (swapchainSupport.capabilities.maxImageCount > 0 && imageCount > swapchainSupport.capabilities.maxImageCount) {
         imageCount = swapchainSupport.capabilities.maxImageCount;
     }
-    DBG "Creating the Swapchain with at least " << imageCount << " images!" ENDL;
+    VRB "Creating the Swapchain with at least " << imageCount << " images!" ENDL;
 
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;

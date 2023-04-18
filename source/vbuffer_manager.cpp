@@ -17,7 +17,7 @@ void VBufferManager::create(VkPhysicalDevice physicalDevice, VkDevice device, Qu
     vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
 
     this->maxAllocations = deviceProperties.limits.maxMemoryAllocationCount;
-    DBG "Maximum memory allocation count: " << this->maxAllocations ENDL;
+    VRB "Maximum memory allocation count: " << this->maxAllocations ENDL;
 
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &this->memProperties);
 

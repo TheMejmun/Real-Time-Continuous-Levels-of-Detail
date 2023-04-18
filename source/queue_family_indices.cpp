@@ -26,7 +26,7 @@ bool QueueFamilyIndices::hasUniqueTransferQueue() const {
 }
 
 void QueueFamilyIndices::print() {
-    DBG
+    VRB
             "QueueFamilyIndices:"
             << " Graphics: " << this->graphicsFamily.value()
             << " Present: " << this->presentFamily.value()

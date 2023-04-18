@@ -55,9 +55,9 @@ void Renderer::createRenderPass() {
 void Renderer::createGraphicsPipeline() {
     // TODO pull these out of here
     auto vertShaderCode = Importinator::readFile("resources/shaders/triangle.vert.spv");
-    DBG "Loaded vertex shader with byte size: " << vertShaderCode.size() ENDL;
+    VRB "Loaded vertex shader with byte size: " << vertShaderCode.size() ENDL;
     auto fragShaderCode = Importinator::readFile("resources/shaders/triangle.frag.spv");
-    DBG "Loaded fragment shader with byte size: " << fragShaderCode.size() ENDL;
+    VRB "Loaded fragment shader with byte size: " << fragShaderCode.size() ENDL;
 
     VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
     VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -225,35 +225,6 @@ void Renderer::createDescriptorSetLayout() {
     }
 }
 
-void Renderer::uploadRenderables(const std::vector<Renderable *>& renderables) {
-    for (auto &renderable: renderables) {
-        if (!renderable->isAllocated) {
-            this->bufferManager.uploadVertices(renderable->vertices);
-            this->bufferManager.uploadIndices(renderable->indices);
-            renderable->isAllocated = true;
-        }
-    }
-}
-
-void Renderer::updateUniformBuffer(const sec &delta, const Camera &camera, const std::vector<Renderable *>& renderables) {
-    UniformBufferObject ubo{};
-    renderables[0]->model.rotate(
-            glm::radians(30.0f * static_cast<float >(delta)),
-            glm::vec3(0, 1, 0));
-    ubo.model = renderables[0]->model.forward;
-
-    ubo.view = camera.view.forward; // Identity
-
-    ubo.proj = camera.getProjection(
-            static_cast<float >(this->swapchainExtent.width) / static_cast<float >(this->swapchainExtent.height));
-
-    // TODO replace with push constants for small objects:
-    // https://registry.khronos.org/vulkan/site/guide/latest/push_constants.html
-
-    this->bufferManager.nextUniformBuffer();
-    memcpy(this->bufferManager.getCurrentUniformBufferMapping(), &ubo, sizeof(ubo));
-}
-
 void Renderer::createDescriptorPool() {
     // Can have multiple pools, with multiple buffers each
     VkDescriptorPoolSize poolSize{};
@@ -412,8 +383,8 @@ sec Renderer::draw(const sec &delta, const Camera &camera, ECS &ecs) {
         }
     }
 
-    auto renderables = ecs.requestRenderables(Renderer::EvaluatorAllRenderables);
-    uploadRenderables(renderables);
+    uploadRenderables(ecs);
+    destroyRenderables(ecs);
 
     auto beforeFence = Timer::now();
     vkWaitForFences(this->logicalDevice, 1, &this->inFlightFence, VK_TRUE, UINT64_MAX);
@@ -440,7 +411,7 @@ sec Renderer::draw(const sec &delta, const Camera &camera, ECS &ecs) {
 
     auto commandBuffer = this->bufferManager.commandBuffer;
 
-    updateUniformBuffer(delta, camera, renderables);
+    updateUniformBuffer(delta, camera, ecs);
 
     vkResetCommandBuffer(commandBuffer, 0); // I am not convinced this is necessary
     recordCommandBuffer(commandBuffer, imageIndex);

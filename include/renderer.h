@@ -57,7 +57,7 @@ struct SwapchainSupportDetails {
     std::vector<VkPresentModeKHR> presentModes;
 };
 
-struct OptionalFeatures{
+struct OptionalFeatures {
     bool supportsWireframeMode = false;
     bool physicalDeviceFeatures2 = false;
 };
@@ -120,7 +120,7 @@ private:
     void createFramebuffers();
 
     // TODO Take out delta time
-    void updateUniformBuffer(const sec &delta, const Camera &camera, const std::vector<Renderable *>& renderables);
+    void updateUniformBuffer(const sec &delta, const Camera &camera, ECS &ecs);
 
     void createDescriptorPool();
 
@@ -136,11 +136,21 @@ private:
 
     void recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex);
 
-    static inline bool EvaluatorAllRenderables(const bool &occupied, const Renderable *renderable) {
-        return true;
+    static inline bool EvaluatorToAllocate(const bool &occupied, const Renderable *renderable) {
+        return renderable != nullptr && occupied && !renderable->isAllocated;
     };
 
-    void uploadRenderables(const std::vector<Renderable*>& renderables);
+    static inline bool EvaluatorToDeallocate(const bool &occupied, const Renderable *renderable) {
+        return renderable != nullptr && !occupied && renderable->isAllocated;
+    };
+
+    static inline bool EvaluatorToDraw(const bool &occupied, const Renderable *renderable) {
+        return renderable != nullptr && occupied && renderable->isAllocated;
+    };
+
+    void uploadRenderables(ECS &ecs);
+
+    void destroyRenderables(ECS &ecs);
 
     chrono_sec_point lastTimestamp = Timer::now();
     bool needsNewSwapchain = false;

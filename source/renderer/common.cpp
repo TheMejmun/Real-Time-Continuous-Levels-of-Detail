@@ -58,9 +58,9 @@ void Renderer::printAvailableInstanceExtensions() {
     std::vector<VkExtensionProperties> extensions(extensionCount);
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
 
-    DBG "Available instance extensions:" ENDL;
+    VRB "Available instance extensions:" ENDL;
     for (const auto &extension: extensions) {
-        DBG '\t' << extension.extensionName ENDL;
+        VRB '\t' << extension.extensionName ENDL;
     }
 }
 

@@ -10,12 +10,12 @@ void Renderer::printAvailablePhysicalDevices() {
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(this->instance, &deviceCount, devices.data());
 
-    DBG "Available physical devices:" ENDL;
+    VRB "Available physical devices:" ENDL;
 
     for (const auto &device: devices) {
         VkPhysicalDeviceProperties deviceProperties;
         vkGetPhysicalDeviceProperties(device, &deviceProperties);
-        DBG "\t" << deviceProperties.deviceName ENDL;
+        VRB "\t" << deviceProperties.deviceName ENDL;
     }
 }
 
@@ -98,10 +98,10 @@ bool Renderer::checkDeviceExtensionSupport(VkPhysicalDevice device) {
     VkPhysicalDeviceProperties deviceProperties;
     vkGetPhysicalDeviceProperties(device, &deviceProperties);
 
-    DBG "Available device extensions for " << deviceProperties.deviceName << ":" ENDL;
+    VRB "Available device extensions for " << deviceProperties.deviceName << ":" ENDL;
 
     for (const auto &extension: availableExtensions) {
-        DBG '\t' << extension.extensionName ENDL;
+        VRB '\t' << extension.extensionName ENDL;
         requiredExtensions.erase(extension.extensionName);
     }
 
