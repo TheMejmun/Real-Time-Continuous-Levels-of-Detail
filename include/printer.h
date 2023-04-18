@@ -8,10 +8,10 @@
 #include <iostream>
 #include <stdexcept>
 
-#define INFO_PRINTING
+//#define INFO_PRINTING
 #define DEBUG_PRINTING
-#define TRACE_PRINTING
-#define FPS_PRINTING
+//#define VERBOSE_PRINTING
+//#define FPS_PRINTING
 
 #define COUT std::cout <<
 #define ENDL << std::endl
@@ -29,10 +29,10 @@
 #define DBG COUT
 #endif
 
-#if(defined(NDEBUG) || !defined(TRACE_PRINTING))
-#define TRC if(false) COUT
+#if(defined(NDEBUG) || !defined(VERBOSE_PRINTING))
+#define VRB if(false) COUT
 #else
-#define TRC COUT
+#define VRB COUT
 #endif
 
 #if(defined(NDEBUG) || !defined(FPS_PRINTING))
