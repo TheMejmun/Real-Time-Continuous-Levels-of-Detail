@@ -112,7 +112,11 @@ void Renderer::createGraphicsPipeline() {
     rasterizer.depthClampEnable = VK_FALSE; // Requires a GPU feature. Clamps to near/far plane instead of discording
     rasterizer.rasterizerDiscardEnable = VK_FALSE; // Disables output to Framebuffer
 #ifdef WIREFRAME_MODE
-    rasterizer.polygonMode = VK_POLYGON_MODE_LINE; // requires GPU feature
+    if (this->optionalFeatures.supportsWireframeMode) {
+        rasterizer.polygonMode = VK_POLYGON_MODE_LINE; // requires GPU feature
+    } else {
+        rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
+    }
 #else
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 #endif
