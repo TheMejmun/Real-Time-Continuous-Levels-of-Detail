@@ -8,7 +8,7 @@
 #include <vulkan/vulkan.h>
 #include "triangle.h"
 #include "queue_family_indices.h"
-#include "world.h"
+#include "byte_size.h"
 
 class VBufferManager {
 public:
@@ -24,6 +24,10 @@ public:
 
     void *getCurrentUniformBufferMapping();
 
+    void uploadVertices(const std::vector<Vertex> &vertices);
+
+    void uploadIndices(const std::vector<uint32_t> &indices);
+
     VkBuffer getCurrentUniformBuffer();
 
     VkBuffer getUniformBuffer(uint32_t i);
@@ -32,11 +36,14 @@ public:
 
     VkCommandBuffer commandBuffer = nullptr; // Cleaned automatically by command pool clean.
     VkBuffer vertexBuffer = nullptr;
+    uint32_t vertexCount = 0;
     VkBuffer indexBuffer = nullptr;
+    uint32_t indexCount = 0;
 
     uint32_t uniformBufferIndex = UBO_BUFFER_COUNT;
 
     static constexpr uint32_t UBO_BUFFER_COUNT = 2;
+    static constexpr uint32_t DEFAULT_ALLOCATION_SIZE = FROM_MB(256);
 private:
     void createVertexBuffer();
 
@@ -68,8 +75,6 @@ private:
     VkQueue transferQueue = nullptr;
     VkCommandPool transferCommandPool = nullptr;
     VkCommandBuffer transferCommandBuffer = nullptr; // Cleaned automatically by command pool clean.
-
-    World world{}; // TODO
 };
 
 #endif //REALTIME_CELL_COLLAPSE_VBUFFER_MANAGER_H

@@ -19,6 +19,8 @@ struct Renderable {
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
     Transformer4 model{};
+    uint32_t componentIndex = -1;
+    bool isAllocated = false;
 };
 
 #endif //REALTIME_CELL_COLLAPSE_RENDERABLE_H

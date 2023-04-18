@@ -28,7 +28,6 @@
 #include "queue_family_indices.h"
 #include "camera.h"
 #include "ecs.h"
-#include "world.h"
 #include <glm/gtc/matrix_transform.hpp> // For mat transforms
 
 #define WIREFRAME_MODE
@@ -67,13 +66,11 @@ class Renderer {
 public:
     void create(const std::string &title, GLFWwindow *window);
 
-    sec draw(const sec &delta, const Camera &camera, const ECS &ecs);
+    sec draw(const sec &delta, const Camera &camera, ECS &ecs);
 
     void destroy();
 
 private:
-    World world{}; // TODO
-
     void createInstance();
 
     static void printAvailableInstanceExtensions();
@@ -122,7 +119,8 @@ private:
 
     void createFramebuffers();
 
-    void updateUniformBuffer(const sec &delta, const Camera &camera, const ECS &ecs); // TODO Take out delta time
+    // TODO Take out delta time
+    void updateUniformBuffer(const sec &delta, const Camera &camera, const std::vector<Renderable *>& renderables);
 
     void createDescriptorPool();
 
@@ -137,6 +135,12 @@ private:
     void createSyncObjects();
 
     void recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex);
+
+    static inline bool EvaluatorAllRenderables(const bool &occupied, const Renderable *renderable) {
+        return true;
+    };
+
+    void uploadRenderables(const std::vector<Renderable*>& renderables);
 
     chrono_sec_point lastTimestamp = Timer::now();
     bool needsNewSwapchain = false;

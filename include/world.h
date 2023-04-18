@@ -6,14 +6,15 @@
 #define REALTIME_CELL_COLLAPSE_WORLD_H
 
 #include "renderable.h"
+#include "ecs.h"
 
-class World{
+class World {
 public:
-    void create();
+    World();
 
-    void destroy();
+    void upload(ECS &ecs);
 
-    Renderable renderable{};
+    Components components{};
 };
 
 #endif //REALTIME_CELL_COLLAPSE_WORLD_H

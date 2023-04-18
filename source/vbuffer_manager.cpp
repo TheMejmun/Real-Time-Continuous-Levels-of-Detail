@@ -10,15 +10,11 @@
 void VBufferManager::create(VkPhysicalDevice physicalDevice, VkDevice device, QueueFamilyIndices indices) {
     INF "Creating VBufferManager" ENDL;
 
-    this->world.create();
-
     this->logicalDevice = device;
     this->queueFamilyIndices = indices;
 
     VkPhysicalDeviceProperties deviceProperties;
     vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
-
-    // TODO get max allocation size VkPhysicalDeviceMaintenance3Properties
 
     this->maxAllocations = deviceProperties.limits.maxMemoryAllocationCount;
     DBG "Maximum memory allocation count: " << this->maxAllocations ENDL;
@@ -71,8 +67,8 @@ VkBuffer VBufferManager::getUniformBuffer(uint32_t i) {
     return this->uniformBuffers[i];
 }
 
-void VBufferManager::createVertexBuffer() {
-    VkDeviceSize bufferSize = sizeof(Vertex) * world.renderable.vertices.size();
+void VBufferManager::uploadVertices(const std::vector<Vertex> &vertices) {
+    VkDeviceSize bufferSize = sizeof(Vertex) * vertices.size();
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
@@ -82,21 +78,45 @@ void VBufferManager::createVertexBuffer() {
 
     void *data;
     vkMapMemory(this->logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, world.renderable.vertices.data(), (size_t) bufferSize);
+    memcpy(data, vertices.data(), (size_t) bufferSize);
     vkUnmapMemory(this->logicalDevice, stagingBufferMemory);
-
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &this->vertexBuffer, &this->vertexBufferMemory);
 
     copyBuffer(stagingBuffer, this->vertexBuffer, bufferSize);
 
     // Cleanup
     vkDestroyBuffer(this->logicalDevice, stagingBuffer, nullptr);
     vkFreeMemory(this->logicalDevice, stagingBufferMemory, nullptr);
+
+    this->vertexCount += vertices.size();
 }
 
-void VBufferManager::createIndexBuffer() {
-    VkDeviceSize bufferSize = sizeof(uint32_t) * world.renderable.indices.size();
+void VBufferManager::createVertexBuffer() {
+//    VkDeviceSize bufferSize = sizeof(Vertex) *  this->world.components.renderable->vertices.size();
+    VkDeviceSize bufferSize = DEFAULT_ALLOCATION_SIZE;
+
+//    VkBuffer stagingBuffer;
+//    VkDeviceMemory stagingBufferMemory;
+//    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+//                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer,
+//                 &stagingBufferMemory);
+//
+//    void *data;
+//    vkMapMemory(this->logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+//    memcpy(data, this->world.components.renderable->vertices.data(), (size_t) bufferSize);
+//    vkUnmapMemory(this->logicalDevice, stagingBufferMemory);
+
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &this->vertexBuffer, &this->vertexBufferMemory);
+
+//    copyBuffer(stagingBuffer, this->vertexBuffer, bufferSize);
+//
+//    // Cleanup
+//    vkDestroyBuffer(this->logicalDevice, stagingBuffer, nullptr);
+//    vkFreeMemory(this->logicalDevice, stagingBufferMemory, nullptr);
+}
+
+void VBufferManager::uploadIndices(const std::vector<uint32_t> &indices) {
+    VkDeviceSize bufferSize = sizeof(uint32_t) * indices.size();
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
@@ -106,16 +126,39 @@ void VBufferManager::createIndexBuffer() {
 
     void *data;
     vkMapMemory(this->logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, world.renderable.indices.data(), (size_t) bufferSize);
+    memcpy(data, indices.data(), (size_t) bufferSize);
     vkUnmapMemory(this->logicalDevice, stagingBufferMemory);
-
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &this->indexBuffer, &this->indexBufferMemory);
 
     copyBuffer(stagingBuffer, this->indexBuffer, bufferSize);
 
     vkDestroyBuffer(this->logicalDevice, stagingBuffer, nullptr);
     vkFreeMemory(this->logicalDevice, stagingBufferMemory, nullptr);
+
+    this->indexCount += indices.size();
+}
+
+void VBufferManager::createIndexBuffer() {
+//    VkDeviceSize bufferSize = sizeof(uint32_t) *  this->world.components.renderable->indices.size();
+    VkDeviceSize bufferSize = DEFAULT_ALLOCATION_SIZE;
+
+//    VkBuffer stagingBuffer;
+//    VkDeviceMemory stagingBufferMemory;
+//    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+//                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer,
+//                 &stagingBufferMemory);
+//
+//    void *data;
+//    vkMapMemory(this->logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+//    memcpy(data, this->world.components.renderable->indices.data(), (size_t) bufferSize);
+//    vkUnmapMemory(this->logicalDevice, stagingBufferMemory);
+
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &this->indexBuffer, &this->indexBufferMemory);
+
+//    copyBuffer(stagingBuffer, this->indexBuffer, bufferSize);
+//
+//    vkDestroyBuffer(this->logicalDevice, stagingBuffer, nullptr);
+//    vkFreeMemory(this->logicalDevice, stagingBufferMemory, nullptr);
 }
 
 void VBufferManager::createUniformBuffers() {

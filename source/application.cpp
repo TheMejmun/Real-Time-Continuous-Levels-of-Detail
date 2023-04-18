@@ -64,4 +64,5 @@ void Application::destroy() {
 
     this->renderer.destroy();
     this->windowManager.destroy();
+    this->ecs.destroy();
 }

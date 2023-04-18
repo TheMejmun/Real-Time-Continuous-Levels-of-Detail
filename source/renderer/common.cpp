@@ -10,8 +10,6 @@ void Renderer::create(const std::string &t, GLFWwindow *w) {
     this->window = w;
     this->title = t;
     this->initVulkan();
-
-    this->world.create();
 }
 
 void Renderer::initVulkan() {

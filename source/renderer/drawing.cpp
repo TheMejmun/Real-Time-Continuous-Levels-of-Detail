@@ -225,13 +225,22 @@ void Renderer::createDescriptorSetLayout() {
     }
 }
 
-void Renderer::updateUniformBuffer(const sec &delta, const Camera &camera, const ECS &ecs) {
-    // TODO
+void Renderer::uploadRenderables(const std::vector<Renderable *>& renderables) {
+    for (auto &renderable: renderables) {
+        if (!renderable->isAllocated) {
+            this->bufferManager.uploadVertices(renderable->vertices);
+            this->bufferManager.uploadIndices(renderable->indices);
+            renderable->isAllocated = true;
+        }
+    }
+}
+
+void Renderer::updateUniformBuffer(const sec &delta, const Camera &camera, const std::vector<Renderable *>& renderables) {
     UniformBufferObject ubo{};
-    this->world.renderable.model.rotate(
+    renderables[0]->model.rotate(
             glm::radians(30.0f * static_cast<float >(delta)),
             glm::vec3(0, 1, 0));
-    ubo.model = this->world.renderable.model.forward;
+    ubo.model = renderables[0]->model.forward;
 
     ubo.view = camera.view.forward; // Identity
 
@@ -379,11 +388,10 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
     vkCmdSetScissor(buffer, 0, 1, &scissor);
 
     // TODO Do not directly access uniform buffer index like this
-//    DBG this->bufferManager.uniformBufferIndex ENDL;
     vkCmdBindDescriptorSets(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipelineLayout, 0, 1,
                             &this->descriptorSets[this->bufferManager.uniformBufferIndex], 0, nullptr);
 
-    vkCmdDrawIndexed(buffer, static_cast<uint32_t>(this->world.renderable.indices.size()), 1, 0, 0, 0);
+    vkCmdDrawIndexed(buffer, this->bufferManager.indexCount, 1, 0, 0, 0);
 
     vkCmdEndRenderPass(buffer);
 
@@ -392,7 +400,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
     }
 }
 
-sec Renderer::draw(const sec &delta, const Camera &camera, const ECS &ecs) {
+sec Renderer::draw(const sec &delta, const Camera &camera, ECS &ecs) {
     if (shouldRecreateSwapchain()) {
         bool success = recreateSwapchain();
         if (success) {
@@ -403,6 +411,9 @@ sec Renderer::draw(const sec &delta, const Camera &camera, const ECS &ecs) {
             return -1;
         }
     }
+
+    auto renderables = ecs.requestRenderables(Renderer::EvaluatorAllRenderables);
+    uploadRenderables(renderables);
 
     auto beforeFence = Timer::now();
     vkWaitForFences(this->logicalDevice, 1, &this->inFlightFence, VK_TRUE, UINT64_MAX);
@@ -429,7 +440,7 @@ sec Renderer::draw(const sec &delta, const Camera &camera, const ECS &ecs) {
 
     auto commandBuffer = this->bufferManager.commandBuffer;
 
-    updateUniformBuffer(delta, camera, ecs);
+    updateUniformBuffer(delta, camera, renderables);
 
     vkResetCommandBuffer(commandBuffer, 0); // I am not convinced this is necessary
     recordCommandBuffer(commandBuffer, imageIndex);
