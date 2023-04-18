@@ -25,46 +25,58 @@ set(LIB_FOLDER lib)
 # Add files
 # Add any added source/header files here
 set(HEADER_FILES
-        ${HEADER_FOLDER}/timer.h
-        ${HEADER_FOLDER}/renderer.h
-        ${HEADER_FOLDER}/importer.h
         ${HEADER_FOLDER}/application.h
-        ${HEADER_FOLDER}/input_manager.h
-        ${HEADER_FOLDER}/window_manager.h
-        ${HEADER_FOLDER}/colors.h
-        ${HEADER_FOLDER}/vertex.h
-        ${HEADER_FOLDER}/triangle.h
-        ${HEADER_FOLDER}/ecs.h
-        ${HEADER_FOLDER}/renderable.h
-        ${HEADER_FOLDER}/printer.h
-        ${HEADER_FOLDER}/vbuffer_manager.h
-        ${HEADER_FOLDER}/queue_family_indices.h
-        ${HEADER_FOLDER}/uniform_buffer_object.h
-        ${HEADER_FOLDER}/transformer.h
-        ${HEADER_FOLDER}/camera.h
-        ${HEADER_FOLDER}/byte_size.h
-        ${HEADER_FOLDER}/pnext_chain_reader.h
-        ${HEADER_FOLDER}/world.h)
+
+        ${HEADER_FOLDER}/graphics/renderer.h
+        ${HEADER_FOLDER}/graphics/colors.h
+        ${HEADER_FOLDER}/graphics/vertex.h
+        ${HEADER_FOLDER}/graphics/vbuffer_manager.h
+        ${HEADER_FOLDER}/graphics/queue_family_indices.h
+        ${HEADER_FOLDER}/graphics/uniform_buffer_object.h
+        ${HEADER_FOLDER}/graphics/renderable.h
+        ${HEADER_FOLDER}/graphics/pnext_chain_reader.h
+        ${HEADER_FOLDER}/graphics/camera.h
+
+        ${HEADER_FOLDER}/io/input_manager.h
+        ${HEADER_FOLDER}/io/window_manager.h
+        ${HEADER_FOLDER}/io/printer.h
+
+        ${HEADER_FOLDER}/ecs/triangle.h
+        ${HEADER_FOLDER}/ecs/ecs.h
+        ${HEADER_FOLDER}/ecs/world.h
+        ${HEADER_FOLDER}/ecs/entity.h
+
+        ${HEADER_FOLDER}/physics/transformer.h
+
+        ${HEADER_FOLDER}/util/timer.h
+        ${HEADER_FOLDER}/util/importer.h
+        ${HEADER_FOLDER}/util/byte_size.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
-        ${SOURCE_FOLDER}/importer.cpp
         ${SOURCE_FOLDER}/application.cpp
-        ${SOURCE_FOLDER}/input_manager.cpp
-        ${SOURCE_FOLDER}/window_manager.cpp
-        ${SOURCE_FOLDER}/ecs.cpp
-        ${SOURCE_FOLDER}/renderer/drawing.cpp
-        ${SOURCE_FOLDER}/renderer/device.cpp
-        ${SOURCE_FOLDER}/renderer/swapchain.cpp
-        ${SOURCE_FOLDER}/queue_family_indices.cpp
-        ${SOURCE_FOLDER}/renderer/debug.cpp
-        ${SOURCE_FOLDER}/renderer/common.cpp
-        ${SOURCE_FOLDER}/renderer/shaders.cpp
-        ${SOURCE_FOLDER}/vbuffer_manager.cpp
-        ${SOURCE_FOLDER}/colors.cpp
-        ${SOURCE_FOLDER}/transformer.cpp
-        ${SOURCE_FOLDER}/camera.cpp
-        ${SOURCE_FOLDER}/world.cpp
-        ${SOURCE_FOLDER}/renderer/systems.cpp)
+
+        ${SOURCE_FOLDER}/graphics/renderer/drawing.cpp
+        ${SOURCE_FOLDER}/graphics/renderer/device.cpp
+        ${SOURCE_FOLDER}/graphics/renderer/swapchain.cpp
+        ${SOURCE_FOLDER}/graphics/renderer/debug.cpp
+        ${SOURCE_FOLDER}/graphics/renderer/common.cpp
+        ${SOURCE_FOLDER}/graphics/renderer/shaders.cpp
+        ${SOURCE_FOLDER}/graphics/renderer/systems.cpp
+        ${SOURCE_FOLDER}/graphics/queue_family_indices.cpp
+        ${SOURCE_FOLDER}/graphics/vbuffer_manager.cpp
+        ${SOURCE_FOLDER}/graphics/colors.cpp
+        ${SOURCE_FOLDER}/graphics/camera.cpp
+
+        ${SOURCE_FOLDER}/io/input_manager.cpp
+        ${SOURCE_FOLDER}/io/window_manager.cpp
+
+        ${SOURCE_FOLDER}/ecs/ecs.cpp
+        ${SOURCE_FOLDER}/ecs/world.cpp
+        ${SOURCE_FOLDER}/ecs/entity.cpp
+
+        ${SOURCE_FOLDER}/physics/transformer.cpp
+
+        ${SOURCE_FOLDER}/util/importer.cpp)
 message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable
 add_executable(Realtime_Cell_Collapse ${SOURCE_FOLDER}/main.cpp ${HEADER_FILES} ${SOURCE_FILES})

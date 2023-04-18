@@ -4,7 +4,7 @@
 
 #include <iomanip>
 #include "application.h"
-#include "printer.h"
+#include "io/printer.h"
 
 void Application::run() {
     init();

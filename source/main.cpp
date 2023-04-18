@@ -3,7 +3,7 @@
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
 #include <iostream>
-#include <vertex.h>
+#include "graphics/vertex.h"
 #include "application.h"
 
 int main() {

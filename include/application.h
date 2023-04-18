@@ -7,12 +7,12 @@
 
 #include <memory>
 #include <string>
-#include "renderer.h"
-#include "timer.h"
-#include "window_manager.h"
-#include "input_manager.h"
-#include "ecs.h"
-#include "printer.h"
+#include "graphics/renderer.h"
+#include "util/timer.h"
+#include "io/window_manager.h"
+#include "io/input_manager.h"
+#include "ecs/ecs.h"
+#include "io/printer.h"
 
 class Application {
 public:
