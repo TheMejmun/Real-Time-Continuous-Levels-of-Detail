@@ -7,12 +7,13 @@
 #include "graphics/colors.h"
 
 DenseSphere::DenseSphere() {
-    auto mesh = Importinator::importMesh("resources/models/dense_sphere.glb");
-    this->components.renderable = new Renderable();
-    this->components.renderable->indices = std::move(mesh.indices);
-    this->components.renderable->vertices = std::move(mesh.vertices);
-    for (auto &v: this->components.renderable->vertices) {
-        v.color = Color::random().getLAB();
-    }
-//    this->components.renderable->model.scale(0.002f);
+	auto mesh = Importinator::importMesh("resources/models/dense_sphere.glb");
+	this->components.renderable = new Renderable();
+	this->components.renderable->indices = std::move(mesh.indices);
+	// this->components.renderable->indices = { 0, 500, 1000 };
+	this->components.renderable->vertices = std::move(mesh.vertices);
+	for (auto& v : this->components.renderable->vertices) {
+		v.color = Color::random().getLAB();
+	}
+	this->components.renderable->model.scale(2.0f);
 }

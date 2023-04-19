@@ -10,9 +10,6 @@
 
 void ECS::create() {
     INF "Creating ECS" ENDL;
-
-    DenseSphere sphere{};
-    sphere.upload(*this);
 }
 
 uint32_t ECS::insert(Components &entityComponents) {

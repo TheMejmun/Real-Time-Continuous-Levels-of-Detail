@@ -19,7 +19,7 @@ struct Renderable {
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
     Transformer4 model{};
-    uint32_t componentIndex = -1;
+    uint32_t componentIndex = 0;
     bool isAllocated = false;
 };
 

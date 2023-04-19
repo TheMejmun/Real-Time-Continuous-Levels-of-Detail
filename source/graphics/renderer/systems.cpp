@@ -30,7 +30,7 @@ void Renderer::updateUniformBuffer(const sec &delta, const Camera &camera, ECS&e
     // TODO not just for one object
     UniformBufferObject ubo{};
     renderables[0]->model.rotate(
-            glm::radians(30.0f * static_cast<float >(delta)),
+            glm::radians(15.0f * static_cast<float >(delta)),
             glm::vec3(0, 1, 0));
     ubo.model = renderables[0]->model.forward;
 

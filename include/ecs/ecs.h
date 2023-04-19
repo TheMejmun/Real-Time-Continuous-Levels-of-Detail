@@ -9,6 +9,7 @@
 #include <optional>
 #include <tuple>
 #include <memory>
+#include <functional>
 #include "graphics/renderable.h"
 
 struct Components {

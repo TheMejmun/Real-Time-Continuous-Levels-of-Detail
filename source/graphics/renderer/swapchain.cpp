@@ -103,12 +103,12 @@ VkExtent2D Renderer::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabiliti
 
 //    out.width /= 10;
 //    out.height /= 10;
-    DBG "Swapchain extents set to: " << out.width << " * " << out.height ENDL;
+    INF "Swapchain extents set to: " << out.width << " * " << out.height ENDL;
     return out;
 }
 
 bool Renderer::recreateSwapchain() {
-    DBG "Recreate Swapchain" ENDL;
+    VRB "Recreate Swapchain" ENDL;
 
     // May need to recreate render pass here if e.g. window moves to HDR monitor
 
@@ -127,7 +127,7 @@ bool Renderer::createSwapchain() {
     VkExtent2D extent = chooseSwapExtent(swapchainSupport.capabilities);
 
     if (extent.width < 1 || extent.height < 1) {
-        DBG "Invalid swapchain extents. Retry later!" ENDL;
+        VRB "Invalid swapchain extents. Retry later!" ENDL;
         this->needsNewSwapchain = true;
         return false;
     }
