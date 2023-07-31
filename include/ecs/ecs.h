@@ -13,7 +13,34 @@
 #include "graphics/renderable.h"
 
 struct Components {
-    Renderable *renderable;
+    bool is_destroyed = false;
+    bool will_destroy = false;
+    uint32_t index = 0;
+    RenderMesh *render_mesh = nullptr;
+    Transformer4 *transform = nullptr;
+
+    /**
+     * Destroys all contained components.
+     *
+     * Warning: Do not call this manually. ECS calls this automatically when required.
+     */
+    void destroy() {
+        delete render_mesh;
+        render_mesh = nullptr;
+        delete transform;
+        transform = nullptr;
+
+        is_destroyed = true;
+        will_destroy = false;
+    }
+
+    /**
+     * Convenience function
+     * @return True, if these components are not and will not be destroyed this frame.
+     */
+    [[nodiscard]] bool isAlive() const {
+        return !is_destroyed && !will_destroy;
+    }
 };
 
 class ECS {
@@ -27,16 +54,13 @@ public:
     // In every frame, always do inserts first, and deletions after. So that the renderer has time to handle allocation
     void remove(const uint32_t &index);
 
-    // auto e = [&](std::shared_ptr<Renderable> r) -> bool { return TODO };
-
-    std::vector<Renderable *>
-    requestRenderables(const std::function<bool(const bool &, const Renderable *)> &evaluator);
+    std::vector<Components *>
+    requestComponents(const std::function<bool(const Components &)> &evaluator);
 
 private:
     void destroyReferences(const uint32_t &index);
 
-    std::vector<bool> isOccupied{};
-    std::vector<Renderable *> renderables{};
+    std::vector<Components> components{};
 };
 
 #endif //REALTIME_CELL_COLLAPSE_ECS_H

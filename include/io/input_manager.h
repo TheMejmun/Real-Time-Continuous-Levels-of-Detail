@@ -17,6 +17,8 @@
 #define IM_MOVE_FORWARD 0x2
 #define IM_MOVE_BACKWARD 0x3
 
+#define IM_TOGGLE_ROTATION 0x4
+
 using KeyState = uint8_t;
 using KeyCode = uint16_t;
 
@@ -45,6 +47,7 @@ private:
     KeyState toggleFullscreen = IM_RELEASED;
     KeyState moveForward = IM_RELEASED;
     KeyState moveBackward = IM_RELEASED;
+    KeyState toggleRotation = IM_RELEASED;
 };
 
 #endif //REALTIME_CELL_COLLAPSE_INPUT_MANAGER_H

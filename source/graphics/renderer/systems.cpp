@@ -8,31 +8,33 @@
 // SYSTEMS THAT PLUG INTO THE ECS
 
 void Renderer::uploadRenderables(ECS &ecs) {
-    auto renderables = ecs.requestRenderables(Renderer::EvaluatorToAllocate);
-    for (auto &renderable: renderables) {
-        if (!renderable->isAllocated) {
-            this->bufferManager.uploadVertices(renderable->vertices);
-            this->bufferManager.uploadIndices(renderable->indices);
-            renderable->isAllocated = true;
-        }
+    auto components_array = ecs.requestComponents(Renderer::EvaluatorToAllocate);
+    for (auto components: components_array) {
+        auto &mesh = *components->render_mesh;
+        this->bufferManager.uploadVertices(mesh.vertices);
+        this->bufferManager.uploadIndices(mesh.indices);
+        mesh.is_allocated = true;
     }
 }
 
 void Renderer::destroyRenderables(ECS &ecs) {
-    auto renderables = ecs.requestRenderables(Renderer::EvaluatorToDeallocate);
-    for (auto &renderable: renderables) {
+    auto components_array = ecs.requestComponents(Renderer::EvaluatorToDeallocate);
+    for (auto components: components_array) {
+        auto &mesh = *components->render_mesh;
         THROW("TODO");
     }
 }
 
-void Renderer::updateUniformBuffer(const sec &delta, const Camera &camera, ECS&ecs) {
-    auto renderables = ecs.requestRenderables(Renderer::EvaluatorToDraw);
+void Renderer::updateUniformBuffer(const sec &delta, const Camera &camera, ECS &ecs) {
+    auto components_array = ecs.requestComponents(Renderer::EvaluatorToDraw);
+
+    auto & sphere = *components_array[0];
     // TODO not just for one object
     UniformBufferObject ubo{};
-    renderables[0]->model.rotate(
+    sphere.transform->rotate(
             glm::radians(15.0f * static_cast<float >(delta)),
             glm::vec3(0, 1, 0));
-    ubo.model = renderables[0]->model.forward;
+    ubo.model = sphere.transform->forward;
 
     ubo.view = camera.view.forward; // Identity
 

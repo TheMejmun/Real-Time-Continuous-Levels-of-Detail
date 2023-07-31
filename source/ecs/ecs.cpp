@@ -13,49 +13,45 @@ void ECS::create() {
 }
 
 uint32_t ECS::insert(Components &entityComponents) {
-    for (uint32_t i = 0; i < this->isOccupied.size(); ++i) {
-        if (!this->isOccupied[i]) {
+    for (uint32_t i = 0; i < this->components.size(); ++i) {
+        if (this->components[i].will_destroy) {
             destroyReferences(i); // Clean up old references before overriding pointers
-            this->renderables[i] = entityComponents.renderable; // Move reference here -> param cant be const
-            this->isOccupied[i] = true;
-            entityComponents.renderable->componentIndex = i;
+        }
+        if (this->components[i].is_destroyed) {
+            this->components[i] = entityComponents; // Move reference here -> param cant be const
+            entityComponents.index = i;
             return i;
         }
     }
 
-    this->isOccupied.push_back(true);
-    this->renderables.push_back(entityComponents.renderable);
-    entityComponents.renderable->componentIndex = isOccupied.size() - 1;
-    return isOccupied.size() - 1;
+    this->components.push_back(entityComponents);
+    entityComponents.index = this->components.size() - 1;
+    return entityComponents.index;
 }
 
 void ECS::destroy() {
     INF "Destroying ECS" ENDL;
 
-    for (uint32_t i = 0; i < this->isOccupied.size(); ++i) {
+    for (uint32_t i = 0; i < this->components.size(); ++i) {
         destroyReferences(i);
     }
 }
 
 void ECS::remove(const uint32_t &index) {
-    if (this->isOccupied[index]) {
-        this->isOccupied[index] = false;
-    } else {
-        THROW("Attempted to remove non-existent entity from ECS.");
-    }
+    this->components[index].will_destroy = true;
 }
 
 void ECS::destroyReferences(const uint32_t &index) {
-    if (this->renderables[index] != nullptr) delete this->renderables[index];
-    this->renderables[index] = nullptr;
+    this->components[index].destroy();
 }
 
-std::vector<Renderable *> ECS::requestRenderables(const std::function<bool(const bool &, const Renderable *)> &evaluator) {
-    std::vector<Renderable *> out{};
+std::vector<Components *>
+ECS::requestComponents(const std::function<bool(const Components &)> &evaluator) {
+    std::vector<Components *> out{};
 
-    for (uint32_t i = 0; i < this->isOccupied.size(); ++i) {
-        if (evaluator(this->isOccupied[i], this->renderables[i])) {
-            out.push_back(this->renderables[i]);
+    for (auto &component: this->components) {
+        if (evaluator(component)) {
+            out.push_back(&component);
         }
     }
 

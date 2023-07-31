@@ -27,6 +27,7 @@ void InputManager::processInput(GLFWwindow *w, int key, int scancode, int action
     if (key == GLFW_KEY_M) InputManager::handleKey(&this->toggleFullscreen, action);
     if (key == GLFW_KEY_W) InputManager::handleKey(&this->moveForward, action);
     if (key == GLFW_KEY_S) InputManager::handleKey(&this->moveBackward, action);
+    if (key == GLFW_KEY_SPACE) InputManager::handleKey(&this->toggleRotation, action);
 }
 
 KeyState *InputManager::keySwitch(const KeyCode &key) {
@@ -43,6 +44,9 @@ KeyState *InputManager::keySwitch(const KeyCode &key) {
             break;
         case IM_MOVE_BACKWARD:
             out = &this->moveBackward;
+            break;
+        case IM_TOGGLE_ROTATION:
+            out = &this->toggleRotation;
             break;
         default:
             return nullptr;

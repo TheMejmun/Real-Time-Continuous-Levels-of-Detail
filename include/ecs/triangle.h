@@ -10,7 +10,7 @@
 
 class Triangle {
 public:
-    Renderable renderable{
+    RenderMesh mesh{
             .vertices{
                     {{0.0f,  0.0f,  0.0f},
                             Color::fromRGB({1.0f, 1.0f, 1.0f}).setLumaLab(0.9).getLAB()},

@@ -136,16 +136,16 @@ private:
 
     void recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex);
 
-    static inline bool EvaluatorToAllocate(const bool &occupied, const Renderable *renderable) {
-        return renderable != nullptr && occupied && !renderable->isAllocated;
+    static inline bool EvaluatorToAllocate(const Components &components) {
+        return components.render_mesh != nullptr && components.isAlive() && !components.render_mesh->is_allocated;
     };
 
-    static inline bool EvaluatorToDeallocate(const bool &occupied, const Renderable *renderable) {
-        return renderable != nullptr && !occupied && renderable->isAllocated;
+    static inline bool EvaluatorToDeallocate(const Components &components) {
+        return components.render_mesh != nullptr && components.will_destroy && components.render_mesh->is_allocated;
     };
 
-    static inline bool EvaluatorToDraw(const bool &occupied, const Renderable *renderable) {
-        return renderable != nullptr && occupied && renderable->isAllocated;
+    static inline bool EvaluatorToDraw(const Components &components) {
+        return components.render_mesh != nullptr && components.isAlive() && components.render_mesh->is_allocated;
     };
 
     void uploadRenderables(ECS &ecs);
