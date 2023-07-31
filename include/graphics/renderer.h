@@ -145,7 +145,8 @@ private:
     };
 
     static inline bool EvaluatorToDraw(const Components &components) {
-        return components.render_mesh != nullptr && components.isAlive() && components.render_mesh->is_allocated;
+        return components.render_mesh != nullptr && components.transform != nullptr && components.isAlive() &&
+               components.render_mesh->is_allocated;
     };
 
     void uploadRenderables(ECS &ecs);
