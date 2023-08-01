@@ -137,20 +137,20 @@ private:
     void recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex);
 
     static inline bool EvaluatorActiveCamera(const Components &components) {
-        return components.camera != nullptr && components.transform != nullptr && components.isAlive() && components.is_main_camera;
+        return components.camera != nullptr && components.transform != nullptr && components.isAlive() && components.isMainCamera;
     };
 
     static inline bool EvaluatorToAllocate(const Components &components) {
-        return components.render_mesh != nullptr && components.isAlive() && !components.render_mesh->is_allocated;
+        return components.renderMesh != nullptr && components.isAlive() && !components.renderMesh->is_allocated;
     };
 
     static inline bool EvaluatorToDeallocate(const Components &components) {
-        return components.render_mesh != nullptr && components.will_destroy && components.render_mesh->is_allocated;
+        return components.renderMesh != nullptr && components.willDestroy && components.renderMesh->is_allocated;
     };
 
     static inline bool EvaluatorToDraw(const Components &components) {
-        return components.render_mesh != nullptr && components.transform != nullptr && components.isAlive() &&
-               components.render_mesh->is_allocated;
+        return components.renderMesh != nullptr && components.transform != nullptr && components.isAlive() &&
+               components.renderMesh->is_allocated;
     };
 
     void uploadRenderables(ECS &ecs);

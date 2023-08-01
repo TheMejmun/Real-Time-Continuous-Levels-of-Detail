@@ -14,14 +14,14 @@
 #include "graphics/projector.h"
 
 struct Components {
-    bool is_destroyed = false;
-    bool will_destroy = false;
+    bool isDestroyed = false;
+    bool willDestroy = false;
     uint32_t index = 0;
-    RenderMesh *render_mesh = nullptr;
+    RenderMesh *renderMesh = nullptr;
     Transformer4 *transform = nullptr;
-    bool is_main_camera = false;
+    bool isMainCamera = false;
     Projector *camera = nullptr;
-    bool is_rotating_sphere = false;
+    bool isRotatingSphere = false;
 
     /**
      * Destroys all contained components.
@@ -29,15 +29,15 @@ struct Components {
      * Warning: Do not call this manually. ECS calls this automatically when required.
      */
     void destroy() {
-        delete this->render_mesh;
-        this->render_mesh = nullptr;
+        delete this->renderMesh;
+        this->renderMesh = nullptr;
         delete this->transform;
         this->transform = nullptr;
         delete this->camera;
         this->camera = nullptr;
 
-        this->is_destroyed = true;
-        this->will_destroy = false;
+        this->isDestroyed = true;
+        this->willDestroy = false;
     }
 
     /**
@@ -45,7 +45,7 @@ struct Components {
      * @return True, if these components are not and will not be destroyed this frame.
      */
     [[nodiscard]] bool isAlive() const {
-        return !is_destroyed && !will_destroy;
+        return !isDestroyed && !willDestroy;
     }
 };
 

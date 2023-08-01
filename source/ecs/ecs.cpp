@@ -14,10 +14,10 @@ void ECS::create() {
 
 uint32_t ECS::insert(Components &entityComponents) {
     for (uint32_t i = 0; i < this->components.size(); ++i) {
-        if (this->components[i].will_destroy) {
+        if (this->components[i].willDestroy) {
             destroyReferences(i); // Clean up old references before overriding pointers
         }
-        if (this->components[i].is_destroyed) {
+        if (this->components[i].isDestroyed) {
             this->components[i] = entityComponents; // Move reference here -> param cant be const
             entityComponents.index = i;
             return i;
@@ -38,7 +38,7 @@ void ECS::destroy() {
 }
 
 void ECS::remove(const uint32_t &index) {
-    this->components[index].will_destroy = true;
+    this->components[index].willDestroy = true;
 }
 
 void ECS::destroyReferences(const uint32_t &index) {

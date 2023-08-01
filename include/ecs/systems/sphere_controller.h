@@ -15,11 +15,11 @@ public:
 
     void destroy();
 
-    void update(const sec &delta, ECS &ecs, InputManager &input_manager);
+    void update(const sec &delta, ECS &ecs, InputManager &inputManager);
 
 private:
     static inline bool EvaluatorRotatingSphere(const Components &components) {
-        return components.transform != nullptr && components.isAlive() && components.is_rotating_sphere;
+        return components.transform != nullptr && components.isAlive() && components.isRotatingSphere;
     };
 
     bool rotate = true;

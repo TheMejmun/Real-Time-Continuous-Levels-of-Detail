@@ -9,8 +9,8 @@ void SphereController::create() {
     INF "Creating SphereController" ENDL;
 }
 
-void SphereController::update(const sec &delta, ECS &ecs, InputManager &input_manager) {
-    if (input_manager.consumeKeyState(IM_TOGGLE_ROTATION) == IM_DOWN_EVENT) {
+void SphereController::update(const sec &delta, ECS &ecs, InputManager &inputManager) {
+    if (inputManager.consumeKeyState(IM_TOGGLE_ROTATION) == IM_DOWN_EVENT) {
         this->rotate = !this->rotate;
     }
 

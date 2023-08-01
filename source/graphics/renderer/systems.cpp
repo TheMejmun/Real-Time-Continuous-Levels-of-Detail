@@ -10,7 +10,7 @@
 void Renderer::uploadRenderables(ECS &ecs) {
     auto components_array = ecs.requestComponents(Renderer::EvaluatorToAllocate);
     for (auto components: components_array) {
-        auto &mesh = *components->render_mesh;
+        auto &mesh = *components->renderMesh;
         this->bufferManager.uploadVertices(mesh.vertices);
         this->bufferManager.uploadIndices(mesh.indices);
         mesh.is_allocated = true;
@@ -20,7 +20,7 @@ void Renderer::uploadRenderables(ECS &ecs) {
 void Renderer::destroyRenderables(ECS &ecs) {
     auto components_array = ecs.requestComponents(Renderer::EvaluatorToDeallocate);
     for (auto components: components_array) {
-        auto &mesh = *components->render_mesh;
+        auto &mesh = *components->renderMesh;
         THROW("TODO");
     }
 }

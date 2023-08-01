@@ -15,11 +15,11 @@ public:
 
     void destroy();
 
-    void update(const sec &delta, ECS &ecs, InputManager &input_manager);
+    void update(const sec &delta, ECS &ecs, InputManager &inputManager);
 
 private:
     static inline bool EvaluatorActiveCamera(const Components &components) {
-        return components.camera != nullptr && components.transform != nullptr && components.isAlive() && components.is_main_camera;
+        return components.camera != nullptr && components.transform != nullptr && components.isAlive() && components.isMainCamera;
     };
 };
 

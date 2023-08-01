@@ -27,7 +27,7 @@ void Application::init() {
 
     // Entities
     Camera camera{};
-    camera.components.is_main_camera = true;
+    camera.components.isMainCamera = true;
     camera.upload(this->ecs);
     DenseSphere sphere{};
     sphere.upload(this->ecs);
