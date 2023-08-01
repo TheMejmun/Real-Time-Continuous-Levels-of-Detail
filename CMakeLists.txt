@@ -33,24 +33,28 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/graphics/vbuffer_manager.h
         ${HEADER_FOLDER}/graphics/queue_family_indices.h
         ${HEADER_FOLDER}/graphics/uniform_buffer_object.h
-        ${HEADER_FOLDER}/graphics/renderable.h
+        ${HEADER_FOLDER}/graphics/render_mesh.h
         ${HEADER_FOLDER}/graphics/pnext_chain_reader.h
-        ${HEADER_FOLDER}/graphics/camera.h
+        ${HEADER_FOLDER}/graphics/projector.h
+        ${HEADER_FOLDER}/graphics/triangle.h
 
         ${HEADER_FOLDER}/io/input_manager.h
         ${HEADER_FOLDER}/io/window_manager.h
         ${HEADER_FOLDER}/io/printer.h
 
-        ${HEADER_FOLDER}/ecs/triangle.h
         ${HEADER_FOLDER}/ecs/ecs.h
-        ${HEADER_FOLDER}/ecs/world.h
         ${HEADER_FOLDER}/ecs/entity.h
+        ${HEADER_FOLDER}/ecs/entities/dense_sphere.h
+        ${HEADER_FOLDER}/ecs/entities/world.h
+        ${HEADER_FOLDER}/ecs/entities/camera.h
+        ${HEADER_FOLDER}/ecs/systems/camera_controller.h
 
         ${HEADER_FOLDER}/physics/transformer.h
 
         ${HEADER_FOLDER}/util/timer.h
         ${HEADER_FOLDER}/util/importer.h
-        ${HEADER_FOLDER}/util/byte_size.h include/ecs/dense_sphere.h)
+        ${HEADER_FOLDER}/util/byte_size.h
+        include/ecs/systems/sphere_controller.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
         ${SOURCE_FOLDER}/application.cpp
@@ -65,18 +69,22 @@ set(SOURCE_FILES
         ${SOURCE_FOLDER}/graphics/queue_family_indices.cpp
         ${SOURCE_FOLDER}/graphics/vbuffer_manager.cpp
         ${SOURCE_FOLDER}/graphics/colors.cpp
-        ${SOURCE_FOLDER}/graphics/camera.cpp
+        ${SOURCE_FOLDER}/graphics/projector.cpp
 
         ${SOURCE_FOLDER}/io/input_manager.cpp
         ${SOURCE_FOLDER}/io/window_manager.cpp
 
         ${SOURCE_FOLDER}/ecs/ecs.cpp
-        ${SOURCE_FOLDER}/ecs/world.cpp
         ${SOURCE_FOLDER}/ecs/entity.cpp
+        ${SOURCE_FOLDER}/ecs/entities/dense_sphere.cpp
+        ${SOURCE_FOLDER}/ecs/entities/world.cpp
+        ${SOURCE_FOLDER}/ecs/entities/camera.cpp
+        ${SOURCE_FOLDER}/ecs/systems/camera_controller.cpp
 
         ${SOURCE_FOLDER}/physics/transformer.cpp
 
-        ${SOURCE_FOLDER}/util/importer.cpp source/ecs/dense_sphere.cpp)
+        ${SOURCE_FOLDER}/util/importer.cpp
+        source/ecs/systems/sphere_controller.cpp)
 message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable
 add_executable(Realtime_Cell_Collapse ${SOURCE_FOLDER}/main.cpp ${HEADER_FILES} ${SOURCE_FILES})

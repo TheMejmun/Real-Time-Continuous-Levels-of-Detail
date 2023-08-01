@@ -375,7 +375,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
     }
 }
 
-sec Renderer::draw(const sec &delta, const Camera &camera, ECS &ecs) {
+sec Renderer::draw(const sec &delta, ECS &ecs) {
     if (shouldRecreateSwapchain()) {
         bool success = recreateSwapchain();
         if (success) {
@@ -415,7 +415,7 @@ sec Renderer::draw(const sec &delta, const Camera &camera, ECS &ecs) {
 
     auto commandBuffer = this->bufferManager.commandBuffer;
 
-    updateUniformBuffer(delta, camera, ecs);
+    updateUniformBuffer(delta, ecs);
 
     vkResetCommandBuffer(commandBuffer, 0); // I am not convinced this is necessary
     recordCommandBuffer(commandBuffer, imageIndex);

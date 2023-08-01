@@ -5,7 +5,8 @@
 #include <iomanip>
 #include "application.h"
 #include "io/printer.h"
-#include "ecs/dense_sphere.h"
+#include "ecs/entities/dense_sphere.h"
+#include "ecs/entities/camera.h"
 
 void Application::run() {
     init();
@@ -24,9 +25,16 @@ void Application::init() {
 
     this->renderer.create(this->title, this->windowManager.window);
 
-    this->camera.view.translate(glm::vec3(0, 0, -5));
+    // Entities
+    Camera camera{};
+    camera.components.is_main_camera = true;
+    camera.upload(this->ecs);
     DenseSphere sphere{};
     sphere.upload(this->ecs);
+
+    // Systems
+    this->cameraController.create();
+    this->sphereController.create();
 }
 
 void Application::mainLoop() {
@@ -41,23 +49,11 @@ void Application::mainLoop() {
             this->windowManager.toggleFullscreen();
         }
 
-        int move = 0;
-        if (this->inputManager.getKeyState(IM_MOVE_FORWARD) == IM_DOWN_EVENT ||
-            this->inputManager.getKeyState(IM_MOVE_FORWARD) == IM_HELD) {
-            move += 1;
-        }
-        if (this->inputManager.getKeyState(IM_MOVE_BACKWARD) == IM_DOWN_EVENT ||
-            this->inputManager.getKeyState(IM_MOVE_BACKWARD) == IM_HELD) {
-            move -= 1;
-        }
-        this->camera.view.translate(glm::vec3(0, 0, this->deltaTime * move));
-
-        if (this->inputManager.getKeyState(IM_TOGGLE_ROTATION) == IM_DOWN_EVENT) {
-
-        }
+        this->cameraController.update(this->deltaTime, this->ecs, this->inputManager);
+        this->sphereController.update(this->deltaTime, this->ecs, this->inputManager);
 
         // Render
-        auto gpuWaitTime = this->renderer.draw(this->deltaTime, this->camera, this->ecs);
+        auto gpuWaitTime = this->renderer.draw(this->deltaTime, this->ecs);
 
         // Benchmark
         auto time = Timer::now();
@@ -79,6 +75,9 @@ void Application::mainLoop() {
 
 void Application::destroy() {
     INF "Destroying Application" ENDL;
+
+    this->sphereController.destroy();
+    this->cameraController.destroy();
 
     this->renderer.destroy();
     this->windowManager.destroy();

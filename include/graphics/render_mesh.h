@@ -2,11 +2,11 @@
 // Created by Sam on 2023-04-09.
 //
 
-#ifndef REALTIME_CELL_COLLAPSE_RENDERABLE_H
-#define REALTIME_CELL_COLLAPSE_RENDERABLE_H
+#ifndef REALTIME_CELL_COLLAPSE_RENDER_MESH_H
+#define REALTIME_CELL_COLLAPSE_RENDER_MESH_H
 
 #include <vector>
-#include "vertex.h"
+#include "graphics/vertex.h"
 #include "physics/transformer.h"
 #include <vulkan/vulkan.h>
 
@@ -16,4 +16,4 @@ struct RenderMesh {
     bool is_allocated = false;
 };
 
-#endif //REALTIME_CELL_COLLAPSE_RENDERABLE_H
+#endif //REALTIME_CELL_COLLAPSE_RENDER_MESH_H

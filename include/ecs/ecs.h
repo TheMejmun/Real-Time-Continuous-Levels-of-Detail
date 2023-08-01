@@ -10,7 +10,8 @@
 #include <tuple>
 #include <memory>
 #include <functional>
-#include "graphics/renderable.h"
+#include "graphics/render_mesh.h"
+#include "graphics/projector.h"
 
 struct Components {
     bool is_destroyed = false;
@@ -18,6 +19,9 @@ struct Components {
     uint32_t index = 0;
     RenderMesh *render_mesh = nullptr;
     Transformer4 *transform = nullptr;
+    bool is_main_camera = false;
+    Projector *camera = nullptr;
+    bool is_rotating_sphere = false;
 
     /**
      * Destroys all contained components.
@@ -25,13 +29,15 @@ struct Components {
      * Warning: Do not call this manually. ECS calls this automatically when required.
      */
     void destroy() {
-        delete render_mesh;
-        render_mesh = nullptr;
-        delete transform;
-        transform = nullptr;
+        delete this->render_mesh;
+        this->render_mesh = nullptr;
+        delete this->transform;
+        this->transform = nullptr;
+        delete this->camera;
+        this->camera = nullptr;
 
-        is_destroyed = true;
-        will_destroy = false;
+        this->is_destroyed = true;
+        this->will_destroy = false;
     }
 
     /**

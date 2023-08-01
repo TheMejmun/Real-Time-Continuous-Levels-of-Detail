@@ -6,7 +6,7 @@
 #define REALTIME_CELL_COLLAPSE_VBUFFER_MANAGER_H
 
 #include <vulkan/vulkan.h>
-#include "ecs/triangle.h"
+#include "triangle.h"
 #include "graphics/queue_family_indices.h"
 #include "util/byte_size.h"
 

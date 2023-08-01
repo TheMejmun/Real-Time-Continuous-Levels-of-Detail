@@ -21,12 +21,12 @@
 #include "renderer.h"
 #include "util/importer.h"
 #include "vertex.h"
-#include "ecs/triangle.h"
+#include "triangle.h"
 #include "util/timer.h"
 #include "io/printer.h"
 #include "vbuffer_manager.h"
 #include "queue_family_indices.h"
-#include "camera.h"
+#include "projector.h"
 #include "ecs/ecs.h"
 #include <glm/gtc/matrix_transform.hpp> // For mat transforms
 
@@ -66,7 +66,7 @@ class Renderer {
 public:
     void create(const std::string &title, GLFWwindow *window);
 
-    sec draw(const sec &delta, const Camera &camera, ECS &ecs);
+    sec draw(const sec &delta, ECS &ecs);
 
     void destroy();
 
@@ -120,7 +120,7 @@ private:
     void createFramebuffers();
 
     // TODO Take out delta time
-    void updateUniformBuffer(const sec &delta, const Camera &camera, ECS &ecs);
+    void updateUniformBuffer(const sec &delta, ECS &ecs);
 
     void createDescriptorPool();
 
@@ -135,6 +135,10 @@ private:
     void createSyncObjects();
 
     void recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex);
+
+    static inline bool EvaluatorActiveCamera(const Components &components) {
+        return components.camera != nullptr && components.transform != nullptr && components.isAlive() && components.is_main_camera;
+    };
 
     static inline bool EvaluatorToAllocate(const Components &components) {
         return components.render_mesh != nullptr && components.isAlive() && !components.render_mesh->is_allocated;

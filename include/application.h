@@ -13,6 +13,8 @@
 #include "io/input_manager.h"
 #include "ecs/ecs.h"
 #include "io/printer.h"
+#include "ecs/systems/camera_controller.h"
+#include "ecs/systems/sphere_controller.h"
 
 class Application {
 public:
@@ -26,14 +28,14 @@ private:
 
     void destroy();
 
-    Camera camera{};
     ECS ecs{};
+    CameraController cameraController{};
+    SphereController sphereController{};
     Renderer renderer{};
     WindowManager windowManager{};
     InputManager inputManager{};
 
     chrono_sec_point lastTimestamp = Timer::now();
-    sec currentFrameTime;
     sec currentGPUWaitTime;
     uint32_t currentFPS = 0;
     sec deltaTime = 0;

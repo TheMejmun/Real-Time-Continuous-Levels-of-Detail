@@ -2,13 +2,13 @@
 // Created by Sam on 2023-04-15.
 //
 
-#ifndef REALTIME_CELL_COLLAPSE_CAMERA_H
-#define REALTIME_CELL_COLLAPSE_CAMERA_H
+#ifndef REALTIME_CELL_COLLAPSE_PROJECTOR_H
+#define REALTIME_CELL_COLLAPSE_PROJECTOR_H
 
 #include <glm/glm.hpp>
 #include "physics/transformer.h"
 
-struct Camera{
+struct Projector{
     Transformer4 view;
     float fovYRadians = glm::radians(45.0f);
     float zNear = 0.01f;
@@ -17,4 +17,4 @@ struct Camera{
     [[nodiscard]] glm::mat4 getProjection(float aspectRatio) const;
 };
 
-#endif //REALTIME_CELL_COLLAPSE_CAMERA_H
+#endif //REALTIME_CELL_COLLAPSE_PROJECTOR_H

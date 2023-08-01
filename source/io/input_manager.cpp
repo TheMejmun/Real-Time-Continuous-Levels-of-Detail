@@ -2,7 +2,6 @@
 // Created by Sam on 2023-04-08.
 //
 
-#include <GLFW/glfw3.h>
 #include <iostream>
 #include "io/input_manager.h"
 #include "io/printer.h"

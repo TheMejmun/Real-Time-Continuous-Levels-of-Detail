@@ -25,20 +25,19 @@ void Renderer::destroyRenderables(ECS &ecs) {
     }
 }
 
-void Renderer::updateUniformBuffer(const sec &delta, const Camera &camera, ECS &ecs) {
+void Renderer::updateUniformBuffer(const sec &delta, ECS &ecs) {
     auto components_array = ecs.requestComponents(Renderer::EvaluatorToDraw);
 
-    auto & sphere = *components_array[0];
+    auto &sphere = *components_array[0];
     // TODO not just for one object
     UniformBufferObject ubo{};
-    sphere.transform->rotate(
-            glm::radians(15.0f * static_cast<float >(delta)),
-            glm::vec3(0, 1, 0));
     ubo.model = sphere.transform->forward;
 
-    ubo.view = camera.view.forward; // Identity
+    auto &camera = *ecs.requestComponents(Renderer::EvaluatorActiveCamera)[0];
 
-    ubo.proj = camera.getProjection(
+    ubo.view = camera.transform->forward; // Identity
+
+    ubo.proj = camera.camera->getProjection(
             static_cast<float >(this->swapchainExtent.width) / static_cast<float >(this->swapchainExtent.height));
 
     // TODO replace with push constants for small objects:

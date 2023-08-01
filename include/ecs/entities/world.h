@@ -5,7 +5,7 @@
 #ifndef REALTIME_CELL_COLLAPSE_WORLD_H
 #define REALTIME_CELL_COLLAPSE_WORLD_H
 
-#include "graphics/renderable.h"
+#include "graphics/render_mesh.h"
 #include "ecs/ecs.h"
 #include "ecs/entity.h"
 
