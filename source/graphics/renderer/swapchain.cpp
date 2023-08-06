@@ -218,7 +218,7 @@ void Renderer::createImageViews() {
         createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D; // 1D - 3D or Cube maps
         createInfo.format = this->swapchainImageFormat;
 
-        // Can swizzle all components to be mapped to a single channel, or map to constants, etc.
+        // Can swizzle all entities to be mapped to a single channel, or map to constants, etc.
         createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
         createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
         createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;

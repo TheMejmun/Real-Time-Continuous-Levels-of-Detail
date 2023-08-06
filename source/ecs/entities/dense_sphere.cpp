@@ -10,7 +10,7 @@ DenseSphere::DenseSphere() {
     auto mesh = Importinator::importMesh("resources/models/dense_sphere.glb");
     this->components.renderMesh = new RenderMesh();
     this->components.renderMesh->indices = std::move(mesh.indices);
-    // this->components.renderable->indices = { 0, 500, 1000 };
+    // this->entities.renderable->indices = { 0, 500, 1000 };
     this->components.renderMesh->vertices = std::move(mesh.vertices);
     for (auto &v: this->components.renderMesh->vertices) {
         v.color = Color::random().getLAB();

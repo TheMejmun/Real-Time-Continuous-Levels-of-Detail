@@ -24,7 +24,7 @@ struct Components {
     bool isRotatingSphere = false;
 
     /**
-     * Destroys all contained components.
+     * Destroys all contained entities.
      *
      * Warning: Do not call this manually. ECS calls this automatically when required.
      */
@@ -42,7 +42,7 @@ struct Components {
 
     /**
      * Convenience function
-     * @return True, if these components are not and will not be destroyed this frame.
+     * @return True, if these entities are not and will not be destroyed this frame.
      */
     [[nodiscard]] bool isAlive() const {
         return !isDestroyed && !willDestroy;
@@ -61,12 +61,12 @@ public:
     void remove(const uint32_t &index);
 
     std::vector<Components *>
-    requestComponents(const std::function<bool(const Components &)> &evaluator);
+    requestEntities(const std::function<bool(const Components &)> &evaluator);
 
 private:
     void destroyReferences(const uint32_t &index);
 
-    std::vector<Components> components{};
+    std::vector<Components> entities{};
 };
 
 #endif //REALTIME_CELL_COLLAPSE_ECS_H

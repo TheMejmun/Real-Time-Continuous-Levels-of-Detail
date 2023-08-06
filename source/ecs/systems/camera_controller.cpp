@@ -6,7 +6,7 @@
 #include "io/printer.h"
 
 void CameraController::update(const sec &delta, ECS &ecs, InputManager &inputManager) {
-    auto &camera = *ecs.requestComponents(CameraController::EvaluatorActiveCamera)[0];
+    auto &camera = *ecs.requestEntities(CameraController::EvaluatorActiveCamera)[0];
 
     int move = 0;
     if (inputManager.getKeyState(IM_MOVE_FORWARD) == IM_DOWN_EVENT ||

@@ -91,7 +91,7 @@ void VBufferManager::uploadVertices(const std::vector<Vertex> &vertices) {
 }
 
 void VBufferManager::createVertexBuffer() {
-//    VkDeviceSize bufferSize = sizeof(Vertex) *  this->world.components.renderable->vertices.size();
+//    VkDeviceSize bufferSize = sizeof(Vertex) *  this->world.entities.renderable->vertices.size();
     VkDeviceSize bufferSize = DEFAULT_ALLOCATION_SIZE;
 
 //    VkBuffer stagingBuffer;
@@ -102,7 +102,7 @@ void VBufferManager::createVertexBuffer() {
 //
 //    void *data;
 //    vkMapMemory(this->logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
-//    memcpy(data, this->world.components.renderable->vertices.data(), (size_t) bufferSize);
+//    memcpy(data, this->world.entities.renderable->vertices.data(), (size_t) bufferSize);
 //    vkUnmapMemory(this->logicalDevice, stagingBufferMemory);
 
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
@@ -138,7 +138,7 @@ void VBufferManager::uploadIndices(const std::vector<uint32_t> &indices) {
 }
 
 void VBufferManager::createIndexBuffer() {
-//    VkDeviceSize bufferSize = sizeof(uint32_t) *  this->world.components.renderable->indices.size();
+//    VkDeviceSize bufferSize = sizeof(uint32_t) *  this->world.entities.renderable->indices.size();
     VkDeviceSize bufferSize = DEFAULT_ALLOCATION_SIZE;
 
 //    VkBuffer stagingBuffer;
@@ -149,7 +149,7 @@ void VBufferManager::createIndexBuffer() {
 //
 //    void *data;
 //    vkMapMemory(this->logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
-//    memcpy(data, this->world.components.renderable->indices.data(), (size_t) bufferSize);
+//    memcpy(data, this->world.entities.renderable->indices.data(), (size_t) bufferSize);
 //    vkUnmapMemory(this->logicalDevice, stagingBufferMemory);
 
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,

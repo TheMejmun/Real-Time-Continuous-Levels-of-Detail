@@ -14,7 +14,7 @@ void SphereController::update(const sec &delta, ECS &ecs, InputManager &inputMan
     }
 
     if (doSphereRotation) {
-        auto spheres = ecs.requestComponents(SphereController::EvaluatorRotatingSphere);
+        auto spheres = ecs.requestEntities(SphereController::EvaluatorRotatingSphere);
 
         for (auto sphere: spheres) {
             sphere->transform->rotate(

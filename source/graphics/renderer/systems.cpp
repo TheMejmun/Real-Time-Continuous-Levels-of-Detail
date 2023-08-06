@@ -8,8 +8,8 @@
 // SYSTEMS THAT PLUG INTO THE ECS
 
 void Renderer::uploadRenderables(ECS &ecs) {
-    auto components_array = ecs.requestComponents(Renderer::EvaluatorToAllocate);
-    for (auto components: components_array) {
+    auto entities = ecs.requestEntities(Renderer::EvaluatorToAllocate);
+    for (auto components: entities) {
         auto &mesh = *components->renderMesh;
         this->bufferManager.uploadVertices(mesh.vertices);
         this->bufferManager.uploadIndices(mesh.indices);
@@ -18,22 +18,22 @@ void Renderer::uploadRenderables(ECS &ecs) {
 }
 
 void Renderer::destroyRenderables(ECS &ecs) {
-    auto components_array = ecs.requestComponents(Renderer::EvaluatorToDeallocate);
-    for (auto components: components_array) {
+    auto entities = ecs.requestEntities(Renderer::EvaluatorToDeallocate);
+    for (auto components: entities) {
         auto &mesh = *components->renderMesh;
         THROW("TODO");
     }
 }
 
 void Renderer::updateUniformBuffer(const sec &delta, ECS &ecs) {
-    auto components_array = ecs.requestComponents(Renderer::EvaluatorToDraw);
+    auto entities = ecs.requestEntities(Renderer::EvaluatorToDraw);
 
-    auto &sphere = *components_array[0];
+    auto &sphere = *entities[0];
     // TODO not just for one object
     UniformBufferObject ubo{};
     ubo.model = sphere.transform->forward;
 
-    auto &camera = *ecs.requestComponents(Renderer::EvaluatorActiveCamera)[0];
+    auto &camera = *ecs.requestEntities(Renderer::EvaluatorActiveCamera)[0];
 
     ubo.view = camera.transform->forward; // Identity
 
