@@ -18,11 +18,8 @@ void Application::init() {
     INF "Creating Application" ENDL;
 
     this->ecs.create();
-
     this->windowManager.create(this->title);
-
     this->inputManager.create(this->windowManager.window);
-
     this->renderer.create(this->title, this->windowManager.window);
 
     // Entities
@@ -31,10 +28,6 @@ void Application::init() {
     camera.upload(this->ecs);
     DenseSphere sphere{};
     sphere.upload(this->ecs);
-
-    // Systems
-    this->cameraController.create();
-    this->sphereController.create();
 }
 
 void Application::mainLoop() {
@@ -49,8 +42,8 @@ void Application::mainLoop() {
             this->windowManager.toggleFullscreen();
         }
 
-        this->cameraController.update(this->deltaTime, this->ecs, this->inputManager);
-        this->sphereController.update(this->deltaTime, this->ecs, this->inputManager);
+        CameraController::update(this->deltaTime, this->ecs, this->inputManager);
+        SphereController::update(this->deltaTime, this->ecs, this->inputManager);
 
         // Render
         auto gpuWaitTime = this->renderer.draw(this->deltaTime, this->ecs);
@@ -75,9 +68,6 @@ void Application::mainLoop() {
 
 void Application::destroy() {
     INF "Destroying Application" ENDL;
-
-    this->sphereController.destroy();
-    this->cameraController.destroy();
 
     this->renderer.destroy();
     this->windowManager.destroy();

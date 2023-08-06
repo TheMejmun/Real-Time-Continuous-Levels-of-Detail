@@ -5,16 +5,15 @@
 #include "ecs/systems/sphere_controller.h"
 #include "io/printer.h"
 
-void SphereController::create() {
-    INF "Creating SphereController" ENDL;
-}
+
+bool doSphereRotation = true;
 
 void SphereController::update(const sec &delta, ECS &ecs, InputManager &inputManager) {
     if (inputManager.consumeKeyState(IM_TOGGLE_ROTATION) == IM_DOWN_EVENT) {
-        this->rotate = !this->rotate;
+        doSphereRotation = !doSphereRotation;
     }
 
-    if (this->rotate) {
+    if (doSphereRotation) {
         auto spheres = ecs.requestComponents(SphereController::EvaluatorRotatingSphere);
 
         for (auto sphere: spheres) {
@@ -23,8 +22,4 @@ void SphereController::update(const sec &delta, ECS &ecs, InputManager &inputMan
                     glm::vec3(0, 1, 0));
         }
     }
-}
-
-void SphereController::destroy() {
-    INF "Destroying SphereController" ENDL;
 }

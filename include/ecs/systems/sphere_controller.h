@@ -9,19 +9,11 @@
 #include "ecs/ecs.h"
 #include "io/input_manager.h"
 
-class SphereController{
-public:
-    void create();
-
-    void destroy();
-
+namespace SphereController {
     void update(const sec &delta, ECS &ecs, InputManager &inputManager);
 
-private:
     static inline bool EvaluatorRotatingSphere(const Components &components) {
         return components.transform != nullptr && components.isAlive() && components.isRotatingSphere;
     };
-
-    bool rotate = true;
 };
 #endif //REALTIME_CELL_COLLAPSE_SPHERE_CONTROLLER_H

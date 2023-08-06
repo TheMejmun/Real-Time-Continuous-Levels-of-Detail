@@ -9,15 +9,9 @@
 #include "ecs/ecs.h"
 #include "io/input_manager.h"
 
-class CameraController{
-public:
-    void create();
-
-    void destroy();
-
+namespace CameraController{
     void update(const sec &delta, ECS &ecs, InputManager &inputManager);
 
-private:
     static inline bool EvaluatorActiveCamera(const Components &components) {
         return components.camera != nullptr && components.transform != nullptr && components.isAlive() && components.isMainCamera;
     };

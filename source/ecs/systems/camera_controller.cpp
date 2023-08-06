@@ -5,10 +5,6 @@
 #include "ecs/systems/camera_controller.h"
 #include "io/printer.h"
 
-void CameraController::create() {
-    INF "Creating CameraController" ENDL;
-}
-
 void CameraController::update(const sec &delta, ECS &ecs, InputManager &inputManager) {
     auto &camera = *ecs.requestComponents(CameraController::EvaluatorActiveCamera)[0];
 
@@ -22,8 +18,4 @@ void CameraController::update(const sec &delta, ECS &ecs, InputManager &inputMan
         move -= 1;
     }
     camera.transform->translate(glm::vec3(0, 0, delta * move));
-}
-
-void CameraController::destroy() {
-    INF "Destroying CameraController" ENDL;
 }

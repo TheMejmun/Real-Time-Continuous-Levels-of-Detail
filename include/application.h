@@ -29,8 +29,6 @@ private:
     void destroy();
 
     ECS ecs{};
-    CameraController cameraController{};
-    SphereController sphereController{};
     Renderer renderer{};
     WindowManager windowManager{};
     InputManager inputManager{};
