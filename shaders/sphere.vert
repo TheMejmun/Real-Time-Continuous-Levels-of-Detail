@@ -13,9 +13,18 @@ layout(location = 3) in vec3 inTangent;
 layout(location = 4) in vec3 inBitangent;
 layout(location = 5) in vec3 inUVW;
 
-layout(location = 0) out vec3 fragColor;
+layout(location = 0) out vec4 fragPos;
+layout(location = 1) out vec4 fragWorldPos;
+layout(location = 2) out vec3 fragColor;
+layout(location = 3) out vec3 fragNormal;
 
 void main() {
-    gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
+    vec4 posWS = ubo.model * vec4(inPosition, 1.0);
+    vec4 posSS = ubo.proj * ubo.view * posWS;
+    gl_Position = posSS;
+
+    fragPos = posSS;
+    fragWorldPos = posWS;
+    fragNormal = (transpose(inverse(ubo.model)) * vec4(inNormal, 1.0)).xyz;
     fragColor = inColor;
 }

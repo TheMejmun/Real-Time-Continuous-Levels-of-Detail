@@ -48,11 +48,10 @@ vec3 xyzToRgb(const vec3 xyz) {
 }
 
 vec3 labToXyz(const vec3 lab) {
-    vec3 labNorm = lab * 100.0f;
-    const float l = (labNorm.x + 16.0f) * ONEHUNDREDSIXTEENTH;
-    const float x = D65_XYZ.x * lab_f_inv(l + (labNorm.y * FIVEHUNDREDTH));
+    const float l = (lab.x + 16.0f) * ONEHUNDREDSIXTEENTH;
+    const float x = D65_XYZ.x * lab_f_inv(l + (lab.y * FIVEHUNDREDTH));
     const float y = D65_XYZ.y * lab_f_inv(l);
-    const float z = D65_XYZ.z * lab_f_inv(l - (labNorm.z * TWOHUNDREDTH));;
+    const float z = D65_XYZ.z * lab_f_inv(l - (lab.z * TWOHUNDREDTH));;
     return vec3(x, y, z);
 }
 

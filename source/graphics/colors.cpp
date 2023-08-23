@@ -83,7 +83,7 @@ Color Color::fromLAB(const double &lStar, const double &aStar, const double &bSt
 }
 
 Color Color::fromLAB(const glm::vec3 &lab) {
-    return Color(labToXyz(lab * 100.0f));
+    return Color(labToXyz(lab));
 }
 
 glm::vec3 Color::getRGB() {
@@ -99,7 +99,7 @@ glm::vec3 Color::getXYZ() {
 }
 
 glm::vec3 Color::getLAB() {
-    return xyzToLab(this->xyz) / 100.0f;
+    return xyzToLab(this->xyz);
 }
 
 Color Color::setLumaXYZ(const double &luma) {
@@ -109,7 +109,7 @@ Color Color::setLumaXYZ(const double &luma) {
 
 Color Color::setLumaLab(const double &luma) {
     auto lab = xyzToLab(this->xyz);
-    lab.x = static_cast<float>(luma * 100);
+    lab.x = static_cast<float>(luma);
     this->xyz = labToXyz(lab);
     return *this;
 }
@@ -197,6 +197,6 @@ glm::vec3 Color::labToXyz(const glm::vec3 &lab) {
 
 glm::vec3 Color::rgbSetLuma(const glm::vec3 &rgb, const double &luma) {
     glm::vec3 lab = xyzToLab(rgbToXyz(rgb));
-    lab.x = static_cast<float>(luma * 100);
+    lab.x = static_cast<float>(luma);
     return xyzToRgb(labToXyz(lab));
 }

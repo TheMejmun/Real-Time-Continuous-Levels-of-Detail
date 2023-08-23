@@ -35,7 +35,7 @@ void Renderer::updateUniformBuffer(const sec &delta, ECS &ecs) {
 
     auto &camera = *ecs.requestEntities(Renderer::EvaluatorActiveCamera)[0];
 
-    ubo.view = camera.transform->forward; // Identity
+    ubo.view = camera.camera->getView(*camera.transform);
 
     ubo.proj = camera.camera->getProjection(
             static_cast<float >(this->swapchainExtent.width) / static_cast<float >(this->swapchainExtent.height));

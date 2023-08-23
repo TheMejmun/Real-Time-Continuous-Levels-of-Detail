@@ -8,13 +8,16 @@
 #include <glm/glm.hpp>
 #include "physics/transformer.h"
 
-struct Projector{
-    Transformer4 view;
+struct Projector {
     float fovYRadians = glm::radians(45.0f);
     float zNear = 0.01f;
     float zFar = 100.0f;
+    glm::vec4 worldUp = {0, -1, 0, 0};
+    glm::vec4 cameraFront = {0, 0, 1, 1};
 
     [[nodiscard]] glm::mat4 getProjection(float aspectRatio) const;
+
+    [[nodiscard]] glm::mat4 getView(const Transformer4 &eye) const;
 };
 
 #endif //REALTIME_CELL_COLLAPSE_PROJECTOR_H

@@ -18,6 +18,8 @@ public:
     void rotate(float radians, glm::vec3 axis);
 
     glm::mat4 forward{1.0f}, inverse{1.0f};
+
+    glm::vec3 getPosition() const;
 };
 
 #endif //REALTIME_CELL_COLLAPSE_TRANSFORMER_H

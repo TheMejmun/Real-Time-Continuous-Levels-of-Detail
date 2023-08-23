@@ -24,3 +24,8 @@ void Transformer4::rotate(float radians, glm::vec3 axis) {
     this->forward = glm::rotate(this->forward, radians, axis);
     this->inverse = glm::rotate(this->inverse, -radians, axis);
 }
+
+glm::vec3 Transformer4::getPosition() const {
+    auto vec4 = this->forward * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    return {vec4.x, vec4.y, vec4.z};
+}
