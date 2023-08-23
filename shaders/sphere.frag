@@ -79,7 +79,4 @@ void main() {
     color = inColor * brightness;
 
     outColor = vec4(xyzToRgb(labToXyz(color)), 1.0f);
-    // outColor = vec4(vec3(brightness / 2 + 0.5), 1.0f);
-    // outColor = vec4(inWorldPos.xyz, 1.0f);
-    // outColor = inPos;
 }

@@ -25,9 +25,9 @@ glm::mat4 Projector::getView(const Transformer4 &eye) const {
     auto upVec4 = eye.forward * this->worldUp;
     glm::vec3 up = {upVec4.x, upVec4.y, upVec4.z};
 
-    DBG "eye:\tpos:\t" << position.x << ", " << position.y << ", " << position.z ENDL;
-    DBG "eye:\tcenter:\t" << center.x << ", " << center.y << ", " << center.z ENDL;
-    DBG "eye:\tup:\t" << up.x << ", " << up.y << ", " << up.z ENDL;
+    // DBG "eye:\tpos:\t" << position.x << ", " << position.y << ", " << position.z ENDL;
+    // DBG "eye:\tcenter:\t" << center.x << ", " << center.y << ", " << center.z ENDL;
+    // DBG "eye:\tup:\t" << up.x << ", " << up.y << ", " << up.z ENDL;
 
     return glm::lookAt(position, center, up);
 }
