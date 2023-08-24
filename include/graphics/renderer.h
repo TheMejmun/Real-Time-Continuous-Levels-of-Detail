@@ -43,7 +43,6 @@ public:
     void destroy();
 
 private:
-    void createRenderPass();
 
     void createGraphicsPipeline();
 
