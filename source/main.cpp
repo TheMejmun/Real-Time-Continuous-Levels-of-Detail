@@ -1,8 +1,8 @@
 
-//#define GLM_FORCE_RADIANS 1
-//#define GLM_FORCE_DEPTH_ZERO_TO_ONE 1
-//#define GLM_FORCE_LEFT_HANDED 1
-//#define GLM_FORCE_MESSAGES 1
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_FORCE_LEFT_HANDED
+#define GLM_FORCE_MESSAGES
 
 #include <iostream>
 #include "application.h"
@@ -10,9 +10,6 @@
 int main() {
     Application app{};
     app.title = "Hello World!";
-
-    glm::vec4 test{0};
-    DBG test.x ENDL;
 
     try {
         app.run();
