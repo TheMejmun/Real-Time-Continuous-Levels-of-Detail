@@ -2,15 +2,15 @@
 // Created by Sam on 2023-04-12.
 //
 
-#include "graphics/vbuffer_manager.h"
+#include "graphics/vulkan/vulkan_buffers.h"
 #include "io/printer.h"
 #include "graphics/queue_family_indices.h"
 #include "graphics/uniform_buffer_object.h"
+#include "graphics/vulkan/vulkan_memory.h"
 
 void VBufferManager::create(VkPhysicalDevice physicalDevice, VkDevice device, QueueFamilyIndices indices) {
     INF "Creating VBufferManager" ENDL;
-
-    this->logicalDevice = device;
+    logicalDevice = device;
     this->queueFamilyIndices = indices;
 
     VkPhysicalDeviceProperties deviceProperties;
@@ -21,7 +21,7 @@ void VBufferManager::create(VkPhysicalDevice physicalDevice, VkDevice device, Qu
 
     vkGetPhysicalDeviceMemoryProperties(physicalDevice, &this->memProperties);
 
-    vkGetDeviceQueue(this->logicalDevice, indices.transferFamily.value(), 0, &this->transferQueue);
+    vkGetDeviceQueue(logicalDevice, indices.transferFamily.value(), 0, &this->transferQueue);
 
     createTransferCommandPool();
     createVertexBuffer();
@@ -33,22 +33,22 @@ void VBufferManager::destroy() {
     INF "Destroying VBufferManager" ENDL;
 
     for (size_t i = 0; i < UBO_BUFFER_COUNT; i++) {
-        vkDestroyBuffer(this->logicalDevice, this->uniformBuffers[i], nullptr);
-        vkFreeMemory(this->logicalDevice, this->uniformBuffersMemory[i], nullptr);
+        vkDestroyBuffer(logicalDevice, this->uniformBuffers[i], nullptr);
+        vkFreeMemory(logicalDevice, this->uniformBuffersMemory[i], nullptr);
     }
 
-    vkDestroyBuffer(this->logicalDevice, this->vertexBuffer, nullptr);
-    vkFreeMemory(this->logicalDevice, this->vertexBufferMemory, nullptr);
+    vkDestroyBuffer(logicalDevice, this->vertexBuffer, nullptr);
+    vkFreeMemory(logicalDevice, this->vertexBufferMemory, nullptr);
 
-    vkDestroyBuffer(this->logicalDevice, this->indexBuffer, nullptr);
-    vkFreeMemory(this->logicalDevice, this->indexBufferMemory, nullptr);
+    vkDestroyBuffer(logicalDevice, this->indexBuffer, nullptr);
+    vkFreeMemory(logicalDevice, this->indexBufferMemory, nullptr);
 
-    vkDestroyCommandPool(this->logicalDevice, this->transferCommandPool, nullptr);
-//    vkFreeCommandBuffers(this->logicalDevice, this->transferCommandPool, 1, &this->transferCommandBuffer);
+    vkDestroyCommandPool(logicalDevice, this->transferCommandPool, nullptr);
+//    vkFreeCommandBuffers(logicalDevice, this->transferCommandPool, 1, &this->transferCommandBuffer);
 }
 
 void VBufferManager::destroyCommandBuffer(VkCommandPool commandPool) {
-    vkFreeCommandBuffers(this->logicalDevice, commandPool, 1, &this->commandBuffer);
+    vkFreeCommandBuffers(logicalDevice, commandPool, 1, &this->commandBuffer);
 }
 
 void VBufferManager::nextUniformBuffer() {
@@ -77,15 +77,15 @@ void VBufferManager::uploadVertices(const std::vector<Vertex> &vertices) {
                  &stagingBufferMemory);
 
     void *data;
-    vkMapMemory(this->logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+    vkMapMemory(logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
     memcpy(data, vertices.data(), (size_t) bufferSize);
-    vkUnmapMemory(this->logicalDevice, stagingBufferMemory);
+    vkUnmapMemory(logicalDevice, stagingBufferMemory);
 
     copyBuffer(stagingBuffer, this->vertexBuffer, bufferSize);
 
     // Cleanup
-    vkDestroyBuffer(this->logicalDevice, stagingBuffer, nullptr);
-    vkFreeMemory(this->logicalDevice, stagingBufferMemory, nullptr);
+    vkDestroyBuffer(logicalDevice, stagingBuffer, nullptr);
+    vkFreeMemory(logicalDevice, stagingBufferMemory, nullptr);
 
     this->vertexCount += vertices.size();
 }
@@ -101,9 +101,9 @@ void VBufferManager::createVertexBuffer() {
 //                 &stagingBufferMemory);
 //
 //    void *data;
-//    vkMapMemory(this->logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+//    vkMapMemory(logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
 //    memcpy(data, this->world.entities.renderable->vertices.data(), (size_t) bufferSize);
-//    vkUnmapMemory(this->logicalDevice, stagingBufferMemory);
+//    vkUnmapMemory(logicalDevice, stagingBufferMemory);
 
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
                  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &this->vertexBuffer, &this->vertexBufferMemory);
@@ -111,8 +111,8 @@ void VBufferManager::createVertexBuffer() {
 //    copyBuffer(stagingBuffer, this->vertexBuffer, bufferSize);
 //
 //    // Cleanup
-//    vkDestroyBuffer(this->logicalDevice, stagingBuffer, nullptr);
-//    vkFreeMemory(this->logicalDevice, stagingBufferMemory, nullptr);
+//    vkDestroyBuffer(logicalDevice, stagingBuffer, nullptr);
+//    vkFreeMemory(logicalDevice, stagingBufferMemory, nullptr);
 }
 
 void VBufferManager::uploadIndices(const std::vector<uint32_t> &indices) {
@@ -125,14 +125,14 @@ void VBufferManager::uploadIndices(const std::vector<uint32_t> &indices) {
                  &stagingBufferMemory);
 
     void *data;
-    vkMapMemory(this->logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+    vkMapMemory(logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
     memcpy(data, indices.data(), (size_t) bufferSize);
-    vkUnmapMemory(this->logicalDevice, stagingBufferMemory);
+    vkUnmapMemory(logicalDevice, stagingBufferMemory);
 
     copyBuffer(stagingBuffer, this->indexBuffer, bufferSize);
 
-    vkDestroyBuffer(this->logicalDevice, stagingBuffer, nullptr);
-    vkFreeMemory(this->logicalDevice, stagingBufferMemory, nullptr);
+    vkDestroyBuffer(logicalDevice, stagingBuffer, nullptr);
+    vkFreeMemory(logicalDevice, stagingBufferMemory, nullptr);
 
     this->indexCount += indices.size();
 }
@@ -148,17 +148,17 @@ void VBufferManager::createIndexBuffer() {
 //                 &stagingBufferMemory);
 //
 //    void *data;
-//    vkMapMemory(this->logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+//    vkMapMemory(logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
 //    memcpy(data, this->world.entities.renderable->indices.data(), (size_t) bufferSize);
-//    vkUnmapMemory(this->logicalDevice, stagingBufferMemory);
+//    vkUnmapMemory(logicalDevice, stagingBufferMemory);
 
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
                  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &this->indexBuffer, &this->indexBufferMemory);
 
 //    copyBuffer(stagingBuffer, this->indexBuffer, bufferSize);
 //
-//    vkDestroyBuffer(this->logicalDevice, stagingBuffer, nullptr);
-//    vkFreeMemory(this->logicalDevice, stagingBufferMemory, nullptr);
+//    vkDestroyBuffer(logicalDevice, stagingBuffer, nullptr);
+//    vkFreeMemory(logicalDevice, stagingBufferMemory, nullptr);
 }
 
 void VBufferManager::createUniformBuffers() {
@@ -176,25 +176,9 @@ void VBufferManager::createUniformBuffers() {
                      &this->uniformBuffers[i], &this->uniformBuffersMemory[i]);
 
         // Persistent mapping:
-        vkMapMemory(this->logicalDevice, this->uniformBuffersMemory[i], 0, bufferSize, 0,
+        vkMapMemory(logicalDevice, this->uniformBuffersMemory[i], 0, bufferSize, 0,
                     &this->uniformBuffersMapped[i]);
     }
-}
-
-uint32_t VBufferManager::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
-
-    for (uint32_t i = 0; i < this->memProperties.memoryTypeCount; i++) {
-        // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkPhysicalDeviceMemoryProperties.html
-        // Look for first memory of type with required properties (-> Fastest)
-        const bool isRequiredMemoryType = (typeFilter & (1 << i));
-        const bool hasRequiredProperties =
-                (this->memProperties.memoryTypes[i].propertyFlags & properties) == properties;
-        if (isRequiredMemoryType && hasRequiredProperties) {
-            return i;
-        }
-    }
-
-    THROW("Failed to find suitable memory type!");
 }
 
 void VBufferManager::createCommandBuffer(VkCommandPool commandPool) {
@@ -210,7 +194,7 @@ void VBufferManager::createCommandBuffer(VkCommandPool commandPool, VkCommandBuf
     // VK_COMMAND_BUFFER_LEVEL_SECONDARY can not be submitted, but called from other command buffers
     allocInfo.commandBufferCount = 1;
 
-    if (vkAllocateCommandBuffers(this->logicalDevice, &allocInfo, pBuffer) != VK_SUCCESS) {
+    if (vkAllocateCommandBuffers(logicalDevice, &allocInfo, pBuffer) != VK_SUCCESS) {
         THROW("Failed to allocate command buffers!");
     }
 }
@@ -222,7 +206,8 @@ void VBufferManager::createTransferCommandPool() {
     // Use VK_COMMAND_POOL_CREATE_TRANSIENT_BIT if buffer is very short-lived
     poolInfo.queueFamilyIndex = queueFamilyIndices.transferFamily.value();
 
-    if (vkCreateCommandPool(this->logicalDevice, &poolInfo, nullptr, &this->transferCommandPool) != VK_SUCCESS) {
+    if (vkCreateCommandPool(logicalDevice, &poolInfo, nullptr, &this->transferCommandPool) !=
+        VK_SUCCESS) {
         THROW("Failed to create command pool!");
     }
 
@@ -245,26 +230,26 @@ void VBufferManager::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, V
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // Like swap chain images
     }
 
-    if (vkCreateBuffer(this->logicalDevice, &bufferInfo, nullptr, pBuffer) != VK_SUCCESS) {
+    if (vkCreateBuffer(logicalDevice, &bufferInfo, nullptr, pBuffer) != VK_SUCCESS) {
         THROW("Failed to create vertex buffer!");
     }
 
     VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(this->logicalDevice, *pBuffer, &memRequirements);
+    vkGetBufferMemoryRequirements(logicalDevice, *pBuffer, &memRequirements);
 
     // Malloc
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
     // Is visible and coherent when viewing from host
-    allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+    allocInfo.memoryTypeIndex = VulkanMemory::findMemoryType(memRequirements.memoryTypeBits, properties);
 
-    if (vkAllocateMemory(this->logicalDevice, &allocInfo, nullptr, pBufferMemory) != VK_SUCCESS) {
+    if (vkAllocateMemory(logicalDevice, &allocInfo, nullptr, pBufferMemory) != VK_SUCCESS) {
         THROW("Failed to allocate vertex buffer memory!");
     }
 
     // offset % memRequirements.alignment == 0
-    vkBindBufferMemory(this->logicalDevice, *pBuffer, *pBufferMemory, 0);
+    vkBindBufferMemory(logicalDevice, *pBuffer, *pBufferMemory, 0);
 }
 
 void VBufferManager::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
@@ -275,7 +260,7 @@ void VBufferManager::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDevice
     allocInfo.commandBufferCount = 1;
 
 //    VkCommandBuffer transferBuffer;
-//    vkAllocateCommandBuffers(this->logicalDevice, &allocInfo, &transferBuffer);
+//    vkAllocateCommandBuffers(logicalDevice, &allocInfo, &transferBuffer);
 
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -299,5 +284,5 @@ void VBufferManager::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDevice
     vkQueueSubmit(this->transferQueue, 1, &submitInfo, VK_NULL_HANDLE);
     vkQueueWaitIdle(this->transferQueue); // TODO replace with fence
 
-//    vkFreeCommandBuffers(this->logicalDevice, this->transferCommandPool, 1, &this->transferCommandBuffer);
+//    vkFreeCommandBuffers(logicalDevice, this->transferCommandPool, 1, &this->transferCommandBuffer);
 }

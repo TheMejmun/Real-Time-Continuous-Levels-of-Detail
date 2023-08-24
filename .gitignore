@@ -118,4 +118,5 @@ fabric.properties
 
 # Visual Studio
 .vs/
+.vscode/
 vcpkg_installed/

@@ -7,7 +7,7 @@
 
 #include <memory>
 #include <string>
-#include <GLFW/glfw3.h>
+#include "util/glfw_include.h"
 
 const int32_t DEFAULT_WIDTH = 1280;
 const int32_t DEFAULT_HEIGHT = 720;

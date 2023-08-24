@@ -47,7 +47,7 @@ void Renderer::createRenderPass() {
     renderPassInfo.dependencyCount = 1;
     renderPassInfo.pDependencies = &dependency;
 
-    if (vkCreateRenderPass(this->logicalDevice, &renderPassInfo, nullptr, &this->renderPass) != VK_SUCCESS) {
+    if (vkCreateRenderPass(VulkanDevices::logicalDevice, &renderPassInfo, nullptr, &this->renderPass) != VK_SUCCESS) {
         THROW("Failed to create render pass!");
     }
 }
@@ -175,7 +175,7 @@ void Renderer::createGraphicsPipeline() {
     pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
     pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
-    if (vkCreatePipelineLayout(this->logicalDevice, &pipelineLayoutInfo, nullptr, &this->pipelineLayout) !=
+    if (vkCreatePipelineLayout(VulkanDevices::logicalDevice, &pipelineLayoutInfo, nullptr, &this->pipelineLayout) !=
         VK_SUCCESS) {
         THROW("Failed to create pipeline layout!");
     }
@@ -200,14 +200,14 @@ void Renderer::createGraphicsPipeline() {
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
     pipelineInfo.basePipelineIndex = -1; // Optional
 
-    if (vkCreateGraphicsPipelines(this->logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
+    if (vkCreateGraphicsPipelines(VulkanDevices::logicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr,
                                   &this->graphicsPipeline) != VK_SUCCESS) {
         THROW("Failed to create graphics pipeline!");
     }
 
     // Once the pipeline is created, we don't need this anymore
-    vkDestroyShaderModule(this->logicalDevice, fragShaderModule, nullptr);
-    vkDestroyShaderModule(this->logicalDevice, vertShaderModule, nullptr);
+    vkDestroyShaderModule(VulkanDevices::logicalDevice, fragShaderModule, nullptr);
+    vkDestroyShaderModule(VulkanDevices::logicalDevice, vertShaderModule, nullptr);
 }
 
 void Renderer::createDescriptorSetLayout() {
@@ -223,7 +223,7 @@ void Renderer::createDescriptorSetLayout() {
     layoutInfo.bindingCount = 1;
     layoutInfo.pBindings = &uboLayoutBinding;
 
-    if (vkCreateDescriptorSetLayout(this->logicalDevice, &layoutInfo, nullptr, &this->descriptorSetLayout) !=
+    if (vkCreateDescriptorSetLayout(VulkanDevices::logicalDevice, &layoutInfo, nullptr, &this->descriptorSetLayout) !=
         VK_SUCCESS) {
         throw std::runtime_error("Failed to create descriptor set layout!");
     }
@@ -245,7 +245,7 @@ void Renderer::createDescriptorPool() {
     // Would allow vkFreeDescriptorSets
     // Otherwise only vkAllocateDescriptorSets and vkResetDescriptorPool
 
-    if (vkCreateDescriptorPool(this->logicalDevice, &poolInfo, nullptr, &this->descriptorPool) != VK_SUCCESS) {
+    if (vkCreateDescriptorPool(VulkanDevices::logicalDevice, &poolInfo, nullptr, &this->descriptorPool) != VK_SUCCESS) {
         throw std::runtime_error("Failed to create descriptor pool!");
     }
 }
@@ -259,7 +259,7 @@ void Renderer::createDescriptorSets() {
     allocInfo.pSetLayouts = layouts.data();
 
     this->descriptorSets.resize(VBufferManager::UBO_BUFFER_COUNT);
-    if (vkAllocateDescriptorSets(this->logicalDevice, &allocInfo, this->descriptorSets.data()) != VK_SUCCESS) {
+    if (vkAllocateDescriptorSets(VulkanDevices::logicalDevice, &allocInfo, this->descriptorSets.data()) != VK_SUCCESS) {
         throw std::runtime_error("Failed to allocate descriptor sets!");
     }
 
@@ -283,7 +283,7 @@ void Renderer::createDescriptorSets() {
         descriptorWrite.pTexelBufferView = nullptr; // Optional
 
         // Optional VkCopyDescriptorSet to copy between descriptors
-        vkUpdateDescriptorSets(this->logicalDevice, 1, &descriptorWrite, 0, nullptr);
+        vkUpdateDescriptorSets(VulkanDevices::logicalDevice, 1, &descriptorWrite, 0, nullptr);
     }
 }
 
@@ -294,7 +294,7 @@ void Renderer::createCommandPool() {
     // Use VK_COMMAND_POOL_CREATE_TRANSIENT_BIT if buffer is very short-lived
     poolInfo.queueFamilyIndex = this->queueFamilyIndices.graphicsFamily.value();
 
-    if (vkCreateCommandPool(this->logicalDevice, &poolInfo, nullptr, &this->commandPool) != VK_SUCCESS) {
+    if (vkCreateCommandPool(VulkanDevices::logicalDevice, &poolInfo, nullptr, &this->commandPool) != VK_SUCCESS) {
         THROW("Failed to create command pool!");
     }
 
@@ -309,9 +309,9 @@ void Renderer::createSyncObjects() {
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; // Start off as signaled
 
-    if (vkCreateSemaphore(this->logicalDevice, &semaphoreInfo, nullptr, &this->imageAvailableSemaphore) != VK_SUCCESS ||
-        vkCreateSemaphore(this->logicalDevice, &semaphoreInfo, nullptr, &this->renderFinishedSemaphore) != VK_SUCCESS ||
-        vkCreateFence(this->logicalDevice, &fenceInfo, nullptr, &this->inFlightFence) != VK_SUCCESS) {
+    if (vkCreateSemaphore(VulkanDevices::logicalDevice, &semaphoreInfo, nullptr, &this->imageAvailableSemaphore) != VK_SUCCESS ||
+        vkCreateSemaphore(VulkanDevices::logicalDevice, &semaphoreInfo, nullptr, &this->renderFinishedSemaphore) != VK_SUCCESS ||
+        vkCreateFence(VulkanDevices::logicalDevice, &fenceInfo, nullptr, &this->inFlightFence) != VK_SUCCESS) {
         THROW("Failed to create semaphores and/or fences!");
     }
 }
@@ -391,11 +391,11 @@ sec Renderer::draw(const sec &delta, ECS &ecs) {
     destroyRenderables(ecs);
 
     auto beforeFence = Timer::now();
-    vkWaitForFences(this->logicalDevice, 1, &this->inFlightFence, VK_TRUE, UINT64_MAX);
+    vkWaitForFences(VulkanDevices::logicalDevice, 1, &this->inFlightFence, VK_TRUE, UINT64_MAX);
     auto afterFence = Timer::now();
 
     uint32_t imageIndex;
-    auto acquireImageResult = vkAcquireNextImageKHR(this->logicalDevice, this->swapchain, UINT64_MAX,
+    auto acquireImageResult = vkAcquireNextImageKHR(VulkanDevices::logicalDevice, this->swapchain, UINT64_MAX,
                                                     this->imageAvailableSemaphore, nullptr, &imageIndex);
 
     if (acquireImageResult == VK_ERROR_OUT_OF_DATE_KHR) {
@@ -411,7 +411,7 @@ sec Renderer::draw(const sec &delta, ECS &ecs) {
     }
 
     // Avoid deadlock if recreating -> move to after success check
-    vkResetFences(this->logicalDevice, 1, &this->inFlightFence);
+    vkResetFences(VulkanDevices::logicalDevice, 1, &this->inFlightFence);
 
     auto commandBuffer = this->bufferManager.commandBuffer;
 

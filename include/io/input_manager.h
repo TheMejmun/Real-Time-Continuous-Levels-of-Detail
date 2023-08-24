@@ -6,7 +6,7 @@
 #define REALTIME_CELL_COLLAPSE_INPUT_MANAGER_H
 
 #include <memory>
-#include <GLFW/glfw3.h>
+#include "util/glfw_include.h"
 
 #define IM_DOWN_EVENT 0x1
 #define IM_HELD 0x2

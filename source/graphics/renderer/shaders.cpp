@@ -12,7 +12,7 @@ VkShaderModule Renderer::createShaderModule(const std::vector<char> &code) {
     createInfo.pCode = reinterpret_cast<const uint32_t *>(code.data());
 
     VkShaderModule shaderModule;
-    if (vkCreateShaderModule(this->logicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+    if (vkCreateShaderModule(VulkanDevices::logicalDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
         THROW("Failed to create shader module!");
     }
 

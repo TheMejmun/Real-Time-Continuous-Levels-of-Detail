@@ -2,13 +2,17 @@
 // Created by Sam on 2023-04-12.
 //
 
-#ifndef REALTIME_CELL_COLLAPSE_VBUFFER_MANAGER_H
-#define REALTIME_CELL_COLLAPSE_VBUFFER_MANAGER_H
+#ifndef REALTIME_CELL_COLLAPSE_VULKAN_BUFFERS_H
+#define REALTIME_CELL_COLLAPSE_VULKAN_BUFFERS_H
 
 #include <vulkan/vulkan.h>
-#include "triangle.h"
+#include "graphics/triangle.h"
 #include "graphics/queue_family_indices.h"
 #include "util/byte_size.h"
+
+namespace VulkanBuffers {
+
+}
 
 class VBufferManager {
 public:
@@ -58,8 +62,6 @@ private:
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer *pBuffer,
                       VkDeviceMemory *pBufferMemory);
 
-    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
     VkDevice logicalDevice = nullptr;
@@ -77,4 +79,4 @@ private:
     VkCommandBuffer transferCommandBuffer = nullptr; // Cleaned automatically by command pool clean.
 };
 
-#endif //REALTIME_CELL_COLLAPSE_VBUFFER_MANAGER_H
+#endif //REALTIME_CELL_COLLAPSE_VULKAN_BUFFERS_H

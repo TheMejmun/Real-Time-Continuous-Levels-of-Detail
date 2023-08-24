@@ -3,12 +3,13 @@
 //
 
 #include "graphics/renderer.h"
+#include "graphics/vulkan/vulkan_validation.h"
 
 void Renderer::printAvailablePhysicalDevices() {
     uint32_t deviceCount = 0;
-    vkEnumeratePhysicalDevices(this->instance, &deviceCount, nullptr);
+    vkEnumeratePhysicalDevices(VulkanInstance::instance, &deviceCount, nullptr);
     std::vector<VkPhysicalDevice> devices(deviceCount);
-    vkEnumeratePhysicalDevices(this->instance, &deviceCount, devices.data());
+    vkEnumeratePhysicalDevices(VulkanInstance::instance, &deviceCount, devices.data());
 
     VRB "Available physical devices:" ENDL;
 
@@ -23,38 +24,38 @@ void Renderer::pickPhysicalDevice() {
     printAvailablePhysicalDevices();
 
     uint32_t deviceCount = 0;
-    vkEnumeratePhysicalDevices(this->instance, &deviceCount, nullptr);
+    vkEnumeratePhysicalDevices(VulkanInstance::instance, &deviceCount, nullptr);
 
     if (deviceCount == 0) {
         THROW("Failed to find GPUs with Vulkan support!");
     }
 
     std::vector<VkPhysicalDevice> devices(deviceCount);
-    vkEnumeratePhysicalDevices(this->instance, &deviceCount, devices.data());
+    vkEnumeratePhysicalDevices(VulkanInstance::instance, &deviceCount, devices.data());
 
     for (const auto &device: devices) {
         if (isDeviceSuitable(device, true)) {
-            this->physicalDevice = device;
+            VulkanDevices::physicalDevice = device;
             break;
         } else if (isDeviceSuitable(device, false)) {
-            this->physicalDevice = device;
+            VulkanDevices::physicalDevice = device;
             // Keep looking for a better one
         }
     }
 
     VkPhysicalDeviceProperties deviceProperties;
-    vkGetPhysicalDeviceProperties(this->physicalDevice, &deviceProperties);
+    vkGetPhysicalDeviceProperties(VulkanDevices::physicalDevice, &deviceProperties);
     INF "Picked physical device: " << deviceProperties.deviceName ENDL;
 
-    if (this->physicalDevice == VK_NULL_HANDLE) {
+    if (VulkanDevices::physicalDevice == VK_NULL_HANDLE) {
         THROW("Failed to find a suitable GPU!");
     }
 
-    this->queueFamilyIndices = Renderer::findQueueFamilies(this->physicalDevice);
+    this->queueFamilyIndices = Renderer::findQueueFamilies(VulkanDevices::physicalDevice);
     this->queueFamilyIndices.print();
 
     VkPhysicalDeviceFeatures deviceFeatures;
-    vkGetPhysicalDeviceFeatures(this->physicalDevice, &deviceFeatures);
+    vkGetPhysicalDeviceFeatures(VulkanDevices::physicalDevice, &deviceFeatures);
     this->optionalFeatures.supportsWireframeMode = deviceFeatures.fillModeNonSolid;
 }
 
@@ -192,28 +193,26 @@ void Renderer::createLogicalDevice() {
     createInfo.pEnabledFeatures = &deviceFeatures;
 
     std::vector<const char *> requiredExtensions = REQUIRED_DEVICE_EXTENSIONS;
-    if (checkDevicePortabilityMode(this->physicalDevice)) {
+    if (checkDevicePortabilityMode(VulkanDevices::physicalDevice)) {
         requiredExtensions.push_back(PORTABILITY_EXTENSION.c_str());
     }
 
     createInfo.enabledExtensionCount = (uint32_t) requiredExtensions.size();
     createInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "UnreachableCode"
-    if (ENABLE_VALIDATION_LAYERS) {
-        createInfo.enabledLayerCount = static_cast<uint32_t>(VALIDATION_LAYERS.size());
-        createInfo.ppEnabledLayerNames = VALIDATION_LAYERS.data();
+    if (VulkanValidation::ENABLE_VALIDATION_LAYERS) {
+        createInfo.enabledLayerCount = static_cast<uint32_t>(VulkanValidation::VALIDATION_LAYERS.size());
+        createInfo.ppEnabledLayerNames = VulkanValidation::VALIDATION_LAYERS.data();
     } else {
         createInfo.enabledLayerCount = 0;
     }
-#pragma clang diagnostic pop
 
-    if (vkCreateDevice(this->physicalDevice, &createInfo, nullptr, &this->logicalDevice) != VK_SUCCESS) {
+    if (vkCreateDevice(VulkanDevices::physicalDevice, &createInfo, nullptr, &VulkanDevices::logicalDevice) !=
+        VK_SUCCESS) {
         THROW("Failed to create logical device!");
     }
 
     // Get each queue
-    vkGetDeviceQueue(this->logicalDevice, indices.graphicsFamily.value(), 0, &this->graphicsQueue);
-    vkGetDeviceQueue(this->logicalDevice, indices.presentFamily.value(), 0, &this->presentQueue);
+    vkGetDeviceQueue(VulkanDevices::logicalDevice, indices.graphicsFamily.value(), 0, &this->graphicsQueue);
+    vkGetDeviceQueue(VulkanDevices::logicalDevice, indices.presentFamily.value(), 0, &this->presentQueue);
 }

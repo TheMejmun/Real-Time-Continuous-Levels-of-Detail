@@ -3,9 +3,11 @@
 //
 
 #include "graphics/renderer.h"
+#include "graphics/vulkan/vulkan_memory.h"
+#include "graphics/vulkan/vulkan_instance.h"
 
 void Renderer::createSurface() {
-    if (glfwCreateWindowSurface(this->instance, this->window, nullptr, &this->surface) != VK_SUCCESS) {
+    if (glfwCreateWindowSurface(VulkanInstance::instance, this->window, nullptr, &this->surface) != VK_SUCCESS) {
         THROW("Failed to create window surface!");
     }
 }
@@ -112,7 +114,7 @@ bool Renderer::recreateSwapchain() {
 
     // May need to recreate render pass here if e.g. window moves to HDR monitor
 
-    vkDeviceWaitIdle(this->logicalDevice);
+    vkDeviceWaitIdle(VulkanDevices::logicalDevice);
 
     destroySwapchain();
 
@@ -120,7 +122,7 @@ bool Renderer::recreateSwapchain() {
 }
 
 bool Renderer::createSwapchain() {
-    SwapchainSupportDetails swapchainSupport = querySwapchainSupport(physicalDevice);
+    SwapchainSupportDetails swapchainSupport = querySwapchainSupport(VulkanDevices::physicalDevice);
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapchainSupport.formats);
     VkPresentModeKHR presentMode = chooseSwapPresentMode(swapchainSupport.presentModes);
@@ -176,14 +178,14 @@ bool Renderer::createSwapchain() {
 
     createInfo.oldSwapchain = nullptr; // Put previous swapchain here if overridden, e.g. if window size changed
 
-    if (vkCreateSwapchainKHR(this->logicalDevice, &createInfo, nullptr, &this->swapchain) != VK_SUCCESS) {
+    if (vkCreateSwapchainKHR(VulkanDevices::logicalDevice, &createInfo, nullptr, &this->swapchain) != VK_SUCCESS) {
         THROW("Failed to create swap chain!");
     }
 
     // imageCount only specified a minimum!
-    vkGetSwapchainImagesKHR(this->logicalDevice, this->swapchain, &imageCount, nullptr);
+    vkGetSwapchainImagesKHR(VulkanDevices::logicalDevice, this->swapchain, &imageCount, nullptr);
     this->swapchainImages.resize(imageCount);
-    vkGetSwapchainImagesKHR(this->logicalDevice, this->swapchain, &imageCount, this->swapchainImages.data());
+    vkGetSwapchainImagesKHR(VulkanDevices::logicalDevice, this->swapchain, &imageCount, this->swapchainImages.data());
     this->swapchainImageFormat = surfaceFormat.format;
     this->swapchainExtent = extent;
 
@@ -196,16 +198,16 @@ bool Renderer::createSwapchain() {
 
 void Renderer::destroySwapchain() {
     for (auto &swapchainFramebuffer: this->swapchainFramebuffers) {
-        vkDestroyFramebuffer(this->logicalDevice, swapchainFramebuffer, nullptr);
+        vkDestroyFramebuffer(VulkanDevices::logicalDevice, swapchainFramebuffer, nullptr);
     }
 
-    vkDestroyRenderPass(this->logicalDevice, this->renderPass, nullptr);
+    vkDestroyRenderPass(VulkanDevices::logicalDevice, this->renderPass, nullptr);
 
     for (auto &swapchainImageView: this->swapchainImageViews) {
-        vkDestroyImageView(this->logicalDevice, swapchainImageView, nullptr);
+        vkDestroyImageView(VulkanDevices::logicalDevice, swapchainImageView, nullptr);
     }
 
-    vkDestroySwapchainKHR(this->logicalDevice, this->swapchain, nullptr);
+    vkDestroySwapchainKHR(VulkanDevices::logicalDevice, this->swapchain, nullptr);
 }
 
 void Renderer::createImageViews() {
@@ -231,10 +233,82 @@ void Renderer::createImageViews() {
         createInfo.subresourceRange.baseArrayLayer = 0;
         createInfo.subresourceRange.layerCount = 1; // No 3D
 
-        if (vkCreateImageView(this->logicalDevice, &createInfo, nullptr, &this->swapchainImageViews[i]) != VK_SUCCESS) {
+        if (vkCreateImageView(VulkanDevices::logicalDevice, &createInfo, nullptr, &this->swapchainImageViews[i]) != VK_SUCCESS) {
             THROW("Failed to create image views!");
         }
     }
+}
+
+void Renderer::createDepthResources() {
+    VkFormat depthFormat = findDepthFormat();
+
+//    createImage(this->swapchainExtent.width,
+//                this->swapchainExtent.height,
+//                depthFormat,
+//                VK_IMAGE_TILING_OPTIMAL,
+//                VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+//                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+//                this->depthImage,
+//                this->depthImageMemory);
+//    this->depthImageView = createImageView(depthImage, depthFormat);
+}
+
+VkFormat Renderer::findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling,
+                                       VkFormatFeatureFlags features) {
+    for (VkFormat format: candidates) {
+        VkFormatProperties props;
+        vkGetPhysicalDeviceFormatProperties(VulkanDevices::physicalDevice, format, &props);
+
+        if ((tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) ||
+            (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features)) {
+            return format;
+        }
+    }
+
+    THROW("Failed to find supported format!");
+}
+
+VkFormat Renderer::findDepthFormat() {
+    return findSupportedFormat(
+            {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
+            VK_IMAGE_TILING_OPTIMAL, // -> More efficient https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkImageTiling.html
+            VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT // -> Can be used as depth/stencil attachment & input attachment
+    );
+}
+
+void Renderer::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
+    VkImageCreateInfo imageInfo{};
+    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    imageInfo.imageType = VK_IMAGE_TYPE_2D;
+    imageInfo.extent.width = width;
+    imageInfo.extent.height = height;
+    imageInfo.extent.depth = 1;
+    imageInfo.mipLevels = 1;
+    imageInfo.arrayLayers = 1;
+    imageInfo.format = format;
+    imageInfo.tiling = tiling;
+    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    imageInfo.usage = usage;
+    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    if (vkCreateImage(VulkanDevices::logicalDevice, &imageInfo, nullptr, &image) != VK_SUCCESS) {
+        THROW("Failed to create image!");
+    }
+
+    VkMemoryRequirements memRequirements;
+    vkGetImageMemoryRequirements(VulkanDevices::logicalDevice, image, &memRequirements);
+
+    VkMemoryAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocInfo.allocationSize = memRequirements.size;
+    allocInfo.memoryTypeIndex = VulkanMemory::findMemoryType(memRequirements.memoryTypeBits, properties);
+
+    if (vkAllocateMemory(VulkanDevices::logicalDevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+        THROW("Failed to allocate image memory!");
+    }
+
+    vkBindImageMemory(VulkanDevices::logicalDevice, image, imageMemory, 0);
 }
 
 void Renderer::createFramebuffers() {
@@ -254,7 +328,7 @@ void Renderer::createFramebuffers() {
         framebufferInfo.height = this->swapchainExtent.height;
         framebufferInfo.layers = 1;
 
-        if (vkCreateFramebuffer(this->logicalDevice, &framebufferInfo, nullptr, &this->swapchainFramebuffers[i]) !=
+        if (vkCreateFramebuffer(VulkanDevices::logicalDevice, &framebufferInfo, nullptr, &this->swapchainFramebuffers[i]) !=
             VK_SUCCESS) {
             THROW("Failed to create framebuffer!");
         }

@@ -5,9 +5,7 @@
 #ifndef REALTIME_CELL_COLLAPSE_RENDERER_H
 #define REALTIME_CELL_COLLAPSE_RENDERER_H
 
-#define GLFW_INCLUDE_VULKAN
-
-#include <GLFW/glfw3.h>
+#include "util/glfw_include.h"
 #include <string>
 #include <utility>
 #include <vector>
@@ -24,20 +22,18 @@
 #include "triangle.h"
 #include "util/timer.h"
 #include "io/printer.h"
-#include "vbuffer_manager.h"
+#include "graphics/vulkan/vulkan_buffers.h"
 #include "queue_family_indices.h"
 #include "projector.h"
 #include "ecs/ecs.h"
 #include <glm/gtc/matrix_transform.hpp> // For mat transforms
+#include "graphics/vulkan/vulkan_devices.h"
+#include "graphics/vulkan/vulkan_instance.h"
 
 //#define WIREFRAME_MODE
 
 //const int MAX_FRAMES_IN_FLIGHT = 2;
 // TODO https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-
-const std::vector<const char *> VALIDATION_LAYERS = {
-        "VK_LAYER_KHRONOS_validation"
-};
 
 const std::vector<const char *> REQUIRED_DEVICE_EXTENSIONS = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
@@ -45,11 +41,6 @@ const std::vector<const char *> REQUIRED_DEVICE_EXTENSIONS = {
 
 const std::string PORTABILITY_EXTENSION = "VK_KHR_portability_subset";
 
-#ifdef NDEBUG
-const bool ENABLE_VALIDATION_LAYERS = false;
-#else
-const bool ENABLE_VALIDATION_LAYERS = true;
-#endif
 
 struct SwapchainSupportDetails {
     VkSurfaceCapabilitiesKHR capabilities;
@@ -71,12 +62,6 @@ public:
     void destroy();
 
 private:
-    void createInstance();
-
-    static void printAvailableInstanceExtensions();
-
-    static bool checkValidationLayerSupport();
-
     void createSurface();
 
     void pickPhysicalDevice();
@@ -132,12 +117,25 @@ private:
 
     void createCommandPool();
 
+    void createDepthResources();
+
+    VkFormat
+    findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+
+    VkFormat findDepthFormat();
+
+    void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
+                     VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &imageMemory);
+
+    // TODO void createTextureImage();
+
     void createSyncObjects();
 
     void recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex);
 
     static inline bool EvaluatorActiveCamera(const Components &components) {
-        return components.camera != nullptr && components.transform != nullptr && components.isAlive() && components.isMainCamera;
+        return components.camera != nullptr && components.transform != nullptr && components.isAlive() &&
+               components.isMainCamera;
     };
 
     static inline bool EvaluatorToAllocate(const Components &components) {
@@ -167,20 +165,24 @@ private:
     VBufferManager bufferManager{};
 
     // Vulkan
-    VkInstance instance = nullptr;
-    VkPhysicalDevice physicalDevice = nullptr;
     QueueFamilyIndices queueFamilyIndices{};
-    VkDevice logicalDevice = nullptr;
     VkQueue graphicsQueue = nullptr;
     VkQueue presentQueue = nullptr;
     OptionalFeatures optionalFeatures{};
 
+    // Swapchain
     VkSurfaceKHR surface = nullptr;
     VkSwapchainKHR swapchain = nullptr;
     std::vector<VkImage> swapchainImages;
     VkFormat swapchainImageFormat{};
     VkExtent2D swapchainExtent{};
     std::vector<VkImageView> swapchainImageViews;
+
+    // Depth testing
+    // TODO destroy:
+//    VkImage depthImage;
+//    VkDeviceMemory depthImageMemory;
+//    VkImageView depthImageView;
 
     VkRenderPass renderPass = nullptr;
     VkDescriptorSetLayout descriptorSetLayout = nullptr;
