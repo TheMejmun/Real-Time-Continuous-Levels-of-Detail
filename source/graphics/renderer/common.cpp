@@ -22,7 +22,7 @@ void Renderer::initVulkan() {
     createSwapchain();
     createDescriptorSetLayout();
     createGraphicsPipeline();
-    this->bufferManager.create(VulkanDevices::physical, VulkanDevices::logical, VulkanDevices::queueFamilyIndices);
+    this->bufferManager.create();
     createDescriptorPool();
     createDescriptorSets();
     createCommandPool();
@@ -50,7 +50,7 @@ void Renderer::destroy() {
     vkDestroyPipeline(VulkanDevices::logical, this->graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(VulkanDevices::logical, this->pipelineLayout, nullptr);
     destroySwapchain();
-    vkDestroyDevice(VulkanDevices::logical, nullptr);
+    VulkanDevices::destroy();
     vkDestroySurfaceKHR(VulkanInstance::instance, VulkanSwapchain::surface, nullptr);
 
     VulkanInstance::destroy();

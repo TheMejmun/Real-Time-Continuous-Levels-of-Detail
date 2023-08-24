@@ -264,3 +264,9 @@ void VulkanDevices::QueueFamilyIndices::print() {
                 << " Transfer: " << this->transferFamily.value()
                 ENDL;
 }
+
+void VulkanDevices::destroy() {
+    INF "Destroying VulkanDevices" ENDL;
+
+    vkDestroyDevice(VulkanDevices::logical, nullptr);
+}

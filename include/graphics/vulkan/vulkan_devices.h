@@ -49,6 +49,8 @@ namespace VulkanDevices {
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
     void createLogical();
+
+    void destroy();
 }
 
 #endif //REALTIME_CELL_COLLAPSE_VULKAN_DEVICES_H

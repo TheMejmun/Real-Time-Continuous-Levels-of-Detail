@@ -8,20 +8,18 @@
 #include "graphics/vulkan/vulkan_memory.h"
 #include "graphics/vulkan/vulkan_devices.h"
 
-void VBufferManager::create(VkPhysicalDevice physicalDevice, VkDevice device, VulkanDevices::QueueFamilyIndices indices) {
+void VBufferManager::create() {
     INF "Creating VBufferManager" ENDL;
-    logicalDevice = device;
-    this->queueFamilyIndices = indices;
 
     VkPhysicalDeviceProperties deviceProperties;
-    vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
+    vkGetPhysicalDeviceProperties(VulkanDevices::physical, &deviceProperties);
 
     this->maxAllocations = deviceProperties.limits.maxMemoryAllocationCount;
     VRB "Maximum memory allocation count: " << this->maxAllocations ENDL;
 
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &this->memProperties);
+    vkGetPhysicalDeviceMemoryProperties(VulkanDevices::physical, &this->memProperties);
 
-    vkGetDeviceQueue(logicalDevice, indices.transferFamily.value(), 0, &this->transferQueue);
+    vkGetDeviceQueue(VulkanDevices::logical, VulkanDevices::queueFamilyIndices.transferFamily.value(), 0, &this->transferQueue);
 
     createTransferCommandPool();
     createVertexBuffer();
@@ -33,22 +31,22 @@ void VBufferManager::destroy() {
     INF "Destroying VBufferManager" ENDL;
 
     for (size_t i = 0; i < UBO_BUFFER_COUNT; i++) {
-        vkDestroyBuffer(logicalDevice, this->uniformBuffers[i], nullptr);
-        vkFreeMemory(logicalDevice, this->uniformBuffersMemory[i], nullptr);
+        vkDestroyBuffer(VulkanDevices::logical, this->uniformBuffers[i], nullptr);
+        vkFreeMemory(VulkanDevices::logical, this->uniformBuffersMemory[i], nullptr);
     }
 
-    vkDestroyBuffer(logicalDevice, this->vertexBuffer, nullptr);
-    vkFreeMemory(logicalDevice, this->vertexBufferMemory, nullptr);
+    vkDestroyBuffer(VulkanDevices::logical, this->vertexBuffer, nullptr);
+    vkFreeMemory(VulkanDevices::logical, this->vertexBufferMemory, nullptr);
 
-    vkDestroyBuffer(logicalDevice, this->indexBuffer, nullptr);
-    vkFreeMemory(logicalDevice, this->indexBufferMemory, nullptr);
+    vkDestroyBuffer(VulkanDevices::logical, this->indexBuffer, nullptr);
+    vkFreeMemory(VulkanDevices::logical, this->indexBufferMemory, nullptr);
 
-    vkDestroyCommandPool(logicalDevice, this->transferCommandPool, nullptr);
-//    vkFreeCommandBuffers(logical, this->transferCommandPool, 1, &this->transferCommandBuffer);
+    vkDestroyCommandPool(VulkanDevices::logical, this->transferCommandPool, nullptr);
+//    vkFreeCommandBuffers(VulkanDevices::logical, this->transferCommandPool, 1, &this->transferCommandBuffer);
 }
 
 void VBufferManager::destroyCommandBuffer(VkCommandPool commandPool) {
-    vkFreeCommandBuffers(logicalDevice, commandPool, 1, &this->commandBuffer);
+    vkFreeCommandBuffers(VulkanDevices::logical, commandPool, 1, &this->commandBuffer);
 }
 
 void VBufferManager::nextUniformBuffer() {
@@ -77,15 +75,15 @@ void VBufferManager::uploadVertices(const std::vector<Vertex> &vertices) {
                  &stagingBufferMemory);
 
     void *data;
-    vkMapMemory(logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+    vkMapMemory(VulkanDevices::logical, stagingBufferMemory, 0, bufferSize, 0, &data);
     memcpy(data, vertices.data(), (size_t) bufferSize);
-    vkUnmapMemory(logicalDevice, stagingBufferMemory);
+    vkUnmapMemory(VulkanDevices::logical, stagingBufferMemory);
 
     copyBuffer(stagingBuffer, this->vertexBuffer, bufferSize);
 
     // Cleanup
-    vkDestroyBuffer(logicalDevice, stagingBuffer, nullptr);
-    vkFreeMemory(logicalDevice, stagingBufferMemory, nullptr);
+    vkDestroyBuffer(VulkanDevices::logical, stagingBuffer, nullptr);
+    vkFreeMemory(VulkanDevices::logical, stagingBufferMemory, nullptr);
 
     this->vertexCount += vertices.size();
 }
@@ -125,14 +123,14 @@ void VBufferManager::uploadIndices(const std::vector<uint32_t> &indices) {
                  &stagingBufferMemory);
 
     void *data;
-    vkMapMemory(logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+    vkMapMemory(VulkanDevices::logical, stagingBufferMemory, 0, bufferSize, 0, &data);
     memcpy(data, indices.data(), (size_t) bufferSize);
-    vkUnmapMemory(logicalDevice, stagingBufferMemory);
+    vkUnmapMemory(VulkanDevices::logical, stagingBufferMemory);
 
     copyBuffer(stagingBuffer, this->indexBuffer, bufferSize);
 
-    vkDestroyBuffer(logicalDevice, stagingBuffer, nullptr);
-    vkFreeMemory(logicalDevice, stagingBufferMemory, nullptr);
+    vkDestroyBuffer(VulkanDevices::logical, stagingBuffer, nullptr);
+    vkFreeMemory(VulkanDevices::logical, stagingBufferMemory, nullptr);
 
     this->indexCount += indices.size();
 }
@@ -176,7 +174,7 @@ void VBufferManager::createUniformBuffers() {
                      &this->uniformBuffers[i], &this->uniformBuffersMemory[i]);
 
         // Persistent mapping:
-        vkMapMemory(logicalDevice, this->uniformBuffersMemory[i], 0, bufferSize, 0,
+        vkMapMemory(VulkanDevices::logical, this->uniformBuffersMemory[i], 0, bufferSize, 0,
                     &this->uniformBuffersMapped[i]);
     }
 }
@@ -194,7 +192,7 @@ void VBufferManager::createCommandBuffer(VkCommandPool commandPool, VkCommandBuf
     // VK_COMMAND_BUFFER_LEVEL_SECONDARY can not be submitted, but called from other command buffers
     allocInfo.commandBufferCount = 1;
 
-    if (vkAllocateCommandBuffers(logicalDevice, &allocInfo, pBuffer) != VK_SUCCESS) {
+    if (vkAllocateCommandBuffers(VulkanDevices::logical, &allocInfo, pBuffer) != VK_SUCCESS) {
         THROW("Failed to allocate command buffers!");
     }
 }
@@ -204,9 +202,9 @@ void VBufferManager::createTransferCommandPool() {
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // for vkResetCommandBuffer
     // Use VK_COMMAND_POOL_CREATE_TRANSIENT_BIT if buffer is very short-lived
-    poolInfo.queueFamilyIndex = queueFamilyIndices.transferFamily.value();
+    poolInfo.queueFamilyIndex = VulkanDevices::queueFamilyIndices.transferFamily.value();
 
-    if (vkCreateCommandPool(logicalDevice, &poolInfo, nullptr, &this->transferCommandPool) !=
+    if (vkCreateCommandPool(VulkanDevices::logical, &poolInfo, nullptr, &this->transferCommandPool) !=
         VK_SUCCESS) {
         THROW("Failed to create command pool!");
     }
@@ -220,22 +218,22 @@ void VBufferManager::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, V
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.size = size;
     bufferInfo.usage = usage; // Can be and-ed with other use cases
-    if (this->queueFamilyIndices.hasUniqueTransferQueue()) {
+    if (VulkanDevices::queueFamilyIndices.hasUniqueTransferQueue()) {
         bufferInfo.sharingMode = VK_SHARING_MODE_CONCURRENT; // TODO Switch to memory barriers
         bufferInfo.queueFamilyIndexCount = 2;
-        uint32_t queueIndices[] = {this->queueFamilyIndices.graphicsFamily.value(),
-                                   this->queueFamilyIndices.transferFamily.value()};
+        uint32_t queueIndices[] = {VulkanDevices::queueFamilyIndices.graphicsFamily.value(),
+                                   VulkanDevices::queueFamilyIndices.transferFamily.value()};
         bufferInfo.pQueueFamilyIndices = queueIndices;
     } else {
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // Like swap chain images
     }
 
-    if (vkCreateBuffer(logicalDevice, &bufferInfo, nullptr, pBuffer) != VK_SUCCESS) {
+    if (vkCreateBuffer(VulkanDevices::logical, &bufferInfo, nullptr, pBuffer) != VK_SUCCESS) {
         THROW("Failed to create vertex buffer!");
     }
 
     VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(logicalDevice, *pBuffer, &memRequirements);
+    vkGetBufferMemoryRequirements(VulkanDevices::logical, *pBuffer, &memRequirements);
 
     // Malloc
     VkMemoryAllocateInfo allocInfo{};
@@ -244,12 +242,12 @@ void VBufferManager::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, V
     // Is visible and coherent when viewing from host
     allocInfo.memoryTypeIndex = VulkanMemory::findMemoryType(memRequirements.memoryTypeBits, properties);
 
-    if (vkAllocateMemory(logicalDevice, &allocInfo, nullptr, pBufferMemory) != VK_SUCCESS) {
+    if (vkAllocateMemory(VulkanDevices::logical, &allocInfo, nullptr, pBufferMemory) != VK_SUCCESS) {
         THROW("Failed to allocate vertex buffer memory!");
     }
 
     // offset % memRequirements.alignment == 0
-    vkBindBufferMemory(logicalDevice, *pBuffer, *pBufferMemory, 0);
+    vkBindBufferMemory(VulkanDevices::logical, *pBuffer, *pBufferMemory, 0);
 }
 
 void VBufferManager::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {

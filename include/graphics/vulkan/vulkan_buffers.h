@@ -16,7 +16,7 @@ namespace VulkanBuffers {
 
 class VBufferManager {
 public:
-    void create(VkPhysicalDevice physicalDevice, VkDevice logicalDevice, VulkanDevices::QueueFamilyIndices indices);
+    void create();
 
     void destroy();
 
@@ -64,8 +64,6 @@ private:
 
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
-    VkDevice logicalDevice = nullptr;
-    VulkanDevices::QueueFamilyIndices queueFamilyIndices{};
     VkPhysicalDeviceMemoryProperties memProperties{};
 
     VkDeviceMemory vertexBufferMemory = nullptr;
