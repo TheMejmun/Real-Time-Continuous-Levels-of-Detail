@@ -10,17 +10,26 @@
 #include <set>
 #include <cstdint>
 
+// Constant
 extern const std::vector<const char *> VulkanDevices::REQUIRED_DEVICE_EXTENSIONS = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 };
 extern const std::string VulkanDevices::PORTABILITY_EXTENSION = "VK_KHR_portability_subset";
 
+// Global
 VkPhysicalDevice VulkanDevices::physical = nullptr;
 VkDevice VulkanDevices::logical = nullptr;
 VkQueue VulkanDevices::graphicsQueue = nullptr;
 VkQueue VulkanDevices::presentQueue = nullptr;
 VulkanDevices::QueueFamilyIndices VulkanDevices::queueFamilyIndices{};
 VulkanDevices::OptionalFeatures  VulkanDevices::optionalFeatures{};
+
+void VulkanDevices::create() {
+    INF "Creating VulkanDevices" ENDL;
+
+    VulkanDevices::pickPhysical();
+    VulkanDevices::createLogical();
+}
 
 void VulkanDevices::printAvailablePhysicalDevices() {
     uint32_t deviceCount = 0;

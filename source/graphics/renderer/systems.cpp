@@ -4,6 +4,7 @@
 
 #include "graphics/renderer.h"
 #include "graphics/uniform_buffer_object.h"
+#include "graphics/vulkan/vulkan_swapchain.h"
 
 // SYSTEMS THAT PLUG INTO THE ECS
 
@@ -38,7 +39,7 @@ void Renderer::updateUniformBuffer(const sec &delta, ECS &ecs) {
     ubo.view = camera.camera->getView(*camera.transform);
 
     ubo.proj = camera.camera->getProjection(
-            static_cast<float >(this->swapchainExtent.width) / static_cast<float >(this->swapchainExtent.height));
+            static_cast<float >(VulkanSwapchain::swapchainExtent.width) / static_cast<float >(VulkanSwapchain::swapchainExtent.height));
 
     // TODO replace with push constants for small objects:
     // https://registry.khronos.org/vulkan/site/guide/latest/push_constants.html

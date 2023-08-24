@@ -9,6 +9,7 @@
 #include <vector>
 #include "util/glfw_include.h"
 
+// Global
 VkInstance VulkanInstance::instance = nullptr;
 
 void VulkanInstance::create(const std::string &title) {

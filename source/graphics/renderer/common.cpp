@@ -16,17 +16,16 @@ void Renderer::create(const std::string &t, GLFWwindow *w) {
 
 void Renderer::initVulkan() {
     VulkanInstance::create(this->title);
-    createSurface();
-    VulkanDevices::pickPhysical();
-    VulkanDevices::createLogical();
-    createSwapchain();
+    VulkanSwapchain::createSurface(this->window);
+    VulkanDevices::create();
+    VulkanSwapchain::createSwapchain();
     createDescriptorSetLayout();
     createGraphicsPipeline();
     this->bufferManager.create();
     createDescriptorPool();
     createDescriptorSets();
     createCommandPool();
-    createDepthResources();
+    VulkanSwapchain::createDepthResources();
     // TODO createTextureImage();
     createSyncObjects();
 }
@@ -49,7 +48,7 @@ void Renderer::destroy() {
     vkDestroyDescriptorSetLayout(VulkanDevices::logical, this->descriptorSetLayout, nullptr);
     vkDestroyPipeline(VulkanDevices::logical, this->graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(VulkanDevices::logical, this->pipelineLayout, nullptr);
-    destroySwapchain();
+    VulkanSwapchain::destroySwapchain();
     VulkanDevices::destroy();
     vkDestroySurfaceKHR(VulkanInstance::instance, VulkanSwapchain::surface, nullptr);
 

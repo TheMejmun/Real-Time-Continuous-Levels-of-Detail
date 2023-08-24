@@ -7,6 +7,7 @@
 
 #include <vulkan/vulkan.h>
 #include <vector>
+#include "util/glfw_include.h"
 
 namespace VulkanSwapchain {
     struct SwapchainSupportDetails {
@@ -16,8 +17,47 @@ namespace VulkanSwapchain {
     };
 
     extern VkSurfaceKHR surface;
+    extern uint32_t framebufferWidth, framebufferHeight;
+    extern VkSwapchainKHR swapchain;
+    extern VkFormat swapchainImageFormat;
+    extern VkExtent2D swapchainExtent;
+    extern std::vector<VkImage> swapchainImages;
+    extern std::vector<VkImageView> swapchainImageViews;
+    extern std::vector<VkFramebuffer> swapchainFramebuffers;
+    extern bool needsNewSwapchain;
+
 
     SwapchainSupportDetails querySwapchainSupport(VkPhysicalDevice device);
+
+    void createSurface(GLFWwindow *window);
+
+    static VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
+
+    static VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
+
+    VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
+
+    bool shouldRecreateSwapchain();
+
+    bool createSwapchain();
+
+    bool recreateSwapchain();
+
+    void destroySwapchain();
+
+    void createImageViews();
+
+    void createFramebuffers();
+
+    void createDepthResources();
+
+    VkFormat
+    findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+
+    VkFormat findDepthFormat();
+
+    void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
+                     VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &imageMemory);
 }
 
 #endif //REALTIME_CELL_COLLAPSE_VULKAN_SWAPCHAIN_H

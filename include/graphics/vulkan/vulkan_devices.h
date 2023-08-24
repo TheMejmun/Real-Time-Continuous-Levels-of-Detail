@@ -6,6 +6,7 @@
 #define REALTIME_CELL_COLLAPSE_VULKAN_DEVICES_H
 
 #include <vulkan/vulkan.h>
+#include <optional>
 
 namespace VulkanDevices {
     struct OptionalFeatures {
@@ -35,6 +36,8 @@ namespace VulkanDevices {
     extern VkQueue presentQueue;
     extern QueueFamilyIndices queueFamilyIndices;
     extern OptionalFeatures optionalFeatures;
+
+    void create();
 
     void pickPhysical();
 

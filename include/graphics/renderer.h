@@ -43,31 +43,11 @@ public:
     void destroy();
 
 private:
-    void createSurface();
-
-    static VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
-
-    static VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
-
-    VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
-
-    bool shouldRecreateSwapchain();
-
-    bool createSwapchain();
-
-    bool recreateSwapchain();
-
-    void destroySwapchain();
-
-    void createImageViews();
-
     void createRenderPass();
 
     void createGraphicsPipeline();
 
     void createDescriptorSetLayout();
-
-    void createFramebuffers();
 
     // TODO Take out delta time
     void updateUniformBuffer(const sec &delta, ECS &ecs);
@@ -81,16 +61,6 @@ private:
     VkShaderModule createShaderModule(const std::vector<char> &code);
 
     void createCommandPool();
-
-    void createDepthResources();
-
-    VkFormat
-    findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
-
-    VkFormat findDepthFormat();
-
-    void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
-                     VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &imageMemory);
 
     // TODO void createTextureImage();
 
@@ -121,20 +91,11 @@ private:
     void destroyRenderables(ECS &ecs);
 
     chrono_sec_point lastTimestamp = Timer::now();
-    bool needsNewSwapchain = false;
 
     std::string title;
     GLFWwindow *window = nullptr;
-    uint32_t framebufferWidth = 0, framebufferHeight = 0;
 
     VBufferManager bufferManager{};
-
-    // Swapchain
-    VkSwapchainKHR swapchain = nullptr;
-    VkFormat swapchainImageFormat{};
-    VkExtent2D swapchainExtent{};
-    std::vector<VkImage> swapchainImages;
-    std::vector<VkImageView> swapchainImageViews;
 
     // Depth testing
     // TODO destroy:
@@ -142,13 +103,11 @@ private:
 //    VkDeviceMemory depthImageMemory;
 //    VkImageView depthImageView;
 
-    VkRenderPass renderPass = nullptr;
     VkDescriptorSetLayout descriptorSetLayout = nullptr;
     VkDescriptorPool descriptorPool = nullptr;
     std::vector<VkDescriptorSet> descriptorSets{}; // Will be cleaned up with pool
     VkPipelineLayout pipelineLayout = nullptr;
     VkPipeline graphicsPipeline = nullptr;
-    std::vector<VkFramebuffer> swapchainFramebuffers;
     VkCommandPool commandPool = nullptr;
 
     VkSemaphore imageAvailableSemaphore = nullptr;

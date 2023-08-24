@@ -4,53 +4,9 @@
 
 #include "graphics/renderer.h"
 #include "graphics/uniform_buffer_object.h"
+#include "graphics/vulkan/vulkan_renderpasses.h"
+#include "graphics/vulkan/vulkan_swapchain.h"
 
-void Renderer::createRenderPass() {
-    VkAttachmentDescription colorAttachment{};
-    colorAttachment.format = this->swapchainImageFormat;
-    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT; // MSAA
-
-    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Before rendering
-    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // After rendering
-    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-
-    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // Before rendering
-    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // After rendering
-
-    // Only a single attachment for now
-    VkAttachmentReference colorAttachmentRef{};
-    colorAttachmentRef.attachment = 0; // -> layout(location = 0) out vec4 outColor
-    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL; // Color buffer
-
-    // Single subpass
-    VkSubpassDescription subpass{};
-    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS; // Is graphics subpass
-    subpass.colorAttachmentCount = 1;
-    subpass.pColorAttachments = &colorAttachmentRef; // Output attachment
-
-    VkRenderPassCreateInfo renderPassInfo{};
-    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    renderPassInfo.attachmentCount = 1;
-    renderPassInfo.pAttachments = &colorAttachment;
-    renderPassInfo.subpassCount = 1;
-    renderPassInfo.pSubpasses = &subpass;
-
-    // To avoid layout transitions before the image has been acquired
-    VkSubpassDependency dependency{};
-    dependency.srcSubpass = VK_SUBPASS_EXTERNAL; // Implicit subpass before/after the current render pass
-    dependency.dstSubpass = 0; // dstSubpass > srcSubpass !!! (unless VK_SUBPASS_EXTERNAL)
-    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // Wait for swapchain
-    dependency.srcAccessMask = 0;
-    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // The stage to wait in
-    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; // The operation that should wait
-    renderPassInfo.dependencyCount = 1;
-    renderPassInfo.pDependencies = &dependency;
-
-    if (vkCreateRenderPass(VulkanDevices::logical, &renderPassInfo, nullptr, &this->renderPass) != VK_SUCCESS) {
-        THROW("Failed to create render pass!");
-    }
-}
 
 void Renderer::createGraphicsPipeline() {
     // TODO pull these out of here
@@ -193,7 +149,7 @@ void Renderer::createGraphicsPipeline() {
     pipelineInfo.pColorBlendState = &colorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
     pipelineInfo.layout = this->pipelineLayout;
-    pipelineInfo.renderPass = this->renderPass; // https://registry.khronos.org/vulkan/specs/1.3-extensions/html/chap8.html#renderpass-compatibility
+    pipelineInfo.renderPass = VulkanRenderPasses::renderPass; // https://registry.khronos.org/vulkan/specs/1.3-extensions/html/chap8.html#renderpass-compatibility
     pipelineInfo.subpass = 0; // Subpass index for this pipeline
     // Index or handle of parent pipeline. -> Perf+ if available
     // Needs VK_PIPELINE_CREATE_DERIVATIVE_BIT flag in this struct
@@ -309,8 +265,10 @@ void Renderer::createSyncObjects() {
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; // Start off as signaled
 
-    if (vkCreateSemaphore(VulkanDevices::logical, &semaphoreInfo, nullptr, &this->imageAvailableSemaphore) != VK_SUCCESS ||
-        vkCreateSemaphore(VulkanDevices::logical, &semaphoreInfo, nullptr, &this->renderFinishedSemaphore) != VK_SUCCESS ||
+    if (vkCreateSemaphore(VulkanDevices::logical, &semaphoreInfo, nullptr, &this->imageAvailableSemaphore) !=
+        VK_SUCCESS ||
+        vkCreateSemaphore(VulkanDevices::logical, &semaphoreInfo, nullptr, &this->renderFinishedSemaphore) !=
+        VK_SUCCESS ||
         vkCreateFence(VulkanDevices::logical, &fenceInfo, nullptr, &this->inFlightFence) != VK_SUCCESS) {
         THROW("Failed to create semaphores and/or fences!");
     }
@@ -328,10 +286,10 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    renderPassInfo.renderPass = this->renderPass;
-    renderPassInfo.framebuffer = this->swapchainFramebuffers[imageIndex];
+    renderPassInfo.renderPass = VulkanRenderPasses::renderPass;
+    renderPassInfo.framebuffer = VulkanSwapchain::swapchainFramebuffers[imageIndex];
     renderPassInfo.renderArea.offset = {0, 0};
-    renderPassInfo.renderArea.extent = this->swapchainExtent;
+    renderPassInfo.renderArea.extent = VulkanSwapchain::swapchainExtent;
 
     VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
     renderPassInfo.clearValueCount = 1;
@@ -351,15 +309,15 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = static_cast<float>(this->swapchainExtent.width);
-    viewport.height = static_cast<float>(this->swapchainExtent.height);
+    viewport.width = static_cast<float>(VulkanSwapchain::swapchainExtent.width);
+    viewport.height = static_cast<float>(VulkanSwapchain::swapchainExtent.height);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(buffer, 0, 1, &viewport);
 
     VkRect2D scissor{};
     scissor.offset = {0, 0};
-    scissor.extent = this->swapchainExtent;
+    scissor.extent = VulkanSwapchain::swapchainExtent;
     vkCmdSetScissor(buffer, 0, 1, &scissor);
 
     // TODO Do not directly access uniform buffer index like this
@@ -376,11 +334,11 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
 }
 
 sec Renderer::draw(const sec &delta, ECS &ecs) {
-    if (shouldRecreateSwapchain()) {
-        bool success = recreateSwapchain();
+    if (VulkanSwapchain::shouldRecreateSwapchain()) {
+        bool success = VulkanSwapchain::recreateSwapchain();
         if (success) {
             DBG "Created new swapchain" ENDL;
-            this->needsNewSwapchain = false;
+            VulkanSwapchain::needsNewSwapchain = false;
         } else {
             DBG "Failed to create new swapchain" ENDL;
             return -1;
@@ -395,16 +353,16 @@ sec Renderer::draw(const sec &delta, ECS &ecs) {
     auto afterFence = Timer::now();
 
     uint32_t imageIndex;
-    auto acquireImageResult = vkAcquireNextImageKHR(VulkanDevices::logical, this->swapchain, UINT64_MAX,
+    auto acquireImageResult = vkAcquireNextImageKHR(VulkanDevices::logical, VulkanSwapchain::swapchain, UINT64_MAX,
                                                     this->imageAvailableSemaphore, nullptr, &imageIndex);
 
     if (acquireImageResult == VK_ERROR_OUT_OF_DATE_KHR) {
         DBG "Swapchain is out of date" ENDL;
-        recreateSwapchain();
+        VulkanSwapchain::recreateSwapchain();
         return Timer::duration(beforeFence, afterFence); // Why not
     } else if (acquireImageResult == VK_SUBOPTIMAL_KHR) {
         DBG "Swapchain is suboptimal" ENDL;
-        this->needsNewSwapchain = true;
+        VulkanSwapchain::needsNewSwapchain = true;
 
     } else if (acquireImageResult != VK_SUCCESS) {
         THROW("Failed to acquire swapchain image!");
@@ -449,7 +407,7 @@ sec Renderer::draw(const sec &delta, ECS &ecs) {
     presentInfo.waitSemaphoreCount = 1;
     presentInfo.pWaitSemaphores = signalSemaphores;
 
-    VkSwapchainKHR swapchains[] = {this->swapchain};
+    VkSwapchainKHR swapchains[] = {VulkanSwapchain::swapchain};
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapchains;
     presentInfo.pImageIndices = &imageIndex;
