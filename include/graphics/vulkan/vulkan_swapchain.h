@@ -19,13 +19,12 @@ namespace VulkanSwapchain {
     extern VkSurfaceKHR surface;
     extern uint32_t framebufferWidth, framebufferHeight;
     extern VkSwapchainKHR swapchain;
-    extern VkFormat swapchainImageFormat;
-    extern VkExtent2D swapchainExtent;
-    extern std::vector<VkImage> swapchainImages;
-    extern std::vector<VkImageView> swapchainImageViews;
-    extern std::vector<VkFramebuffer> swapchainFramebuffers;
+    extern VkFormat imageFormat;
+    extern VkExtent2D extent;
+    extern std::vector<VkImage> images;
+    extern std::vector<VkImageView> imageViews;
+    extern std::vector<VkFramebuffer> framebuffers;
     extern bool needsNewSwapchain;
-
 
     SwapchainSupportDetails querySwapchainSupport(VkPhysicalDevice device);
 

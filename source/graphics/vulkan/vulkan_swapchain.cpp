@@ -14,11 +14,11 @@
 VkSurfaceKHR VulkanSwapchain::surface = nullptr;
 uint32_t VulkanSwapchain::framebufferWidth = 0, VulkanSwapchain::framebufferHeight = 0;
 VkSwapchainKHR VulkanSwapchain::swapchain = nullptr;
-VkFormat VulkanSwapchain::swapchainImageFormat{};
-VkExtent2D VulkanSwapchain::swapchainExtent{};
-std::vector<VkImage> VulkanSwapchain::swapchainImages{};
-std::vector<VkImageView> VulkanSwapchain::swapchainImageViews{};
-std::vector<VkFramebuffer> VulkanSwapchain::swapchainFramebuffers{};
+VkFormat VulkanSwapchain::imageFormat{};
+VkExtent2D VulkanSwapchain::extent{};
+std::vector<VkImage> VulkanSwapchain::images{};
+std::vector<VkImageView> VulkanSwapchain::imageViews{};
+std::vector<VkFramebuffer> VulkanSwapchain::framebuffers{};
 bool VulkanSwapchain::needsNewSwapchain = false;
 
 // Local
@@ -208,11 +208,11 @@ bool VulkanSwapchain::createSwapchain() {
 
     // imageCount only specified a minimum!
     vkGetSwapchainImagesKHR(VulkanDevices::logical, VulkanSwapchain::swapchain, &imageCount, nullptr);
-    VulkanSwapchain::swapchainImages.resize(imageCount);
+    VulkanSwapchain::images.resize(imageCount);
     vkGetSwapchainImagesKHR(VulkanDevices::logical, VulkanSwapchain::swapchain, &imageCount,
-                            VulkanSwapchain::swapchainImages.data());
-    VulkanSwapchain::swapchainImageFormat = surfaceFormat.format;
-    VulkanSwapchain::swapchainExtent = extent;
+                            VulkanSwapchain::images.data());
+    VulkanSwapchain::imageFormat = surfaceFormat.format;
+    VulkanSwapchain::extent = extent;
 
     createImageViews();
     VulkanRenderPasses::create();
@@ -224,13 +224,13 @@ bool VulkanSwapchain::createSwapchain() {
 void VulkanSwapchain::destroySwapchain() {
     INF "Destroying VulkanSwapchain" ENDL;
 
-    for (auto &swapchainFramebuffer: VulkanSwapchain::swapchainFramebuffers) {
+    for (auto &swapchainFramebuffer: VulkanSwapchain::framebuffers) {
         vkDestroyFramebuffer(VulkanDevices::logical, swapchainFramebuffer, nullptr);
     }
 
     VulkanRenderPasses::destroy();
 
-    for (auto &swapchainImageView: VulkanSwapchain::swapchainImageViews) {
+    for (auto &swapchainImageView: VulkanSwapchain::imageViews) {
         vkDestroyImageView(VulkanDevices::logical, swapchainImageView, nullptr);
     }
 
@@ -238,14 +238,14 @@ void VulkanSwapchain::destroySwapchain() {
 }
 
 void VulkanSwapchain::createImageViews() {
-    VulkanSwapchain::swapchainImageViews.resize(VulkanSwapchain::swapchainImages.size());
+    VulkanSwapchain::imageViews.resize(VulkanSwapchain::images.size());
 
-    for (size_t i = 0; i < VulkanSwapchain::swapchainImages.size(); i++) {
+    for (size_t i = 0; i < VulkanSwapchain::images.size(); i++) {
         VkImageViewCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        createInfo.image = VulkanSwapchain::swapchainImages[i];
+        createInfo.image = VulkanSwapchain::images[i];
         createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D; // 1D - 3D or Cube maps
-        createInfo.format = VulkanSwapchain::swapchainImageFormat;
+        createInfo.format = VulkanSwapchain::imageFormat;
 
         // Can swizzle all entities to be mapped to a single channel, or map to constants, etc.
         createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -260,7 +260,7 @@ void VulkanSwapchain::createImageViews() {
         createInfo.subresourceRange.baseArrayLayer = 0;
         createInfo.subresourceRange.layerCount = 1; // No 3D
 
-        if (vkCreateImageView(VulkanDevices::logical, &createInfo, nullptr, &VulkanSwapchain::swapchainImageViews[i]) !=
+        if (vkCreateImageView(VulkanDevices::logical, &createInfo, nullptr, &VulkanSwapchain::imageViews[i]) !=
             VK_SUCCESS) {
             THROW("Failed to create image views!");
         }
@@ -270,8 +270,8 @@ void VulkanSwapchain::createImageViews() {
 void VulkanSwapchain::createDepthResources() {
     VkFormat depthFormat = findDepthFormat();
 
-//    createImage(VulkanSwapchain::swapchainExtent.width,
-//                VulkanSwapchain::swapchainExtent.height,
+//    createImage(VulkanSwapchain::extent.width,
+//                VulkanSwapchain::extent.height,
 //                depthFormat,
 //                VK_IMAGE_TILING_OPTIMAL,
 //                VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
@@ -342,11 +342,11 @@ void VulkanSwapchain::createImage(uint32_t width, uint32_t height, VkFormat form
 }
 
 void VulkanSwapchain::createFramebuffers() {
-    VulkanSwapchain::swapchainFramebuffers.resize(VulkanSwapchain::swapchainImageViews.size());
+    VulkanSwapchain::framebuffers.resize(VulkanSwapchain::imageViews.size());
 
-    for (size_t i = 0; i < VulkanSwapchain::swapchainImageViews.size(); i++) {
+    for (size_t i = 0; i < VulkanSwapchain::imageViews.size(); i++) {
         VkImageView attachments[] = {
-                VulkanSwapchain::swapchainImageViews[i]
+                VulkanSwapchain::imageViews[i]
         };
 
         VkFramebufferCreateInfo framebufferInfo{};
@@ -354,12 +354,12 @@ void VulkanSwapchain::createFramebuffers() {
         framebufferInfo.renderPass = VulkanRenderPasses::renderPass;
         framebufferInfo.attachmentCount = 1;
         framebufferInfo.pAttachments = attachments;
-        framebufferInfo.width = VulkanSwapchain::swapchainExtent.width;
-        framebufferInfo.height = VulkanSwapchain::swapchainExtent.height;
+        framebufferInfo.width = VulkanSwapchain::extent.width;
+        framebufferInfo.height = VulkanSwapchain::extent.height;
         framebufferInfo.layers = 1;
 
         if (vkCreateFramebuffer(VulkanDevices::logical, &framebufferInfo, nullptr,
-                                &VulkanSwapchain::swapchainFramebuffers[i]) !=
+                                &VulkanSwapchain::framebuffers[i]) !=
             VK_SUCCESS) {
             THROW("Failed to create framebuffer!");
         }

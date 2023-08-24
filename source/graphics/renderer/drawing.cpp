@@ -287,9 +287,9 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
     VkRenderPassBeginInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassInfo.renderPass = VulkanRenderPasses::renderPass;
-    renderPassInfo.framebuffer = VulkanSwapchain::swapchainFramebuffers[imageIndex];
+    renderPassInfo.framebuffer = VulkanSwapchain::framebuffers[imageIndex];
     renderPassInfo.renderArea.offset = {0, 0};
-    renderPassInfo.renderArea.extent = VulkanSwapchain::swapchainExtent;
+    renderPassInfo.renderArea.extent = VulkanSwapchain::extent;
 
     VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
     renderPassInfo.clearValueCount = 1;
@@ -309,15 +309,15 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = static_cast<float>(VulkanSwapchain::swapchainExtent.width);
-    viewport.height = static_cast<float>(VulkanSwapchain::swapchainExtent.height);
+    viewport.width = static_cast<float>(VulkanSwapchain::extent.width);
+    viewport.height = static_cast<float>(VulkanSwapchain::extent.height);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(buffer, 0, 1, &viewport);
 
     VkRect2D scissor{};
     scissor.offset = {0, 0};
-    scissor.extent = VulkanSwapchain::swapchainExtent;
+    scissor.extent = VulkanSwapchain::extent;
     vkCmdSetScissor(buffer, 0, 1, &scissor);
 
     // TODO Do not directly access uniform buffer index like this

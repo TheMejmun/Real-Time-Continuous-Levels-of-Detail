@@ -39,7 +39,7 @@ void Renderer::updateUniformBuffer(const sec &delta, ECS &ecs) {
     ubo.view = camera.camera->getView(*camera.transform);
 
     ubo.proj = camera.camera->getProjection(
-            static_cast<float >(VulkanSwapchain::swapchainExtent.width) / static_cast<float >(VulkanSwapchain::swapchainExtent.height));
+            static_cast<float >(VulkanSwapchain::extent.width) / static_cast<float >(VulkanSwapchain::extent.height));
 
     // TODO replace with push constants for small objects:
     // https://registry.khronos.org/vulkan/site/guide/latest/push_constants.html

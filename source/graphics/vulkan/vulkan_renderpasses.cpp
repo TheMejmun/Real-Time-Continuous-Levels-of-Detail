@@ -13,7 +13,7 @@ void VulkanRenderPasses::create() {
     INF "Creating VulkanRenderPasses" ENDL;
 
     VkAttachmentDescription colorAttachment{};
-    colorAttachment.format = VulkanSwapchain::swapchainImageFormat;
+    colorAttachment.format = VulkanSwapchain::imageFormat;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT; // MSAA
 
     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Before rendering
