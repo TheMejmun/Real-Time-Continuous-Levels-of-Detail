@@ -80,8 +80,6 @@ set(SOURCE_FILES
         ${SOURCE_FOLDER}/application.cpp
 
         ${SOURCE_FOLDER}/graphics/renderer/drawing.cpp
-        ${SOURCE_FOLDER}/graphics/renderer/device.cpp
-        ${SOURCE_FOLDER}/graphics/renderer/swapchain.cpp
         ${SOURCE_FOLDER}/graphics/renderer/common.cpp
         ${SOURCE_FOLDER}/graphics/renderer/shaders.cpp
         ${SOURCE_FOLDER}/graphics/renderer/systems.cpp
