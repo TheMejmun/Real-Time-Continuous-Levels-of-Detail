@@ -5,33 +5,12 @@
 #include "graphics/renderer.h"
 #include "graphics/vulkan/vulkan_memory.h"
 #include "graphics/vulkan/vulkan_instance.h"
+#include "graphics/vulkan/vulkan_swapchain.h"
 
 void Renderer::createSurface() {
-    if (glfwCreateWindowSurface(VulkanInstance::instance, this->window, nullptr, &this->surface) != VK_SUCCESS) {
+    if (glfwCreateWindowSurface(VulkanInstance::instance, this->window, nullptr, &VulkanSwapchain::surface) != VK_SUCCESS) {
         THROW("Failed to create window surface!");
     }
-}
-
-SwapchainSupportDetails Renderer::querySwapchainSupport(VkPhysicalDevice device) {
-    SwapchainSupportDetails details;
-
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, this->surface, &details.capabilities);
-
-    uint32_t formatCount;
-    vkGetPhysicalDeviceSurfaceFormatsKHR(device, this->surface, &formatCount, nullptr);
-    if (formatCount != 0) {
-        details.formats.resize(formatCount);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(device, this->surface, &formatCount, details.formats.data());
-    }
-
-    uint32_t presentModeCount;
-    vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
-    if (presentModeCount != 0) {
-        details.presentModes.resize(presentModeCount);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentModes.data());
-    }
-
-    return details;
 }
 
 VkSurfaceFormatKHR Renderer::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats) {
@@ -122,7 +101,7 @@ bool Renderer::recreateSwapchain() {
 }
 
 bool Renderer::createSwapchain() {
-    SwapchainSupportDetails swapchainSupport = querySwapchainSupport(VulkanDevices::physicalDevice);
+    VulkanSwapchain::SwapchainSupportDetails swapchainSupport = VulkanSwapchain::querySwapchainSupport(VulkanDevices::physicalDevice);
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapchainSupport.formats);
     VkPresentModeKHR presentMode = chooseSwapPresentMode(swapchainSupport.presentModes);
@@ -143,7 +122,7 @@ bool Renderer::createSwapchain() {
 
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    createInfo.surface = this->surface;
+    createInfo.surface = VulkanSwapchain::surface;
     createInfo.minImageCount = imageCount;
     createInfo.imageFormat = surfaceFormat.format;
     createInfo.imageColorSpace = surfaceFormat.colorSpace;
@@ -152,10 +131,10 @@ bool Renderer::createSwapchain() {
     // TODO switch to VK_IMAGE_USAGE_TRANSFER_DST_BIT for post processing, instead of directly rendering to the SC
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    uint32_t queueIndices[] = {this->queueFamilyIndices.graphicsFamily.value(),
-                               this->queueFamilyIndices.presentFamily.value()};
+    uint32_t queueIndices[] = {VulkanDevices::queueFamilyIndices.graphicsFamily.value(),
+                               VulkanDevices::queueFamilyIndices.presentFamily.value()};
 
-    if (!this->queueFamilyIndices.isUnifiedGraphicsPresentQueue()) {
+    if (!VulkanDevices::queueFamilyIndices.isUnifiedGraphicsPresentQueue()) {
         createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT; // Image is shared between queues -> no transfers!
         createInfo.queueFamilyIndexCount = 2; // Concurrent mode requires at least two indices
         createInfo.pQueueFamilyIndices = queueIndices; // Share image between these queues
@@ -233,7 +212,8 @@ void Renderer::createImageViews() {
         createInfo.subresourceRange.baseArrayLayer = 0;
         createInfo.subresourceRange.layerCount = 1; // No 3D
 
-        if (vkCreateImageView(VulkanDevices::logicalDevice, &createInfo, nullptr, &this->swapchainImageViews[i]) != VK_SUCCESS) {
+        if (vkCreateImageView(VulkanDevices::logicalDevice, &createInfo, nullptr, &this->swapchainImageViews[i]) !=
+            VK_SUCCESS) {
             THROW("Failed to create image views!");
         }
     }
@@ -276,7 +256,9 @@ VkFormat Renderer::findDepthFormat() {
     );
 }
 
-void Renderer::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
+void
+Renderer::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
+                      VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &imageMemory) {
     VkImageCreateInfo imageInfo{};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -328,7 +310,8 @@ void Renderer::createFramebuffers() {
         framebufferInfo.height = this->swapchainExtent.height;
         framebufferInfo.layers = 1;
 
-        if (vkCreateFramebuffer(VulkanDevices::logicalDevice, &framebufferInfo, nullptr, &this->swapchainFramebuffers[i]) !=
+        if (vkCreateFramebuffer(VulkanDevices::logicalDevice, &framebufferInfo, nullptr,
+                                &this->swapchainFramebuffers[i]) !=
             VK_SUCCESS) {
             THROW("Failed to create framebuffer!");
         }

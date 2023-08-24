@@ -7,16 +7,16 @@
 
 #include <vulkan/vulkan.h>
 #include "graphics/triangle.h"
-#include "graphics/queue_family_indices.h"
 #include "util/byte_size.h"
+#include "vulkan_devices.h"
 
 namespace VulkanBuffers {
-
+ // TODO
 }
 
 class VBufferManager {
 public:
-    void create(VkPhysicalDevice physicalDevice, VkDevice logicalDevice, QueueFamilyIndices indices);
+    void create(VkPhysicalDevice physicalDevice, VkDevice logicalDevice, VulkanDevices::QueueFamilyIndices indices);
 
     void destroy();
 
@@ -65,7 +65,7 @@ private:
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
     VkDevice logicalDevice = nullptr;
-    QueueFamilyIndices queueFamilyIndices{};
+    VulkanDevices::QueueFamilyIndices queueFamilyIndices{};
     VkPhysicalDeviceMemoryProperties memProperties{};
 
     VkDeviceMemory vertexBufferMemory = nullptr;

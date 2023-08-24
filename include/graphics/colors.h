@@ -5,7 +5,7 @@
 #ifndef REALTIME_CELL_COLLAPSE_COLORS_H
 #define REALTIME_CELL_COLLAPSE_COLORS_H
 
-#include <glm/glm.hpp>
+#include "util/glm_include.h"
 #include <cmath>
 #include <string>
 

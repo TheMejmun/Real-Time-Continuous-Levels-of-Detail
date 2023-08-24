@@ -4,11 +4,11 @@
 
 #include "graphics/vulkan/vulkan_buffers.h"
 #include "io/printer.h"
-#include "graphics/queue_family_indices.h"
 #include "graphics/uniform_buffer_object.h"
 #include "graphics/vulkan/vulkan_memory.h"
+#include "graphics/vulkan/vulkan_devices.h"
 
-void VBufferManager::create(VkPhysicalDevice physicalDevice, VkDevice device, QueueFamilyIndices indices) {
+void VBufferManager::create(VkPhysicalDevice physicalDevice, VkDevice device, VulkanDevices::QueueFamilyIndices indices) {
     INF "Creating VBufferManager" ENDL;
     logicalDevice = device;
     this->queueFamilyIndices = indices;

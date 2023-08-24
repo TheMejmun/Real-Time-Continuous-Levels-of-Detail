@@ -5,7 +5,7 @@
 #ifndef REALTIME_CELL_COLLAPSE_TRANSFORMER_H
 #define REALTIME_CELL_COLLAPSE_TRANSFORMER_H
 
-#include <glm/glm.hpp>
+#include "util/glm_include.h"
 
 class Transformer4 {
 public:

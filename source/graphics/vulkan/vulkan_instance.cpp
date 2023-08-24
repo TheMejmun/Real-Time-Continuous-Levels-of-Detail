@@ -4,7 +4,6 @@
 
 #include "graphics/vulkan/vulkan_instance.h"
 #include "io/printer.h"
-#include "graphics/vulkan/vulkan_state.h"
 #include "graphics/vulkan/vulkan_validation.h"
 #include <vulkan/vulkan.h>
 #include <vector>

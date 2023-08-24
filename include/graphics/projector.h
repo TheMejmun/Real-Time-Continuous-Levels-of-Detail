@@ -5,7 +5,7 @@
 #ifndef REALTIME_CELL_COLLAPSE_PROJECTOR_H
 #define REALTIME_CELL_COLLAPSE_PROJECTOR_H
 
-#include <glm/glm.hpp>
+#include "util/glm_include.h"
 #include "physics/transformer.h"
 
 struct Projector {

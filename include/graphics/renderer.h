@@ -23,7 +23,6 @@
 #include "util/timer.h"
 #include "io/printer.h"
 #include "graphics/vulkan/vulkan_buffers.h"
-#include "queue_family_indices.h"
 #include "projector.h"
 #include "ecs/ecs.h"
 #include <glm/gtc/matrix_transform.hpp> // For mat transforms
@@ -34,24 +33,6 @@
 
 //const int MAX_FRAMES_IN_FLIGHT = 2;
 // TODO https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
-
-const std::vector<const char *> REQUIRED_DEVICE_EXTENSIONS = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-};
-
-const std::string PORTABILITY_EXTENSION = "VK_KHR_portability_subset";
-
-
-struct SwapchainSupportDetails {
-    VkSurfaceCapabilitiesKHR capabilities;
-    std::vector<VkSurfaceFormatKHR> formats;
-    std::vector<VkPresentModeKHR> presentModes;
-};
-
-struct OptionalFeatures {
-    bool supportsWireframeMode = false;
-    bool physicalDeviceFeatures2 = false;
-};
 
 class Renderer {
 public:
@@ -64,27 +45,11 @@ public:
 private:
     void createSurface();
 
-    void pickPhysicalDevice();
-
-    void printAvailablePhysicalDevices();
-
-    bool isDeviceSuitable(VkPhysicalDevice device, bool strictMode);
-
-    static bool checkDeviceExtensionSupport(VkPhysicalDevice device);
-
-    static bool checkDevicePortabilityMode(VkPhysicalDevice device);
-
-    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
-
-    SwapchainSupportDetails querySwapchainSupport(VkPhysicalDevice device);
-
     static VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
 
     static VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
 
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
-
-    void createLogicalDevice();
 
     bool shouldRecreateSwapchain();
 
@@ -164,18 +129,11 @@ private:
 
     VBufferManager bufferManager{};
 
-    // Vulkan
-    QueueFamilyIndices queueFamilyIndices{};
-    VkQueue graphicsQueue = nullptr;
-    VkQueue presentQueue = nullptr;
-    OptionalFeatures optionalFeatures{};
-
     // Swapchain
-    VkSurfaceKHR surface = nullptr;
     VkSwapchainKHR swapchain = nullptr;
-    std::vector<VkImage> swapchainImages;
     VkFormat swapchainImageFormat{};
     VkExtent2D swapchainExtent{};
+    std::vector<VkImage> swapchainImages;
     std::vector<VkImageView> swapchainImageViews;
 
     // Depth testing

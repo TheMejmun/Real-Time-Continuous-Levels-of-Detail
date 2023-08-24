@@ -4,6 +4,7 @@
 
 #include "graphics/renderer.h"
 #include "graphics/vulkan/vulkan_instance.h"
+#include "graphics/vulkan/vulkan_swapchain.h"
 
 void Renderer::create(const std::string &t, GLFWwindow *w) {
     INF "Creating Renderer" ENDL;
@@ -16,12 +17,12 @@ void Renderer::create(const std::string &t, GLFWwindow *w) {
 void Renderer::initVulkan() {
     VulkanInstance::createInstance(this->title);
     createSurface();
-    pickPhysicalDevice();
-    createLogicalDevice();
+    VulkanDevices::pickPhysicalDevice();
+    VulkanDevices::createLogicalDevice();
     createSwapchain();
     createDescriptorSetLayout();
     createGraphicsPipeline();
-    this->bufferManager.create(VulkanDevices::physicalDevice, VulkanDevices::logicalDevice, this->queueFamilyIndices);
+    this->bufferManager.create(VulkanDevices::physicalDevice, VulkanDevices::logicalDevice, VulkanDevices::queueFamilyIndices);
     createDescriptorPool();
     createDescriptorSets();
     createCommandPool();
@@ -50,7 +51,7 @@ void Renderer::destroy() {
     vkDestroyPipelineLayout(VulkanDevices::logicalDevice, this->pipelineLayout, nullptr);
     destroySwapchain();
     vkDestroyDevice(VulkanDevices::logicalDevice, nullptr);
-    vkDestroySurfaceKHR(VulkanInstance::instance, this->surface, nullptr);
+    vkDestroySurfaceKHR(VulkanInstance::instance, VulkanSwapchain::surface, nullptr);
 
     VulkanInstance::destroyInstance();
 }

@@ -292,7 +292,7 @@ void Renderer::createCommandPool() {
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // for vkResetCommandBuffer
     // Use VK_COMMAND_POOL_CREATE_TRANSIENT_BIT if buffer is very short-lived
-    poolInfo.queueFamilyIndex = this->queueFamilyIndices.graphicsFamily.value();
+    poolInfo.queueFamilyIndex = VulkanDevices::queueFamilyIndices.graphicsFamily.value();
 
     if (vkCreateCommandPool(VulkanDevices::logicalDevice, &poolInfo, nullptr, &this->commandPool) != VK_SUCCESS) {
         THROW("Failed to create command pool!");
@@ -438,7 +438,7 @@ sec Renderer::draw(const sec &delta, ECS &ecs) {
     submitInfo.pSignalSemaphores = signalSemaphores;
 
 //    START_TRACE
-    if (vkQueueSubmit(this->graphicsQueue, 1, &submitInfo, this->inFlightFence) != VK_SUCCESS) {
+    if (vkQueueSubmit(VulkanDevices::graphicsQueue, 1, &submitInfo, this->inFlightFence) != VK_SUCCESS) {
         THROW("Failed to submit draw command buffer!");
     }
 //    END_TRACE("QUEUE SUBMIT")
@@ -455,7 +455,7 @@ sec Renderer::draw(const sec &delta, ECS &ecs) {
     presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr; // Per swapchain acquireImageResult
 
-    vkQueuePresentKHR(presentQueue, &presentInfo);
+    vkQueuePresentKHR(VulkanDevices::presentQueue, &presentInfo);
 
     return Timer::duration(beforeFence, afterFence);
 }

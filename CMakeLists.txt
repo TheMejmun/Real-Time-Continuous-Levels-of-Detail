@@ -41,7 +41,6 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/graphics/renderer.h
         ${HEADER_FOLDER}/graphics/colors.h
         ${HEADER_FOLDER}/graphics/vertex.h
-        ${HEADER_FOLDER}/graphics/queue_family_indices.h
         ${HEADER_FOLDER}/graphics/uniform_buffer_object.h
         ${HEADER_FOLDER}/graphics/render_mesh.h
         ${HEADER_FOLDER}/graphics/pnext_chain_reader.h
@@ -51,7 +50,6 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/graphics/vulkan/vulkan_images.h
         ${HEADER_FOLDER}/graphics/vulkan/vulkan_memory.h
         ${HEADER_FOLDER}/graphics/vulkan/vulkan_buffers.h
-        ${HEADER_FOLDER}/graphics/vulkan/vulkan_state.h
         ${HEADER_FOLDER}/graphics/vulkan/vulkan_devices.h
         ${HEADER_FOLDER}/graphics/vulkan/vulkan_instance.h
         ${HEADER_FOLDER}/graphics/vulkan/vulkan_validation.h
@@ -74,7 +72,8 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/util/importer.h
         ${HEADER_FOLDER}/util/byte_size.h
         include/util/glm_include.h
-        include/util/glfw_include.h)
+        include/util/glfw_include.h
+        include/graphics/vulkan/vulkan_swapchain.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
         ${SOURCE_FOLDER}/application.cpp
@@ -82,11 +81,9 @@ set(SOURCE_FILES
         ${SOURCE_FOLDER}/graphics/renderer/drawing.cpp
         ${SOURCE_FOLDER}/graphics/renderer/device.cpp
         ${SOURCE_FOLDER}/graphics/renderer/swapchain.cpp
-        ${SOURCE_FOLDER}/graphics/renderer/debug.cpp
         ${SOURCE_FOLDER}/graphics/renderer/common.cpp
         ${SOURCE_FOLDER}/graphics/renderer/shaders.cpp
         ${SOURCE_FOLDER}/graphics/renderer/systems.cpp
-        ${SOURCE_FOLDER}/graphics/queue_family_indices.cpp
         ${SOURCE_FOLDER}/graphics/colors.cpp
         ${SOURCE_FOLDER}/graphics/projector.cpp
 
@@ -95,7 +92,6 @@ set(SOURCE_FILES
         ${SOURCE_FOLDER}/graphics/vulkan/vulkan_memory.cpp
         ${SOURCE_FOLDER}/graphics/vulkan/vulkan_devices.cpp
         ${SOURCE_FOLDER}/graphics/vulkan/vulkan_instance.cpp
-        ${SOURCE_FOLDER}/graphics/vulkan/vulkan_state.cpp
         ${SOURCE_FOLDER}/graphics/vulkan/vulkan_validation.cpp
 
         ${SOURCE_FOLDER}/io/input_manager.cpp
@@ -111,7 +107,8 @@ set(SOURCE_FILES
 
         ${SOURCE_FOLDER}/physics/transformer.cpp
 
-        ${SOURCE_FOLDER}/util/importer.cpp)
+        ${SOURCE_FOLDER}/util/importer.cpp
+        source/graphics/vulkan/vulkan_swapchain.cpp)
 message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable
 add_executable(Realtime_Cell_Collapse ${SOURCE_FOLDER}/main.cpp ${HEADER_FILES} ${SOURCE_FILES})
