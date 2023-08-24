@@ -118,3 +118,4 @@ fabric.properties
 
 # Visual Studio
 .vs/
+vcpkg_installed/
