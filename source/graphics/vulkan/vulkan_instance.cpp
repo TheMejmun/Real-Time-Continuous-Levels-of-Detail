@@ -11,7 +11,7 @@
 
 VkInstance VulkanInstance::instance = nullptr;
 
-void VulkanInstance::createInstance(const std::string &title) {
+void VulkanInstance::create(const std::string &title) {
     INF "Creating VulkanInstance" ENDL;
 
     // App Info
@@ -42,7 +42,7 @@ void VulkanInstance::createInstance(const std::string &title) {
     createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 
     // Extensions final
-    VulkanInstance::printAvailableInstanceExtensions();
+    VulkanInstance::printAvailableExtensions();
     createInfo.enabledExtensionCount = (uint32_t) requiredExtensions.size();
     createInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
@@ -64,7 +64,7 @@ void VulkanInstance::createInstance(const std::string &title) {
     }
 }
 
-void VulkanInstance::printAvailableInstanceExtensions() {
+void VulkanInstance::printAvailableExtensions() {
     uint32_t extensionCount = 0;
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 
@@ -77,7 +77,7 @@ void VulkanInstance::printAvailableInstanceExtensions() {
     }
 }
 
-void VulkanInstance::destroyInstance() {
+void VulkanInstance::destroy() {
     INF "Destroying VulkanInstance" ENDL;
 
     vkDestroyInstance(instance, nullptr);

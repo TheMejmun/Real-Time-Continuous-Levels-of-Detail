@@ -15,8 +15,8 @@ extern const std::vector<const char *> VulkanDevices::REQUIRED_DEVICE_EXTENSIONS
 };
 extern const std::string VulkanDevices::PORTABILITY_EXTENSION = "VK_KHR_portability_subset";
 
-VkPhysicalDevice VulkanDevices::physicalDevice = nullptr;
-VkDevice VulkanDevices::logicalDevice = nullptr;
+VkPhysicalDevice VulkanDevices::physical = nullptr;
+VkDevice VulkanDevices::logical = nullptr;
 VkQueue VulkanDevices::graphicsQueue = nullptr;
 VkQueue VulkanDevices::presentQueue = nullptr;
 VulkanDevices::QueueFamilyIndices VulkanDevices::queueFamilyIndices{};
@@ -37,7 +37,7 @@ void VulkanDevices::printAvailablePhysicalDevices() {
     }
 }
 
-void VulkanDevices::pickPhysicalDevice() {
+void VulkanDevices::pickPhysical() {
     printAvailablePhysicalDevices();
 
     uint32_t deviceCount = 0;
@@ -51,32 +51,32 @@ void VulkanDevices::pickPhysicalDevice() {
     vkEnumeratePhysicalDevices(VulkanInstance::instance, &deviceCount, devices.data());
 
     for (const auto &device: devices) {
-        if (isDeviceSuitable(device, true)) {
-            VulkanDevices::physicalDevice = device;
+        if (isPhysicalDeviceSuitable(device, true)) {
+            VulkanDevices::physical = device;
             break;
-        } else if (isDeviceSuitable(device, false)) {
-            VulkanDevices::physicalDevice = device;
+        } else if (isPhysicalDeviceSuitable(device, false)) {
+            VulkanDevices::physical = device;
             // Keep looking for a better one
         }
     }
 
     VkPhysicalDeviceProperties deviceProperties;
-    vkGetPhysicalDeviceProperties(VulkanDevices::physicalDevice, &deviceProperties);
+    vkGetPhysicalDeviceProperties(VulkanDevices::physical, &deviceProperties);
     INF "Picked physical device: " << deviceProperties.deviceName ENDL;
 
-    if (VulkanDevices::physicalDevice == VK_NULL_HANDLE) {
+    if (VulkanDevices::physical == VK_NULL_HANDLE) {
         THROW("Failed to find a suitable GPU!");
     }
 
-    VulkanDevices::queueFamilyIndices = VulkanDevices::findQueueFamilies(VulkanDevices::physicalDevice);
+    VulkanDevices::queueFamilyIndices = VulkanDevices::findQueueFamilies(VulkanDevices::physical);
     VulkanDevices::queueFamilyIndices.print();
 
     VkPhysicalDeviceFeatures deviceFeatures;
-    vkGetPhysicalDeviceFeatures(VulkanDevices::physicalDevice, &deviceFeatures);
+    vkGetPhysicalDeviceFeatures(VulkanDevices::physical, &deviceFeatures);
     VulkanDevices::optionalFeatures.supportsWireframeMode = deviceFeatures.fillModeNonSolid;
 }
 
-bool VulkanDevices::isDeviceSuitable(VkPhysicalDevice device, bool strictMode) {
+bool VulkanDevices::isPhysicalDeviceSuitable(VkPhysicalDevice device, bool strictMode) {
     VkPhysicalDeviceProperties deviceProperties;
     vkGetPhysicalDeviceProperties(device, &deviceProperties);
 
@@ -94,7 +94,7 @@ bool VulkanDevices::isDeviceSuitable(VkPhysicalDevice device, bool strictMode) {
     suitable = suitable && indices.isComplete();
 
     // Supports required extensions
-    suitable = suitable && checkDeviceExtensionSupport(device);
+    suitable = suitable && checkExtensionSupport(device);
 
     // Supports required swapchain features
     auto swapchainSupport = VulkanSwapchain::querySwapchainSupport(device);
@@ -104,7 +104,7 @@ bool VulkanDevices::isDeviceSuitable(VkPhysicalDevice device, bool strictMode) {
     return suitable;
 }
 
-bool VulkanDevices::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+bool VulkanDevices::checkExtensionSupport(VkPhysicalDevice device) {
     uint32_t extensionCount;
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
@@ -127,7 +127,7 @@ bool VulkanDevices::checkDeviceExtensionSupport(VkPhysicalDevice device) {
     return requiredExtensions.empty();
 }
 
-bool VulkanDevices::checkDevicePortabilityMode(VkPhysicalDevice device) {
+bool VulkanDevices::checkPortabilityMode(VkPhysicalDevice device) {
     uint32_t extensionCount;
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
@@ -181,7 +181,7 @@ VulkanDevices::QueueFamilyIndices VulkanDevices::findQueueFamilies(VkPhysicalDev
     return indices;
 }
 
-void VulkanDevices::createLogicalDevice() {
+void VulkanDevices::createLogical() {
     auto indices = VulkanDevices::queueFamilyIndices;
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -199,7 +199,7 @@ void VulkanDevices::createLogicalDevice() {
         queueCreateInfos.push_back(queueCreateInfo);
     }
 
-    // Define the features we will use as queried in isDeviceSuitable
+    // Define the features we will use as queried in isPhysicalDeviceSuitable
     VkPhysicalDeviceFeatures deviceFeatures{};
     deviceFeatures.fillModeNonSolid = VulkanDevices::optionalFeatures.supportsWireframeMode;
 
@@ -211,7 +211,7 @@ void VulkanDevices::createLogicalDevice() {
     createInfo.pEnabledFeatures = &deviceFeatures;
 
     std::vector<const char *> requiredExtensions = REQUIRED_DEVICE_EXTENSIONS;
-    if (checkDevicePortabilityMode(VulkanDevices::physicalDevice)) {
+    if (checkPortabilityMode(VulkanDevices::physical)) {
         requiredExtensions.push_back(PORTABILITY_EXTENSION.c_str());
     }
 
@@ -225,14 +225,14 @@ void VulkanDevices::createLogicalDevice() {
         createInfo.enabledLayerCount = 0;
     }
 
-    if (vkCreateDevice(VulkanDevices::physicalDevice, &createInfo, nullptr, &VulkanDevices::logicalDevice) !=
+    if (vkCreateDevice(VulkanDevices::physical, &createInfo, nullptr, &VulkanDevices::logical) !=
         VK_SUCCESS) {
         THROW("Failed to create logical device!");
     }
 
     // Get each queue
-    vkGetDeviceQueue(VulkanDevices::logicalDevice, indices.graphicsFamily.value(), 0, &VulkanDevices::graphicsQueue);
-    vkGetDeviceQueue(VulkanDevices::logicalDevice, indices.presentFamily.value(), 0, &VulkanDevices::presentQueue);
+    vkGetDeviceQueue(VulkanDevices::logical, indices.graphicsFamily.value(), 0, &VulkanDevices::graphicsQueue);
+    vkGetDeviceQueue(VulkanDevices::logical, indices.presentFamily.value(), 0, &VulkanDevices::presentQueue);
 }
 
 

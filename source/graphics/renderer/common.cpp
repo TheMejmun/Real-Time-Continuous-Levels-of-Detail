@@ -15,14 +15,14 @@ void Renderer::create(const std::string &t, GLFWwindow *w) {
 }
 
 void Renderer::initVulkan() {
-    VulkanInstance::createInstance(this->title);
+    VulkanInstance::create(this->title);
     createSurface();
-    VulkanDevices::pickPhysicalDevice();
-    VulkanDevices::createLogicalDevice();
+    VulkanDevices::pickPhysical();
+    VulkanDevices::createLogical();
     createSwapchain();
     createDescriptorSetLayout();
     createGraphicsPipeline();
-    this->bufferManager.create(VulkanDevices::physicalDevice, VulkanDevices::logicalDevice, VulkanDevices::queueFamilyIndices);
+    this->bufferManager.create(VulkanDevices::physical, VulkanDevices::logical, VulkanDevices::queueFamilyIndices);
     createDescriptorPool();
     createDescriptorSets();
     createCommandPool();
@@ -35,23 +35,23 @@ void Renderer::destroy() {
     INF "Destroying Renderer" ENDL;
 
     // Wait until resources are not actively being used anymore
-    vkDeviceWaitIdle(VulkanDevices::logicalDevice);
+    vkDeviceWaitIdle(VulkanDevices::logical);
 
-    vkDestroySemaphore(VulkanDevices::logicalDevice, this->imageAvailableSemaphore, nullptr);
-    vkDestroySemaphore(VulkanDevices::logicalDevice, this->renderFinishedSemaphore, nullptr);
-    vkDestroyFence(VulkanDevices::logicalDevice, this->inFlightFence, nullptr);
+    vkDestroySemaphore(VulkanDevices::logical, this->imageAvailableSemaphore, nullptr);
+    vkDestroySemaphore(VulkanDevices::logical, this->renderFinishedSemaphore, nullptr);
+    vkDestroyFence(VulkanDevices::logical, this->inFlightFence, nullptr);
 
     this->bufferManager.destroy();
 
 //    this->bufferManager.destroyCommandBuffer(this->commandPool);
-    vkDestroyCommandPool(VulkanDevices::logicalDevice, this->commandPool, nullptr);
-    vkDestroyDescriptorPool(VulkanDevices::logicalDevice, this->descriptorPool, nullptr);
-    vkDestroyDescriptorSetLayout(VulkanDevices::logicalDevice, this->descriptorSetLayout, nullptr);
-    vkDestroyPipeline(VulkanDevices::logicalDevice, this->graphicsPipeline, nullptr);
-    vkDestroyPipelineLayout(VulkanDevices::logicalDevice, this->pipelineLayout, nullptr);
+    vkDestroyCommandPool(VulkanDevices::logical, this->commandPool, nullptr);
+    vkDestroyDescriptorPool(VulkanDevices::logical, this->descriptorPool, nullptr);
+    vkDestroyDescriptorSetLayout(VulkanDevices::logical, this->descriptorSetLayout, nullptr);
+    vkDestroyPipeline(VulkanDevices::logical, this->graphicsPipeline, nullptr);
+    vkDestroyPipelineLayout(VulkanDevices::logical, this->pipelineLayout, nullptr);
     destroySwapchain();
-    vkDestroyDevice(VulkanDevices::logicalDevice, nullptr);
+    vkDestroyDevice(VulkanDevices::logical, nullptr);
     vkDestroySurfaceKHR(VulkanInstance::instance, VulkanSwapchain::surface, nullptr);
 
-    VulkanInstance::destroyInstance();
+    VulkanInstance::destroy();
 }

@@ -93,7 +93,7 @@ bool Renderer::recreateSwapchain() {
 
     // May need to recreate render pass here if e.g. window moves to HDR monitor
 
-    vkDeviceWaitIdle(VulkanDevices::logicalDevice);
+    vkDeviceWaitIdle(VulkanDevices::logical);
 
     destroySwapchain();
 
@@ -101,7 +101,7 @@ bool Renderer::recreateSwapchain() {
 }
 
 bool Renderer::createSwapchain() {
-    VulkanSwapchain::SwapchainSupportDetails swapchainSupport = VulkanSwapchain::querySwapchainSupport(VulkanDevices::physicalDevice);
+    VulkanSwapchain::SwapchainSupportDetails swapchainSupport = VulkanSwapchain::querySwapchainSupport(VulkanDevices::physical);
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapchainSupport.formats);
     VkPresentModeKHR presentMode = chooseSwapPresentMode(swapchainSupport.presentModes);
@@ -157,14 +157,14 @@ bool Renderer::createSwapchain() {
 
     createInfo.oldSwapchain = nullptr; // Put previous swapchain here if overridden, e.g. if window size changed
 
-    if (vkCreateSwapchainKHR(VulkanDevices::logicalDevice, &createInfo, nullptr, &this->swapchain) != VK_SUCCESS) {
+    if (vkCreateSwapchainKHR(VulkanDevices::logical, &createInfo, nullptr, &this->swapchain) != VK_SUCCESS) {
         THROW("Failed to create swap chain!");
     }
 
     // imageCount only specified a minimum!
-    vkGetSwapchainImagesKHR(VulkanDevices::logicalDevice, this->swapchain, &imageCount, nullptr);
+    vkGetSwapchainImagesKHR(VulkanDevices::logical, this->swapchain, &imageCount, nullptr);
     this->swapchainImages.resize(imageCount);
-    vkGetSwapchainImagesKHR(VulkanDevices::logicalDevice, this->swapchain, &imageCount, this->swapchainImages.data());
+    vkGetSwapchainImagesKHR(VulkanDevices::logical, this->swapchain, &imageCount, this->swapchainImages.data());
     this->swapchainImageFormat = surfaceFormat.format;
     this->swapchainExtent = extent;
 
@@ -177,16 +177,16 @@ bool Renderer::createSwapchain() {
 
 void Renderer::destroySwapchain() {
     for (auto &swapchainFramebuffer: this->swapchainFramebuffers) {
-        vkDestroyFramebuffer(VulkanDevices::logicalDevice, swapchainFramebuffer, nullptr);
+        vkDestroyFramebuffer(VulkanDevices::logical, swapchainFramebuffer, nullptr);
     }
 
-    vkDestroyRenderPass(VulkanDevices::logicalDevice, this->renderPass, nullptr);
+    vkDestroyRenderPass(VulkanDevices::logical, this->renderPass, nullptr);
 
     for (auto &swapchainImageView: this->swapchainImageViews) {
-        vkDestroyImageView(VulkanDevices::logicalDevice, swapchainImageView, nullptr);
+        vkDestroyImageView(VulkanDevices::logical, swapchainImageView, nullptr);
     }
 
-    vkDestroySwapchainKHR(VulkanDevices::logicalDevice, this->swapchain, nullptr);
+    vkDestroySwapchainKHR(VulkanDevices::logical, this->swapchain, nullptr);
 }
 
 void Renderer::createImageViews() {
@@ -212,7 +212,7 @@ void Renderer::createImageViews() {
         createInfo.subresourceRange.baseArrayLayer = 0;
         createInfo.subresourceRange.layerCount = 1; // No 3D
 
-        if (vkCreateImageView(VulkanDevices::logicalDevice, &createInfo, nullptr, &this->swapchainImageViews[i]) !=
+        if (vkCreateImageView(VulkanDevices::logical, &createInfo, nullptr, &this->swapchainImageViews[i]) !=
             VK_SUCCESS) {
             THROW("Failed to create image views!");
         }
@@ -237,7 +237,7 @@ VkFormat Renderer::findSupportedFormat(const std::vector<VkFormat> &candidates, 
                                        VkFormatFeatureFlags features) {
     for (VkFormat format: candidates) {
         VkFormatProperties props;
-        vkGetPhysicalDeviceFormatProperties(VulkanDevices::physicalDevice, format, &props);
+        vkGetPhysicalDeviceFormatProperties(VulkanDevices::physical, format, &props);
 
         if ((tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) ||
             (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features)) {
@@ -274,23 +274,23 @@ Renderer::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageT
     imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    if (vkCreateImage(VulkanDevices::logicalDevice, &imageInfo, nullptr, &image) != VK_SUCCESS) {
+    if (vkCreateImage(VulkanDevices::logical, &imageInfo, nullptr, &image) != VK_SUCCESS) {
         THROW("Failed to create image!");
     }
 
     VkMemoryRequirements memRequirements;
-    vkGetImageMemoryRequirements(VulkanDevices::logicalDevice, image, &memRequirements);
+    vkGetImageMemoryRequirements(VulkanDevices::logical, image, &memRequirements);
 
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex = VulkanMemory::findMemoryType(memRequirements.memoryTypeBits, properties);
 
-    if (vkAllocateMemory(VulkanDevices::logicalDevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+    if (vkAllocateMemory(VulkanDevices::logical, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
         THROW("Failed to allocate image memory!");
     }
 
-    vkBindImageMemory(VulkanDevices::logicalDevice, image, imageMemory, 0);
+    vkBindImageMemory(VulkanDevices::logical, image, imageMemory, 0);
 }
 
 void Renderer::createFramebuffers() {
@@ -310,7 +310,7 @@ void Renderer::createFramebuffers() {
         framebufferInfo.height = this->swapchainExtent.height;
         framebufferInfo.layers = 1;
 
-        if (vkCreateFramebuffer(VulkanDevices::logicalDevice, &framebufferInfo, nullptr,
+        if (vkCreateFramebuffer(VulkanDevices::logical, &framebufferInfo, nullptr,
                                 &this->swapchainFramebuffers[i]) !=
             VK_SUCCESS) {
             THROW("Failed to create framebuffer!");

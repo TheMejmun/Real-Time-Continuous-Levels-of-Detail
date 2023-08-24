@@ -44,7 +44,7 @@ void VBufferManager::destroy() {
     vkFreeMemory(logicalDevice, this->indexBufferMemory, nullptr);
 
     vkDestroyCommandPool(logicalDevice, this->transferCommandPool, nullptr);
-//    vkFreeCommandBuffers(logicalDevice, this->transferCommandPool, 1, &this->transferCommandBuffer);
+//    vkFreeCommandBuffers(logical, this->transferCommandPool, 1, &this->transferCommandBuffer);
 }
 
 void VBufferManager::destroyCommandBuffer(VkCommandPool commandPool) {
@@ -101,9 +101,9 @@ void VBufferManager::createVertexBuffer() {
 //                 &stagingBufferMemory);
 //
 //    void *data;
-//    vkMapMemory(logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+//    vkMapMemory(logical, stagingBufferMemory, 0, bufferSize, 0, &data);
 //    memcpy(data, this->world.entities.renderable->vertices.data(), (size_t) bufferSize);
-//    vkUnmapMemory(logicalDevice, stagingBufferMemory);
+//    vkUnmapMemory(logical, stagingBufferMemory);
 
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
                  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &this->vertexBuffer, &this->vertexBufferMemory);
@@ -111,8 +111,8 @@ void VBufferManager::createVertexBuffer() {
 //    copyBuffer(stagingBuffer, this->vertexBuffer, bufferSize);
 //
 //    // Cleanup
-//    vkDestroyBuffer(logicalDevice, stagingBuffer, nullptr);
-//    vkFreeMemory(logicalDevice, stagingBufferMemory, nullptr);
+//    vkDestroyBuffer(logical, stagingBuffer, nullptr);
+//    vkFreeMemory(logical, stagingBufferMemory, nullptr);
 }
 
 void VBufferManager::uploadIndices(const std::vector<uint32_t> &indices) {
@@ -148,17 +148,17 @@ void VBufferManager::createIndexBuffer() {
 //                 &stagingBufferMemory);
 //
 //    void *data;
-//    vkMapMemory(logicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+//    vkMapMemory(logical, stagingBufferMemory, 0, bufferSize, 0, &data);
 //    memcpy(data, this->world.entities.renderable->indices.data(), (size_t) bufferSize);
-//    vkUnmapMemory(logicalDevice, stagingBufferMemory);
+//    vkUnmapMemory(logical, stagingBufferMemory);
 
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
                  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &this->indexBuffer, &this->indexBufferMemory);
 
 //    copyBuffer(stagingBuffer, this->indexBuffer, bufferSize);
 //
-//    vkDestroyBuffer(logicalDevice, stagingBuffer, nullptr);
-//    vkFreeMemory(logicalDevice, stagingBufferMemory, nullptr);
+//    vkDestroyBuffer(logical, stagingBuffer, nullptr);
+//    vkFreeMemory(logical, stagingBufferMemory, nullptr);
 }
 
 void VBufferManager::createUniformBuffers() {
@@ -260,7 +260,7 @@ void VBufferManager::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDevice
     allocInfo.commandBufferCount = 1;
 
 //    VkCommandBuffer transferBuffer;
-//    vkAllocateCommandBuffers(logicalDevice, &allocInfo, &transferBuffer);
+//    vkAllocateCommandBuffers(logical, &allocInfo, &transferBuffer);
 
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -284,5 +284,5 @@ void VBufferManager::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDevice
     vkQueueSubmit(this->transferQueue, 1, &submitInfo, VK_NULL_HANDLE);
     vkQueueWaitIdle(this->transferQueue); // TODO replace with fence
 
-//    vkFreeCommandBuffers(logicalDevice, this->transferCommandPool, 1, &this->transferCommandBuffer);
+//    vkFreeCommandBuffers(logical, this->transferCommandPool, 1, &this->transferCommandBuffer);
 }

@@ -29,26 +29,26 @@ namespace VulkanDevices {
 
     extern const std::vector<const char *> REQUIRED_DEVICE_EXTENSIONS;
     extern const std::string PORTABILITY_EXTENSION;
-    extern VkPhysicalDevice physicalDevice;
-    extern VkDevice logicalDevice;
+    extern VkPhysicalDevice physical;
+    extern VkDevice logical;
     extern VkQueue graphicsQueue;
     extern VkQueue presentQueue;
     extern QueueFamilyIndices queueFamilyIndices;
     extern OptionalFeatures optionalFeatures;
 
-    void pickPhysicalDevice();
+    void pickPhysical();
 
     void printAvailablePhysicalDevices();
 
-    bool isDeviceSuitable(VkPhysicalDevice device, bool strictMode);
+    bool isPhysicalDeviceSuitable(VkPhysicalDevice device, bool strictMode);
 
-    static bool checkDeviceExtensionSupport(VkPhysicalDevice device);
+    static bool checkExtensionSupport(VkPhysicalDevice device);
 
-    static bool checkDevicePortabilityMode(VkPhysicalDevice device);
+    static bool checkPortabilityMode(VkPhysicalDevice device);
 
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
-    void createLogicalDevice();
+    void createLogical();
 }
 
 #endif //REALTIME_CELL_COLLAPSE_VULKAN_DEVICES_H

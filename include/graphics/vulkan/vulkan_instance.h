@@ -11,11 +11,11 @@
 namespace VulkanInstance {
     extern VkInstance instance;
 
-    void createInstance(const std::string &title);
+    void create(const std::string &title);
 
-    void destroyInstance();
+    void destroy();
 
-    void printAvailableInstanceExtensions();
+    void printAvailableExtensions();
 }
 
 #endif //REALTIME_CELL_COLLAPSE_VULKAN_INSTANCE_H
