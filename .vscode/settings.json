@@ -1,0 +1,18 @@
+{
+    "cmake.configureArgs": [
+        "-DVCPKG_TARGET_TRIPLET=",
+        "-DVCPKG_APPLOCAL_DEPS=ON",
+        "-DX_VCPKG_APPLOCAL_DEPS_INSTALL=ON",
+        "-DVCPKG_MANIFEST_MODE=ON"
+    ],
+    "vcpkg.general.enable": true,
+    "vcpkg.target.hostTriplet": "arm64-osx",
+    "vcpkg.target.defaultTriplet": "",
+    "vcpkg.target.useStaticLib": false,
+    "cmake.configureSettings": {
+        "CMAKE_TOOLCHAIN_FILE": "/Users/samanmiran/.clion-vcpkg/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    },
+    "vcpkg.target.installDependencies": true,
+    "vcpkg.target.preferSystemLibs": false,
+    "vcpkg.target.useManifest": true
+}

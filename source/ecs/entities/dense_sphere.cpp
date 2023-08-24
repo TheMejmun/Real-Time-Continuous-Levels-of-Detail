@@ -7,7 +7,7 @@
 #include "graphics/colors.h"
 
 DenseSphere::DenseSphere() {
-    auto mesh = Importinator::importMesh("resources/models/dense_sphere.glb");
+    auto mesh = Importinator::importMesh("resources/models/monkey.glb");
     this->components.renderMesh = new RenderMesh();
     this->components.renderMesh->indices = std::move(mesh.indices);
     // this->entities.renderable->indices = { 0, 500, 1000 };

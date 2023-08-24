@@ -4,6 +4,17 @@ project(Realtime_Cell_Collapse)
 set(CMAKE_CXX_STANDARD 20)
 
 add_link_options("-v")
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
+# flags
+#add_definitions("-DGLM_FORCE_MESSAGES")
+#add_definitions("-DGLM_FORCE_DEPTH_ZERO_TO_ONE")
+#set(GLM_FORCE_MESSAGES ON)
+#vcpkg_configure_cmake(
+#        SOURCE_PATH ${SOURCE_PATH}
+#        OPTIONS
+#            -DGLM_FORCE_MESSAGES=ON
+#)
 
 if (WIN32)
     message(STATUS "Windows mode")
@@ -97,19 +108,12 @@ target_include_directories(Realtime_Cell_Collapse PUBLIC ${SOURCE_FOLDER})
 # glfw
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(Realtime_Cell_Collapse PRIVATE glfw)
-# glm
-find_package(glm CONFIG REQUIRED)
-target_link_libraries(Realtime_Cell_Collapse PRIVATE glm::glm)
 # assimp
 find_package(assimp CONFIG REQUIRED)
 target_link_libraries(Realtime_Cell_Collapse PRIVATE assimp::assimp)
 # vulkan
 find_package(Vulkan REQUIRED)
 target_link_libraries(Realtime_Cell_Collapse PRIVATE Vulkan::Vulkan)
-
-# vcpkg failed to include assimp in clion. Use a submodule for now
-#add_subdirectory(${EXTERNAL_FOLDER}/assimp)
-#target_link_libraries(Realtime_Cell_Collapse PRIVATE assimp::assimp)
 
 # output
 get_target_property(LL Realtime_Cell_Collapse LINK_LIBRARIES)

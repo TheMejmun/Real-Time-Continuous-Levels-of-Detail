@@ -10,7 +10,7 @@
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
-      "cmakeToolchain": "${env.USERPROFILE}/.vcpkg/scripts/buildsystems/vcpkg.cmake"
+      "cmakeToolchain": "${env:VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
     }
   ]
 }
