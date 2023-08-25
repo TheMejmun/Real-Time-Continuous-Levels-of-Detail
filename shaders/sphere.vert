@@ -17,6 +17,8 @@ layout(location = 0) out vec4 fragPos;
 layout(location = 1) out vec4 fragWorldPos;
 layout(location = 2) out vec3 fragColor;
 layout(location = 3) out vec3 fragNormal;
+layout(location = 4) out vec3 fragUVW;
+
 
 void main() {
     vec4 posWS = ubo.model * vec4(inPosition, 1.0);
@@ -25,6 +27,7 @@ void main() {
 
     fragPos = posSS;
     fragWorldPos = posWS;
-    fragNormal = (transpose(inverse(ubo.model)) * vec4(inNormal, 1.0)).xyz;
     fragColor = inColor;
+    fragNormal = (transpose(inverse(ubo.model)) * vec4(inNormal, 1.0)).xyz;
+    fragUVW = inUVW;
 }

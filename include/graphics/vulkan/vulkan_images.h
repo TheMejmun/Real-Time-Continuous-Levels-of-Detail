@@ -6,7 +6,7 @@
 #define REALTIME_CELL_COLLAPSE_VULKAN_IMAGES_H
 
 namespace VulkanImages{
-    // TODO
+    void createTextureImage();
 }
 
 #endif //REALTIME_CELL_COLLAPSE_VULKAN_IMAGES_H

@@ -5,6 +5,7 @@
 #include "graphics/renderer.h"
 #include "graphics/vulkan/vulkan_instance.h"
 #include "graphics/vulkan/vulkan_swapchain.h"
+#include "graphics/vulkan/vulkan_images.h"
 
 void Renderer::create(const std::string &t, GLFWwindow *w) {
     INF "Creating Renderer" ENDL;
@@ -26,7 +27,7 @@ void Renderer::initVulkan() {
     createDescriptorSets();
     createCommandPool();
     VulkanSwapchain::createDepthResources();
-    // TODO createTextureImage();
+    VulkanImages::createTextureImage();
     createSyncObjects();
 }
 

@@ -127,6 +127,9 @@ target_link_libraries(Realtime_Cell_Collapse PRIVATE assimp::assimp)
 # imgui
 find_package(imgui CONFIG REQUIRED)
 target_link_libraries(Realtime_Cell_Collapse PRIVATE imgui::imgui)
+# stb
+find_package(Stb REQUIRED)
+target_include_directories(Realtime_Cell_Collapse PRIVATE ${Stb_INCLUDE_DIR})
 # vulkan
 find_package(Vulkan REQUIRED)
 target_link_libraries(Realtime_Cell_Collapse PRIVATE Vulkan::Vulkan)
