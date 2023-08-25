@@ -18,6 +18,7 @@ namespace VulkanSwapchain {
 
     extern VkSurfaceKHR surface;
     extern uint32_t framebufferWidth, framebufferHeight;
+    extern float aspectRatio;
     extern VkSwapchainKHR swapchain;
     extern VkFormat imageFormat;
     extern VkExtent2D extent;

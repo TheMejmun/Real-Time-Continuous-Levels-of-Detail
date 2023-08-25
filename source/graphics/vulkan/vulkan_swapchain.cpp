@@ -13,6 +13,7 @@
 // Global
 VkSurfaceKHR VulkanSwapchain::surface = nullptr;
 uint32_t VulkanSwapchain::framebufferWidth = 0, VulkanSwapchain::framebufferHeight = 0;
+float VulkanSwapchain::aspectRatio = 1.0f;
 VkSwapchainKHR VulkanSwapchain::swapchain = nullptr;
 VkFormat VulkanSwapchain::imageFormat{};
 VkExtent2D VulkanSwapchain::extent{};
@@ -123,9 +124,9 @@ VkExtent2D VulkanSwapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &cap
 
     VulkanSwapchain::framebufferWidth = out.width;
     VulkanSwapchain::framebufferHeight = out.height;
+    VulkanSwapchain::aspectRatio =
+            static_cast<float >(VulkanSwapchain::extent.width) / static_cast<float >(VulkanSwapchain::extent.height);
 
-//    out.width /= 10;
-//    out.height /= 10;
     INF "Swapchain extents set to: " << out.width << " * " << out.height ENDL;
     return out;
 }
@@ -305,8 +306,8 @@ VkFormat VulkanSwapchain::findDepthFormat() {
 }
 
 void VulkanSwapchain::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
-                             VkImageUsageFlags usage,
-                             VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &imageMemory) {
+                                  VkImageUsageFlags usage,
+                                  VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &imageMemory) {
     VkImageCreateInfo imageInfo{};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
