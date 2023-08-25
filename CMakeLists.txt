@@ -53,6 +53,8 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/graphics/vulkan/vulkan_devices.h
         ${HEADER_FOLDER}/graphics/vulkan/vulkan_instance.h
         ${HEADER_FOLDER}/graphics/vulkan/vulkan_validation.h
+        ${HEADER_FOLDER}/graphics/vulkan/vulkan_swapchain.h
+        ${HEADER_FOLDER}/graphics/vulkan/vulkan_renderpasses.h
 
         ${HEADER_FOLDER}/io/input_manager.h
         ${HEADER_FOLDER}/io/window_manager.h
@@ -71,10 +73,8 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/util/timer.h
         ${HEADER_FOLDER}/util/importer.h
         ${HEADER_FOLDER}/util/byte_size.h
-        include/util/glm_include.h
-        include/util/glfw_include.h
-        include/graphics/vulkan/vulkan_swapchain.h
-        include/graphics/vulkan/vulkan_renderpasses.h)
+        ${HEADER_FOLDER}/util/glm_include.h
+        ${HEADER_FOLDER}/util/glfw_include.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
         ${SOURCE_FOLDER}/application.cpp
@@ -92,6 +92,8 @@ set(SOURCE_FILES
         ${SOURCE_FOLDER}/graphics/vulkan/vulkan_devices.cpp
         ${SOURCE_FOLDER}/graphics/vulkan/vulkan_instance.cpp
         ${SOURCE_FOLDER}/graphics/vulkan/vulkan_validation.cpp
+        ${SOURCE_FOLDER}/graphics/vulkan/vulkan_swapchain.cpp
+        ${SOURCE_FOLDER}/graphics/vulkan/vulkan_renderpasses.cpp
 
         ${SOURCE_FOLDER}/io/input_manager.cpp
         ${SOURCE_FOLDER}/io/window_manager.cpp
@@ -106,9 +108,7 @@ set(SOURCE_FILES
 
         ${SOURCE_FOLDER}/physics/transformer.cpp
 
-        ${SOURCE_FOLDER}/util/importer.cpp
-        source/graphics/vulkan/vulkan_swapchain.cpp
-        source/graphics/vulkan/vulkan_renderpasses.cpp)
+        ${SOURCE_FOLDER}/util/importer.cpp)
 message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable
 add_executable(Realtime_Cell_Collapse ${SOURCE_FOLDER}/main.cpp ${HEADER_FILES} ${SOURCE_FILES})
@@ -124,6 +124,9 @@ target_link_libraries(Realtime_Cell_Collapse PRIVATE glfw)
 # assimp
 find_package(assimp CONFIG REQUIRED)
 target_link_libraries(Realtime_Cell_Collapse PRIVATE assimp::assimp)
+# imgui
+find_package(imgui CONFIG REQUIRED)
+target_link_libraries(Realtime_Cell_Collapse PRIVATE imgui::imgui)
 # vulkan
 find_package(Vulkan REQUIRED)
 target_link_libraries(Realtime_Cell_Collapse PRIVATE Vulkan::Vulkan)
