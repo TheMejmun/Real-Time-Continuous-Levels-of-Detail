@@ -1,11 +1,11 @@
 //
 // Created by Sam on 2023-04-15.
 //
+
+#include "util/glm_include.h"
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
-#include <tic.h>
 #include "graphics/projector.h"
-#include "io/printer.h"
 
 glm::mat4 Projector::getProjection(float aspectRatio) const {
     return glm::perspective(

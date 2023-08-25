@@ -124,8 +124,7 @@ VkExtent2D VulkanSwapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &cap
 
     VulkanSwapchain::framebufferWidth = out.width;
     VulkanSwapchain::framebufferHeight = out.height;
-    VulkanSwapchain::aspectRatio =
-            static_cast<float >(VulkanSwapchain::extent.width) / static_cast<float >(VulkanSwapchain::extent.height);
+    VulkanSwapchain::aspectRatio = static_cast<float>(out.width) / static_cast<float>(out.height);
 
     INF "Swapchain extents set to: " << out.width << " * " << out.height ENDL;
     return out;

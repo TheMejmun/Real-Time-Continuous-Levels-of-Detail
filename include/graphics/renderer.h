@@ -25,7 +25,7 @@
 #include "graphics/vulkan/vulkan_buffers.h"
 #include "projector.h"
 #include "ecs/ecs.h"
-#include <glm/gtc/matrix_transform.hpp> // For mat transforms
+#include "util/glm_include.h"
 #include "graphics/vulkan/vulkan_devices.h"
 #include "graphics/vulkan/vulkan_instance.h"
 
