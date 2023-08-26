@@ -125,11 +125,15 @@ void VulkanImgui::draw(RenderState &state) {
     ImGui_ImplVulkan_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::ShowDemoWindow();
+    ImGui::Begin("Performance");
+    sec last_frametime = state.uiState.fps.frametimesLastSecond.back();
+    ImGui::Text("Total frame time:\t%1.4f", last_frametime);
+    ImGui::Text("Frames per second:\t%d", state.uiState.fps.currentFPS());
+    ImGui::End();
 
     ImGui::Render();
     ImDrawData *draw_data = ImGui::GetDrawData();
-    draw_data->FramebufferScale =scaleVec2;
+    draw_data->FramebufferScale = scaleVec2;
     ImGui_ImplVulkan_RenderDrawData(draw_data, VulkanBuffers::commandBuffer);
 }
 

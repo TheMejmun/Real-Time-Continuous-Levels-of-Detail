@@ -8,7 +8,7 @@
 #include "util/timer.h"
 
 struct UiState {
-    sec last_frametime = 1.0;
+    FPSCounter fps = {};
 };
 
 #endif //REALTIME_CELL_COLLAPSE_UI_STATE_H

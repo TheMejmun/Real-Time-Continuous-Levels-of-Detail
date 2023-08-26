@@ -5,6 +5,7 @@ layout(location = 1) in vec4 inWorldPos;
 layout(location = 2) in vec3 inColor;
 layout(location = 3) in vec3 inNormal;
 layout(location = 4) in vec3 inUVW;
+layout(location = 5) in mat4 inModelTransform;
 
 layout(location = 0) out vec4 outColor;
 
@@ -66,7 +67,7 @@ vec3 labToXyz(const vec3 lab) {
 }
 
 void main() {
-    vec3 N = normalize(inNormal);
+    vec3 N = normalize((transpose(inverse(inModelTransform)) * vec4(inNormal, 1.0)).xyz);
     vec3 L = normalize(SUN_POS - inWorldPos.xyz);
     vec3 V = normalize(CAMERA_POS - inWorldPos.xyz);
 
@@ -80,5 +81,5 @@ void main() {
     color = inColor * brightness;
 
     outColor = vec4(xyzToRgb(labToXyz(color)), 1.0f);
-    outColor = vec4(inWorldPos.xyz * brightness, 1.0f);
+//    outColor = vec4(inWorldPos.xyz * brightness, 1.0f);
 }

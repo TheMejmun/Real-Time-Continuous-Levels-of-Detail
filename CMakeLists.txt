@@ -37,6 +37,7 @@ set(LIB_FOLDER lib)
 # Add any added source/header files here
 set(HEADER_FILES
         ${HEADER_FOLDER}/application.h
+        ${HEADER_FOLDER}/imgui_example.h
 
         ${HEADER_FOLDER}/graphics/renderer.h
         ${HEADER_FOLDER}/graphics/colors.h
@@ -46,6 +47,8 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/graphics/pnext_chain_reader.h
         ${HEADER_FOLDER}/graphics/projector.h
         ${HEADER_FOLDER}/graphics/triangle.h
+        ${HEADER_FOLDER}/graphics/render_state.h
+        ${HEADER_FOLDER}/graphics/ui_state.h
 
         ${HEADER_FOLDER}/graphics/vulkan/vulkan_images.h
         ${HEADER_FOLDER}/graphics/vulkan/vulkan_memory.h
@@ -55,6 +58,8 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/graphics/vulkan/vulkan_validation.h
         ${HEADER_FOLDER}/graphics/vulkan/vulkan_swapchain.h
         ${HEADER_FOLDER}/graphics/vulkan/vulkan_renderpasses.h
+        ${HEADER_FOLDER}/graphics/vulkan/vulkan_imgui.h
+        ${HEADER_FOLDER}/graphics/vulkan/vulkan_state.h
 
         ${HEADER_FOLDER}/io/input_manager.h
         ${HEADER_FOLDER}/io/window_manager.h
@@ -74,20 +79,17 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/util/importer.h
         ${HEADER_FOLDER}/util/byte_size.h
         ${HEADER_FOLDER}/util/glm_include.h
-        ${HEADER_FOLDER}/util/glfw_include.h
-        include/graphics/vulkan/vulkan_imgui.h
-        include/graphics/vulkan/vulkan_state.h
-        include/graphics/ui_state.h
-        include/graphics/render_state.h
-        include/imgui_example.h)
+        ${HEADER_FOLDER}/util/glfw_include.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
         ${SOURCE_FOLDER}/application.cpp
+        ${SOURCE_FOLDER}/imgui_example.cpp
 
         ${SOURCE_FOLDER}/graphics/renderer/drawing.cpp
         ${SOURCE_FOLDER}/graphics/renderer/common.cpp
         ${SOURCE_FOLDER}/graphics/renderer/shaders.cpp
         ${SOURCE_FOLDER}/graphics/renderer/systems.cpp
+        ${SOURCE_FOLDER}/graphics/renderer/ui.cpp
         ${SOURCE_FOLDER}/graphics/colors.cpp
         ${SOURCE_FOLDER}/graphics/projector.cpp
 
@@ -99,6 +101,7 @@ set(SOURCE_FILES
         ${SOURCE_FOLDER}/graphics/vulkan/vulkan_validation.cpp
         ${SOURCE_FOLDER}/graphics/vulkan/vulkan_swapchain.cpp
         ${SOURCE_FOLDER}/graphics/vulkan/vulkan_renderpasses.cpp
+        ${SOURCE_FOLDER}/graphics/vulkan/vulkan_imgui.cpp
 
         ${SOURCE_FOLDER}/io/input_manager.cpp
         ${SOURCE_FOLDER}/io/window_manager.cpp
@@ -114,9 +117,7 @@ set(SOURCE_FILES
         ${SOURCE_FOLDER}/physics/transformer.cpp
 
         ${SOURCE_FOLDER}/util/importer.cpp
-        source/graphics/renderer/ui.cpp
-        source/graphics/vulkan/vulkan_imgui.cpp
-        source/imgui_example.cpp)
+        ${SOURCE_FOLDER}/util/timer.cpp)
 message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable
 add_executable(Realtime_Cell_Collapse ${SOURCE_FOLDER}/main.cpp ${HEADER_FILES} ${SOURCE_FILES})

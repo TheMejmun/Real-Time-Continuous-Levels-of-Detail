@@ -6,7 +6,7 @@
 #include "graphics/renderer.h"
 
 void Renderer::updateLastFrametime(sec delta) {
-    this->state.uiState.last_frametime = delta;
+    this->state.uiState.fps.update(delta);
 }
 
 void Renderer::drawUi() {

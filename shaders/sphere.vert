@@ -18,16 +18,24 @@ layout(location = 1) out vec4 fragWorldPos;
 layout(location = 2) out vec3 fragColor;
 layout(location = 3) out vec3 fragNormal;
 layout(location = 4) out vec3 fragUVW;
-
+layout(location = 5) out mat4 modelTransform;
 
 void main() {
-    vec4 posWS = ubo.model * vec4(inPosition, 1.0);
+    mat4 model  = ubo.model + mat4 (
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    (gl_InstanceIndex / 5 - 2) * 5, (gl_InstanceIndex % 5 - 2) * 5, 0, 0
+    );
+    vec4 posWS = model * vec4(inPosition, 1.0);
+//    posWS += vec4((gl_InstanceIndex / 5 - 2) * 5, (gl_InstanceIndex % 5 - 2) * 5, 0, 0);
     vec4 posSS = ubo.proj * ubo.view * posWS;
     gl_Position = posSS;
 
     fragPos = posSS;
     fragWorldPos = posWS;
     fragColor = inColor;
-    fragNormal = (transpose(inverse(ubo.model)) * vec4(inNormal, 1.0)).xyz;
+    fragNormal = inNormal;
     fragUVW = inUVW;
+    modelTransform = model;
 }

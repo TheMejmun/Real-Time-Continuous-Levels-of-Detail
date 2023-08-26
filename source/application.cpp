@@ -46,6 +46,7 @@ void Application::mainLoop() {
         SphereController::update(this->deltaTime, this->ecs, this->inputManager);
 
         // Render
+        this->renderer.updateLastFrametime(this->deltaTime);
         auto gpuWaitTime = this->renderer.draw(this->deltaTime, this->ecs);
 
         // Benchmark
