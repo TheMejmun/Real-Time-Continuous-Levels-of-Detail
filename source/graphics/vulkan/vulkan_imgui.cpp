@@ -105,8 +105,8 @@ void VulkanImgui::recalculateScale(RenderState &state) {
     int fbWidth, fbHeight, wWidth, wHeight;
     glfwGetFramebufferSize(state.window, &fbWidth, &fbHeight);
     glfwGetWindowSize(state.window, &wWidth, &wHeight);
-    printf("Window width: %d,\tframebuffer width: %d\n", wWidth, fbWidth);
-    printf("Window height: %d,\tframebuffer height: %d\n", wHeight, fbHeight);
+    // printf("Window width: %d,\tframebuffer width: %d\n", wWidth, fbWidth);
+    // printf("Window height: %d,\tframebuffer height: %d\n", wHeight, fbHeight);
 
     scale = (static_cast<float>(fbWidth) / static_cast<float>(wWidth));
     scaleVec2 = {scale, scale};
