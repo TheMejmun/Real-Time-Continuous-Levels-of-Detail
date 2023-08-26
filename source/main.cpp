@@ -2,8 +2,15 @@
 
 #include <iostream>
 #include "application.h"
+#include "imgui_example.h"
+
+//#define IMGUI_EXAMPLE
 
 int main() {
+#ifdef IMGUI_EXAMPLE
+    return imguiExample();
+#else
+
     Application app{};
     app.title = "Hello World!";
 
@@ -15,4 +22,6 @@ int main() {
     }
 
     return EXIT_SUCCESS;
+
+#endif
 }

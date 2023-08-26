@@ -6,6 +6,7 @@
 #include "graphics/uniform_buffer_object.h"
 #include "graphics/vulkan/vulkan_renderpasses.h"
 #include "graphics/vulkan/vulkan_swapchain.h"
+#include "graphics/vulkan/vulkan_imgui.h"
 
 
 void Renderer::createGraphicsPipeline() {
@@ -254,6 +255,8 @@ void Renderer::createCommandPool() {
         THROW("Failed to create command pool!");
     }
 
+    this->state.vulkanState.commandPool = this->commandPool;
+
     VulkanBuffers::createCommandBuffer(this->commandPool);
 }
 
@@ -326,6 +329,8 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
 
     vkCmdDrawIndexed(buffer, VulkanBuffers::indexCount, 1, 0, 0, 0);
 
+    VulkanImgui::draw(this->state);
+
     vkCmdEndRenderPass(buffer);
 
     if (vkEndCommandBuffer(buffer) != VK_SUCCESS) {
@@ -339,6 +344,7 @@ sec Renderer::draw(const sec &delta, ECS &ecs) {
         if (success) {
             DBG "Created new swapchain" ENDL;
             VulkanSwapchain::needsNewSwapchain = false;
+
         } else {
             DBG "Failed to create new swapchain" ENDL;
             return -1;

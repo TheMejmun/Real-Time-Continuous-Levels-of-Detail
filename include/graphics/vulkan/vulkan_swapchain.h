@@ -9,6 +9,8 @@
 #include <vector>
 #include "util/glfw_include.h"
 
+//const int MAX_FRAMES_IN_FLIGHT = 2;
+
 namespace VulkanSwapchain {
     struct SwapchainSupportDetails {
         VkSurfaceCapabilitiesKHR capabilities;
@@ -20,6 +22,9 @@ namespace VulkanSwapchain {
     extern uint32_t framebufferWidth, framebufferHeight;
     extern float aspectRatio;
     extern VkSwapchainKHR swapchain;
+    extern VkPresentModeKHR presentMode;
+    extern uint32_t minImageCount;
+    extern uint32_t imageCount;
     extern VkFormat imageFormat;
     extern VkExtent2D extent;
     extern std::vector<VkImage> images;

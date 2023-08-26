@@ -74,7 +74,12 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/util/importer.h
         ${HEADER_FOLDER}/util/byte_size.h
         ${HEADER_FOLDER}/util/glm_include.h
-        ${HEADER_FOLDER}/util/glfw_include.h)
+        ${HEADER_FOLDER}/util/glfw_include.h
+        include/graphics/vulkan/vulkan_imgui.h
+        include/graphics/vulkan/vulkan_state.h
+        include/graphics/ui_state.h
+        include/graphics/render_state.h
+        include/imgui_example.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
         ${SOURCE_FOLDER}/application.cpp
@@ -108,7 +113,10 @@ set(SOURCE_FILES
 
         ${SOURCE_FOLDER}/physics/transformer.cpp
 
-        ${SOURCE_FOLDER}/util/importer.cpp)
+        ${SOURCE_FOLDER}/util/importer.cpp
+        source/graphics/renderer/ui.cpp
+        source/graphics/vulkan/vulkan_imgui.cpp
+        source/imgui_example.cpp)
 message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable
 add_executable(Realtime_Cell_Collapse ${SOURCE_FOLDER}/main.cpp ${HEADER_FILES} ${SOURCE_FILES})

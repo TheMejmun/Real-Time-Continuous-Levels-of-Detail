@@ -28,10 +28,10 @@
 #include "util/glm_include.h"
 #include "graphics/vulkan/vulkan_devices.h"
 #include "graphics/vulkan/vulkan_instance.h"
+#include "graphics/render_state.h"
 
 //#define WIREFRAME_MODE
 
-//const int MAX_FRAMES_IN_FLIGHT = 2;
 // TODO https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
 
 class Renderer {
@@ -41,6 +41,8 @@ public:
     sec draw(const sec &delta, ECS &ecs);
 
     void destroy();
+
+    void updateLastFrametime(sec delta);
 
 private:
 
@@ -56,6 +58,8 @@ private:
     void createDescriptorSets();
 
     void initVulkan();
+
+    void destroyVulkan();
 
     VkShaderModule createShaderModule(const std::vector<char> &code);
 
@@ -89,10 +93,11 @@ private:
 
     void destroyRenderables(ECS &ecs);
 
-    chrono_sec_point lastTimestamp = Timer::now();
+    void drawUi();
 
-    std::string title;
-    GLFWwindow *window = nullptr;
+    RenderState state{};
+
+    chrono_sec_point lastTimestamp = Timer::now();
 
     // Depth testing
     // TODO destroy:

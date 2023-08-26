@@ -6,18 +6,21 @@
 #include "graphics/vulkan/vulkan_instance.h"
 #include "graphics/vulkan/vulkan_swapchain.h"
 #include "graphics/vulkan/vulkan_images.h"
+#include "graphics/vulkan/vulkan_imgui.h"
 
-void Renderer::create(const std::string &t, GLFWwindow *w) {
+void Renderer::create(const std::string &title, GLFWwindow *window) {
     INF "Creating Renderer" ENDL;
 
-    this->window = w;
-    this->title = t;
+    this->state.title = title;
+    this->state.window = window;
+
     this->initVulkan();
+    VulkanImgui::create(this->state);
 }
 
 void Renderer::initVulkan() {
-    VulkanInstance::create(this->title);
-    VulkanSwapchain::createSurface(this->window);
+    VulkanInstance::create(this->state.title);
+    VulkanSwapchain::createSurface(this->state.window);
     VulkanDevices::create();
     VulkanSwapchain::createSwapchain();
     createDescriptorSetLayout();
@@ -31,12 +34,7 @@ void Renderer::initVulkan() {
     createSyncObjects();
 }
 
-void Renderer::destroy() {
-    INF "Destroying Renderer" ENDL;
-
-    // Wait until resources are not actively being used anymore
-    vkDeviceWaitIdle(VulkanDevices::logical);
-
+void Renderer::destroyVulkan() {
     vkDestroySemaphore(VulkanDevices::logical, this->imageAvailableSemaphore, nullptr);
     vkDestroySemaphore(VulkanDevices::logical, this->renderFinishedSemaphore, nullptr);
     vkDestroyFence(VulkanDevices::logical, this->inFlightFence, nullptr);
@@ -54,4 +52,15 @@ void Renderer::destroy() {
     vkDestroySurfaceKHR(VulkanInstance::instance, VulkanSwapchain::surface, nullptr);
 
     VulkanInstance::destroy();
+}
+
+void Renderer::destroy() {
+    INF "Destroying Renderer" ENDL;
+
+    // Wait until resources are not actively being used anymore
+    vkDeviceWaitIdle(VulkanDevices::logical);
+
+    VulkanImgui::destroy();
+
+    this->destroyVulkan();
 }

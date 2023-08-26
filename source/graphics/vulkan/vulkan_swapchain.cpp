@@ -16,11 +16,14 @@ uint32_t VulkanSwapchain::framebufferWidth = 0, VulkanSwapchain::framebufferHeig
 float VulkanSwapchain::aspectRatio = 1.0f;
 VkSwapchainKHR VulkanSwapchain::swapchain = nullptr;
 VkFormat VulkanSwapchain::imageFormat{};
+VkPresentModeKHR VulkanSwapchain::presentMode;
 VkExtent2D VulkanSwapchain::extent{};
 std::vector<VkImage> VulkanSwapchain::images{};
 std::vector<VkImageView> VulkanSwapchain::imageViews{};
 std::vector<VkFramebuffer> VulkanSwapchain::framebuffers{};
 bool VulkanSwapchain::needsNewSwapchain = false;
+uint32_t VulkanSwapchain::minImageCount = 2;
+uint32_t VulkanSwapchain::imageCount = 2;
 
 // Local
 GLFWwindow *window = nullptr;
@@ -149,29 +152,30 @@ bool VulkanSwapchain::createSwapchain() {
             VulkanDevices::physical);
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapchainSupport.formats);
-    VkPresentModeKHR presentMode = chooseSwapPresentMode(swapchainSupport.presentModes);
-    VkExtent2D extent = chooseSwapExtent(swapchainSupport.capabilities);
+    VkPresentModeKHR presentModeTemp = chooseSwapPresentMode(swapchainSupport.presentModes);
+    VkExtent2D extentTemp = chooseSwapExtent(swapchainSupport.capabilities);
 
-    if (extent.width < 1 || extent.height < 1) {
+    if (extentTemp.width < 1 || extentTemp.height < 1) {
         VRB "Invalid swapchain extents. Retry later!" ENDL;
         VulkanSwapchain::needsNewSwapchain = true;
         return false;
     }
 
     // One more image than the minimum to avoid stalling if the driver is still working on the image
-    uint32_t imageCount = swapchainSupport.capabilities.minImageCount + 1;
-    if (swapchainSupport.capabilities.maxImageCount > 0 && imageCount > swapchainSupport.capabilities.maxImageCount) {
-        imageCount = swapchainSupport.capabilities.maxImageCount;
+    VulkanSwapchain::minImageCount = swapchainSupport.capabilities.minImageCount + 1;
+    if (swapchainSupport.capabilities.maxImageCount > 0 &&
+        VulkanSwapchain::minImageCount > swapchainSupport.capabilities.maxImageCount) {
+        VulkanSwapchain::minImageCount = swapchainSupport.capabilities.maxImageCount;
     }
-    VRB "Creating the Swapchain with at least " << imageCount << " images!" ENDL;
+    VRB "Creating the Swapchain with at least " << VulkanSwapchain::minImageCount << " images!" ENDL;
 
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     createInfo.surface = VulkanSwapchain::surface;
-    createInfo.minImageCount = imageCount;
+    createInfo.minImageCount = VulkanSwapchain::minImageCount;
     createInfo.imageFormat = surfaceFormat.format;
     createInfo.imageColorSpace = surfaceFormat.colorSpace;
-    createInfo.imageExtent = extent;
+    createInfo.imageExtent = extentTemp;
     createInfo.imageArrayLayers = 1; // Can be 2 for 3D, etc.
     // TODO switch to VK_IMAGE_USAGE_TRANSFER_DST_BIT for post processing, instead of directly rendering to the SC
     createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
@@ -195,7 +199,7 @@ bool VulkanSwapchain::createSwapchain() {
     // Do not blend with other windows
     createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 
-    createInfo.presentMode = presentMode;
+    createInfo.presentMode = presentModeTemp;
 
     // Clip pixels if obscured by other window -> Perf+
     createInfo.clipped = VK_TRUE;
@@ -207,12 +211,13 @@ bool VulkanSwapchain::createSwapchain() {
     }
 
     // imageCount only specified a minimum!
-    vkGetSwapchainImagesKHR(VulkanDevices::logical, VulkanSwapchain::swapchain, &imageCount, nullptr);
-    VulkanSwapchain::images.resize(imageCount);
-    vkGetSwapchainImagesKHR(VulkanDevices::logical, VulkanSwapchain::swapchain, &imageCount,
+    vkGetSwapchainImagesKHR(VulkanDevices::logical, VulkanSwapchain::swapchain, &VulkanSwapchain::imageCount, nullptr);
+    VulkanSwapchain::images.resize(VulkanSwapchain::imageCount);
+    vkGetSwapchainImagesKHR(VulkanDevices::logical, VulkanSwapchain::swapchain, &VulkanSwapchain::imageCount,
                             VulkanSwapchain::images.data());
     VulkanSwapchain::imageFormat = surfaceFormat.format;
-    VulkanSwapchain::extent = extent;
+    VulkanSwapchain::extent = extentTemp;
+    VulkanSwapchain::presentMode = presentModeTemp;
 
     createImageViews();
     VulkanRenderPasses::create();
