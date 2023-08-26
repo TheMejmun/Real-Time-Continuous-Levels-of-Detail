@@ -340,7 +340,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
 
 sec Renderer::draw(const sec &delta, ECS &ecs) {
     if (VulkanSwapchain::shouldRecreateSwapchain()) {
-        bool success = VulkanSwapchain::recreateSwapchain();
+        bool success = VulkanSwapchain::recreateSwapchain(this->state);
         if (success) {
             DBG "Created new swapchain" ENDL;
             VulkanSwapchain::needsNewSwapchain = false;
@@ -364,7 +364,7 @@ sec Renderer::draw(const sec &delta, ECS &ecs) {
 
     if (acquireImageResult == VK_ERROR_OUT_OF_DATE_KHR) {
         DBG "Swapchain is out of date" ENDL;
-        VulkanSwapchain::recreateSwapchain();
+        VulkanSwapchain::recreateSwapchain(this->state);
         return Timer::duration(beforeFence, afterFence); // Why not
     } else if (acquireImageResult == VK_SUBOPTIMAL_KHR) {
         DBG "Swapchain is suboptimal" ENDL;

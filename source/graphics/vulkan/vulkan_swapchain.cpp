@@ -9,6 +9,7 @@
 #include "util/glfw_include.h"
 #include "graphics/vulkan/vulkan_renderpasses.h"
 #include "graphics/vulkan/vulkan_memory.h"
+#include "graphics/vulkan/vulkan_imgui.h"
 
 // Global
 VkSurfaceKHR VulkanSwapchain::surface = nullptr;
@@ -133,7 +134,7 @@ VkExtent2D VulkanSwapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &cap
     return out;
 }
 
-bool VulkanSwapchain::recreateSwapchain() {
+bool VulkanSwapchain::recreateSwapchain(RenderState &state) {
     VRB "Recreating Swapchain" ENDL;
 
     // May need to recreate render pass here if e.g. window moves to HDR monitor
@@ -142,7 +143,13 @@ bool VulkanSwapchain::recreateSwapchain() {
 
     destroySwapchain();
 
-    return createSwapchain();
+    auto success = createSwapchain();
+
+    if(success){
+        VulkanImgui::recalculateScale(state);
+    }
+
+    return success;
 }
 
 bool VulkanSwapchain::createSwapchain() {

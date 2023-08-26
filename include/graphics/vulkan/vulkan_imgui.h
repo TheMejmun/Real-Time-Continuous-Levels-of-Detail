@@ -13,7 +13,7 @@ namespace VulkanImgui {
 
     void draw(RenderState &state);
 
-    void recreatedSwapchain(RenderState &state);
+    void recalculateScale(RenderState &state);
 
     void destroy();
 }

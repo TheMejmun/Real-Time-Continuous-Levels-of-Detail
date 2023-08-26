@@ -8,6 +8,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 #include "util/glfw_include.h"
+#include "graphics/render_state.h"
 
 //const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -46,7 +47,7 @@ namespace VulkanSwapchain {
 
     bool createSwapchain();
 
-    bool recreateSwapchain();
+    bool recreateSwapchain(RenderState &state);
 
     void destroySwapchain();
 

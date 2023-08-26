@@ -15,6 +15,8 @@
 #include <sstream>
 
 VkDescriptorPool uiDescriptorPool;
+float scale = 1.0f;
+ImVec2 scaleVec2 = {scale, scale};
 
 static void checkVkResult(VkResult err) {
     if (err == 0) return;
@@ -50,6 +52,7 @@ void VulkanImgui::create(RenderState &state) {
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
     (void) io;
+    io.WantCaptureMouse = true;
     // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
@@ -94,25 +97,30 @@ void VulkanImgui::create(RenderState &state) {
 
     checkVkResult(vkDeviceWaitIdle(VulkanDevices::logical));
     ImGui_ImplVulkan_DestroyFontUploadObjects();
+
+    VulkanImgui::recalculateScale(state);
 }
 
-void VulkanImgui::recreatedSwapchain(RenderState &state) {
-    int width, height;
-    glfwGetFramebufferSize(state.window, &width, &height);
-    if (width > 0 && height > 0) {
-//        ImGui_ImplVulkan_SetMinImageCount(VulkanSwapchain::minImageCount);
-//        ImGui_ImplVulkanH_CreateOrResizeWindow(VulkanInstance::instance,
-//                                               VulkanDevices::physical,
-//                                               VulkanDevices::logical, &g_MainWindowData,
-//                                               VulkanDevices::queueFamilyIndices.graphicsFamily.value(),
-//                                               nullptr, width, height, VulkanSwapchain::minImageCount);
-//        g_MainWindowData.FrameIndex = 0;
-    }
+void VulkanImgui::recalculateScale(RenderState &state) {
+    int fbWidth, fbHeight, wWidth, wHeight;
+    glfwGetFramebufferSize(state.window, &fbWidth, &fbHeight);
+    glfwGetWindowSize(state.window, &wWidth, &wHeight);
+    printf("Window width: %d,\tframebuffer width: %d\n", wWidth, fbWidth);
+    printf("Window height: %d,\tframebuffer height: %d\n", wHeight, fbHeight);
+
+    scale = (static_cast<float>(fbWidth) / static_cast<float>(wWidth));
+    scaleVec2 = {scale, scale};
 }
 
 void VulkanImgui::draw(RenderState &state) {
+    int width, height;
+    glfwGetFramebufferSize(state.window, &width, &height);
     ImGui::GetIO().DisplaySize = {static_cast<float>(VulkanSwapchain::framebufferWidth),
                                   static_cast<float>(VulkanSwapchain::framebufferHeight)};
+    ImGui::GetIO().DisplaySize = {static_cast<float>(width),
+                                  static_cast<float>(height)};
+    ImGui::GetIO().DisplayFramebufferScale = scaleVec2;
+
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplVulkan_NewFrame();
     ImGui::NewFrame();
@@ -121,6 +129,7 @@ void VulkanImgui::draw(RenderState &state) {
 
     ImGui::Render();
     ImDrawData *draw_data = ImGui::GetDrawData();
+    draw_data->FramebufferScale =scaleVec2;
     ImGui_ImplVulkan_RenderDrawData(draw_data, VulkanBuffers::commandBuffer);
 }
 
