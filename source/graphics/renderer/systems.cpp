@@ -12,8 +12,8 @@ void Renderer::uploadRenderables(ECS &ecs) {
     auto entities = ecs.requestEntities(Renderer::EvaluatorToAllocate);
     for (auto components: entities) {
         auto &mesh = *components->renderMesh;
-        this->bufferManager.uploadVertices(mesh.vertices);
-        this->bufferManager.uploadIndices(mesh.indices);
+        VulkanBuffers::uploadVertices(mesh.vertices);
+        VulkanBuffers::uploadIndices(mesh.indices);
         mesh.is_allocated = true;
     }
 }
@@ -43,6 +43,6 @@ void Renderer::updateUniformBuffer(const sec &delta, ECS &ecs) {
     // TODO replace with push constants for small objects:
     // https://registry.khronos.org/vulkan/site/guide/latest/push_constants.html
 
-    this->bufferManager.nextUniformBuffer();
-    memcpy(this->bufferManager.getCurrentUniformBufferMapping(), &ubo, sizeof(ubo));
+    VulkanBuffers::nextUniformBuffer();
+    memcpy(VulkanBuffers::getCurrentUniformBufferMapping(), &ubo, sizeof(ubo));
 }

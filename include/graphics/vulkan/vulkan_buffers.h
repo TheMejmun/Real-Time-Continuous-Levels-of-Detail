@@ -11,11 +11,31 @@
 #include "vulkan_devices.h"
 
 namespace VulkanBuffers {
- // TODO
-}
+    extern uint32_t maxAllocations, currentAllocations;
 
-class VBufferManager {
-public:
+    extern VkCommandBuffer commandBuffer; // Cleaned automatically by command pool clean.
+    extern VkBuffer vertexBuffer;
+    extern uint32_t vertexCount;
+    extern VkBuffer indexBuffer;
+    extern uint32_t indexCount;
+
+    extern const uint32_t UBO_BUFFER_COUNT;
+    extern const uint32_t DEFAULT_ALLOCATION_SIZE;
+
+    extern uint32_t uniformBufferIndex;
+
+    extern VkPhysicalDeviceMemoryProperties memProperties;
+
+    extern VkDeviceMemory vertexBufferMemory;
+    extern VkDeviceMemory indexBufferMemory;
+    extern std::vector<VkBuffer> uniformBuffers;
+    extern std::vector<VkDeviceMemory> uniformBuffersMemory;
+    extern std::vector<void *> uniformBuffersMapped;
+
+    extern VkQueue transferQueue;
+    extern VkCommandPool transferCommandPool;
+    extern VkCommandBuffer transferCommandBuffer; // Cleaned automatically by command pool clean.
+
     void create();
 
     void destroy();
@@ -34,21 +54,6 @@ public:
 
     VkBuffer getCurrentUniformBuffer();
 
-    VkBuffer getUniformBuffer(uint32_t i);
-
-    uint32_t maxAllocations = 0, currentAllocations = 0;
-
-    VkCommandBuffer commandBuffer = nullptr; // Cleaned automatically by command pool clean.
-    VkBuffer vertexBuffer = nullptr;
-    uint32_t vertexCount = 0;
-    VkBuffer indexBuffer = nullptr;
-    uint32_t indexCount = 0;
-
-    uint32_t uniformBufferIndex = UBO_BUFFER_COUNT;
-
-    static constexpr uint32_t UBO_BUFFER_COUNT = 2;
-    static constexpr uint32_t DEFAULT_ALLOCATION_SIZE = FROM_MB(256);
-private:
     void createVertexBuffer();
 
     void createIndexBuffer();
@@ -63,18 +68,6 @@ private:
                       VkDeviceMemory *pBufferMemory);
 
     void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-
-    VkPhysicalDeviceMemoryProperties memProperties{};
-
-    VkDeviceMemory vertexBufferMemory = nullptr;
-    VkDeviceMemory indexBufferMemory = nullptr;
-    std::vector<VkBuffer> uniformBuffers{};
-    std::vector<VkDeviceMemory> uniformBuffersMemory{};
-    std::vector<void *> uniformBuffersMapped{};
-
-    VkQueue transferQueue = nullptr;
-    VkCommandPool transferCommandPool = nullptr;
-    VkCommandBuffer transferCommandBuffer = nullptr; // Cleaned automatically by command pool clean.
-};
+}
 
 #endif //REALTIME_CELL_COLLAPSE_VULKAN_BUFFERS_H

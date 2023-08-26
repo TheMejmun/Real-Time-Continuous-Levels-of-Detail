@@ -189,13 +189,13 @@ void Renderer::createDescriptorPool() {
     // Can have multiple pools, with multiple buffers each
     VkDescriptorPoolSize poolSize{};
     poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSize.descriptorCount = static_cast<uint32_t>(VBufferManager::UBO_BUFFER_COUNT);
+    poolSize.descriptorCount = static_cast<uint32_t>(VulkanBuffers::UBO_BUFFER_COUNT);
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = 1;
     poolInfo.pPoolSizes = &poolSize;
-    poolInfo.maxSets = static_cast<uint32_t>(VBufferManager::UBO_BUFFER_COUNT);
+    poolInfo.maxSets = static_cast<uint32_t>(VulkanBuffers::UBO_BUFFER_COUNT);
     // poolInfo.flags = 0; // Investigate VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT
     // Would mean that Descriptor sets could individually be freed to their pools
     // Would allow vkFreeDescriptorSets
@@ -207,21 +207,21 @@ void Renderer::createDescriptorPool() {
 }
 
 void Renderer::createDescriptorSets() {
-    std::vector<VkDescriptorSetLayout> layouts(VBufferManager::UBO_BUFFER_COUNT, this->descriptorSetLayout);
+    std::vector<VkDescriptorSetLayout> layouts(VulkanBuffers::UBO_BUFFER_COUNT, this->descriptorSetLayout);
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = this->descriptorPool;
-    allocInfo.descriptorSetCount = static_cast<uint32_t>(VBufferManager::UBO_BUFFER_COUNT);
+    allocInfo.descriptorSetCount = static_cast<uint32_t>(VulkanBuffers::UBO_BUFFER_COUNT);
     allocInfo.pSetLayouts = layouts.data();
 
-    this->descriptorSets.resize(VBufferManager::UBO_BUFFER_COUNT);
+    this->descriptorSets.resize(VulkanBuffers::UBO_BUFFER_COUNT);
     if (vkAllocateDescriptorSets(VulkanDevices::logical, &allocInfo, this->descriptorSets.data()) != VK_SUCCESS) {
         throw std::runtime_error("Failed to allocate descriptor sets!");
     }
 
-    for (size_t i = 0; i < VBufferManager::UBO_BUFFER_COUNT; i++) {
+    for (size_t i = 0; i < VulkanBuffers::UBO_BUFFER_COUNT; i++) {
         VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = this->bufferManager.getUniformBuffer(i);
+        bufferInfo.buffer = VulkanBuffers::uniformBuffers[i];
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(UniformBufferObject); // Or VK_WHOLE_SIZE
 
@@ -254,7 +254,7 @@ void Renderer::createCommandPool() {
         THROW("Failed to create command pool!");
     }
 
-    this->bufferManager.createCommandBuffer(this->commandPool);
+    VulkanBuffers::createCommandBuffer(this->commandPool);
 }
 
 void Renderer::createSyncObjects() {
@@ -299,12 +299,12 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
 
     vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->graphicsPipeline);
 
-    VkBuffer vertexBuffers[] = {this->bufferManager.vertexBuffer};
+    VkBuffer vertexBuffers[] = {VulkanBuffers::vertexBuffer};
     VkDeviceSize offsets[] = {0};
     // Offset and number of bindings, buffers, and byte offsets from those buffers
     vkCmdBindVertexBuffers(buffer, 0, 1, vertexBuffers, offsets);
 
-    vkCmdBindIndexBuffer(buffer, this->bufferManager.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindIndexBuffer(buffer, VulkanBuffers::indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
     VkViewport viewport{};
     viewport.x = 0.0f;
@@ -322,9 +322,9 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
 
     // TODO Do not directly access uniform buffer index like this
     vkCmdBindDescriptorSets(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipelineLayout, 0, 1,
-                            &this->descriptorSets[this->bufferManager.uniformBufferIndex], 0, nullptr);
+                            &this->descriptorSets[VulkanBuffers::uniformBufferIndex], 0, nullptr);
 
-    vkCmdDrawIndexed(buffer, this->bufferManager.indexCount, 1, 0, 0, 0);
+    vkCmdDrawIndexed(buffer, VulkanBuffers::indexCount, 1, 0, 0, 0);
 
     vkCmdEndRenderPass(buffer);
 
@@ -371,7 +371,7 @@ sec Renderer::draw(const sec &delta, ECS &ecs) {
     // Avoid deadlock if recreating -> move to after success check
     vkResetFences(VulkanDevices::logical, 1, &this->inFlightFence);
 
-    auto commandBuffer = this->bufferManager.commandBuffer;
+    auto commandBuffer = VulkanBuffers::commandBuffer;
 
     updateUniformBuffer(delta, ecs);
 

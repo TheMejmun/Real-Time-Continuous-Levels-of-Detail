@@ -94,8 +94,6 @@ private:
     std::string title;
     GLFWwindow *window = nullptr;
 
-    VBufferManager bufferManager{};
-
     // Depth testing
     // TODO destroy:
 //    VkImage depthImage;
