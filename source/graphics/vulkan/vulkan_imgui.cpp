@@ -12,6 +12,7 @@
 #include "graphics/vulkan/vulkan_swapchain.h"
 #include "graphics/vulkan/vulkan_renderpasses.h"
 #include "graphics/vulkan/vulkan_buffers.h"
+#include "graphics/ui.h"
 #include <sstream>
 
 VkDescriptorPool uiDescriptorPool;
@@ -125,11 +126,7 @@ void VulkanImgui::draw(RenderState &state) {
     ImGui_ImplVulkan_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::Begin("Performance");
-    sec last_frametime = state.uiState.fps.frametimesLastSecond.back();
-    ImGui::Text("Total frame time:\t%1.4f", last_frametime);
-    ImGui::Text("Frames per second:\t%d", state.uiState.fps.currentFPS());
-    ImGui::End();
+    UI::update(state);
 
     ImGui::Render();
     ImDrawData *draw_data = ImGui::GetDrawData();

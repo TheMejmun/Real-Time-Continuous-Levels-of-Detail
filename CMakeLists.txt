@@ -79,7 +79,8 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/util/importer.h
         ${HEADER_FOLDER}/util/byte_size.h
         ${HEADER_FOLDER}/util/glm_include.h
-        ${HEADER_FOLDER}/util/glfw_include.h)
+        ${HEADER_FOLDER}/util/glfw_include.h
+        include/graphics/ui.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
         ${SOURCE_FOLDER}/application.cpp
@@ -117,7 +118,8 @@ set(SOURCE_FILES
         ${SOURCE_FOLDER}/physics/transformer.cpp
 
         ${SOURCE_FOLDER}/util/importer.cpp
-        ${SOURCE_FOLDER}/util/timer.cpp)
+        ${SOURCE_FOLDER}/util/timer.cpp
+        source/graphics/ui.cpp)
 message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable
 add_executable(Realtime_Cell_Collapse ${SOURCE_FOLDER}/main.cpp ${HEADER_FILES} ${SOURCE_FILES})

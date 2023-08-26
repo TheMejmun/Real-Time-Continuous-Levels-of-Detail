@@ -17,7 +17,7 @@ VkBuffer VulkanBuffers::indexBuffer = nullptr;
 uint32_t VulkanBuffers::indexCount = 0;
 
 extern const uint32_t VulkanBuffers::UBO_BUFFER_COUNT = 2;
-extern const uint32_t VulkanBuffers::DEFAULT_ALLOCATION_SIZE = FROM_MB(256);
+extern const uint32_t VulkanBuffers::DEFAULT_ALLOCATION_SIZE = FROM_MB(256); // 128MB is not enough
 
 uint32_t VulkanBuffers::uniformBufferIndex = UBO_BUFFER_COUNT;
 
