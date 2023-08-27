@@ -29,6 +29,7 @@
 #include "graphics/vulkan/vulkan_devices.h"
 #include "graphics/vulkan/vulkan_instance.h"
 #include "graphics/render_state.h"
+#include <thread>
 
 //#define WIREFRAME_MODE
 
@@ -77,19 +78,28 @@ private:
     };
 
     static inline bool EvaluatorToAllocate(const Components &components) {
-        return components.renderMesh != nullptr && components.isAlive() && !components.renderMesh->is_allocated;
+        return components.renderMesh != nullptr && components.isAlive() && !components.renderMesh->isAllocated;
+    };
+
+    static inline bool EvaluatorToAllocateSimplifiedMesh(const Components &components) {
+        return components.renderMesh != nullptr && components.isAlive() &&
+               components.renderMeshSimplified != nullptr && components.updateSimplifiedMesh;
     };
 
     static inline bool EvaluatorToDeallocate(const Components &components) {
-        return components.renderMesh != nullptr && components.willDestroy && components.renderMesh->is_allocated;
+        return components.renderMesh != nullptr && components.willDestroy && components.renderMesh->isAllocated;
     };
 
     static inline bool EvaluatorToDraw(const Components &components) {
         return components.renderMesh != nullptr && components.transform != nullptr && components.isAlive() &&
-               components.renderMesh->is_allocated;
+               components.renderMesh->isAllocated;
     };
 
     void uploadRenderables(ECS &ecs);
+
+    void uploadSimplifiedMeshes(ECS &ecs);
+
+    void uploadSimplifiedMeshesThreadHelper(ECS &ecs);
 
     void destroyRenderables(ECS &ecs);
 
@@ -98,6 +108,11 @@ private:
     RenderState state{};
 
     chrono_sec_point lastTimestamp = Timer::now();
+    std::thread simplifiedMeshAllocationThread{};
+    bool simplifiedMeshAllocationThreadRunning = false;
+    uint32_t simplifiedMeshAllocationThreadFrameCounter = 0;
+
+    uint32_t meshBufferToUse = 0;
 
     // Depth testing
     // TODO destroy:

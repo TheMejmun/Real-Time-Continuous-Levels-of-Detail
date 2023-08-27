@@ -11,23 +11,22 @@
 #include "vulkan_devices.h"
 
 namespace VulkanBuffers {
+    extern const uint32_t UBO_BUFFER_COUNT;
+    extern const uint32_t DEFAULT_ALLOCATION_SIZE;
     extern uint32_t maxAllocations, currentAllocations;
 
     extern VkCommandBuffer commandBuffer; // Cleaned automatically by command pool clean.
-    extern VkBuffer vertexBuffer;
-    extern uint32_t vertexCount;
-    extern VkBuffer indexBuffer;
-    extern uint32_t indexCount;
-
-    extern const uint32_t UBO_BUFFER_COUNT;
-    extern const uint32_t DEFAULT_ALLOCATION_SIZE;
-
+    extern VkBuffer vertexBuffer[];
+    extern uint32_t vertexCount[];
+    extern VkBuffer indexBuffer[];
+    extern uint32_t indexCount[];
+    extern int simplifiedMeshBuffersIndex;
     extern uint32_t uniformBufferIndex;
 
     extern VkPhysicalDeviceMemoryProperties memProperties;
 
-    extern VkDeviceMemory vertexBufferMemory;
-    extern VkDeviceMemory indexBufferMemory;
+    extern VkDeviceMemory vertexBufferMemory[];
+    extern VkDeviceMemory indexBufferMemory[];
     extern std::vector<VkBuffer> uniformBuffers;
     extern std::vector<VkDeviceMemory> uniformBuffersMemory;
     extern std::vector<void *> uniformBuffersMapped;
@@ -48,9 +47,9 @@ namespace VulkanBuffers {
 
     void *getCurrentUniformBufferMapping();
 
-    void uploadVertices(const std::vector<Vertex> &vertices);
+    void uploadVertices(const std::vector<Vertex> &vertices, int simplifiedMeshBufferIndex = -1);
 
-    void uploadIndices(const std::vector<uint32_t> &indices);
+    void uploadIndices(const std::vector<uint32_t> &indices, int simplifiedMeshBufferIndex = -1);
 
     VkBuffer getCurrentUniformBuffer();
 

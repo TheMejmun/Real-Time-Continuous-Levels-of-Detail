@@ -12,15 +12,24 @@
 #include <functional>
 #include "graphics/render_mesh.h"
 #include "graphics/projector.h"
+#include <mutex>
 
 struct Components {
     bool isDestroyed = false;
     bool willDestroy = false;
     uint32_t index = 0;
+
     RenderMesh *renderMesh = nullptr;
+    RenderMesh *renderMeshSimplified = nullptr;
+    // TODO move these somewhere else
+    bool updateSimplifiedMesh = false;
+    std::mutex *simplifiedMeshMutex = nullptr;
+
     Transformer4 *transform = nullptr;
+
     bool isMainCamera = false;
     Projector *camera = nullptr;
+
     bool isRotatingSphere = false;
 
     /**
@@ -35,6 +44,9 @@ struct Components {
         this->transform = nullptr;
         delete this->camera;
         this->camera = nullptr;
+
+        delete this->simplifiedMeshMutex;
+        this->simplifiedMeshMutex = nullptr;
 
         this->isDestroyed = true;
         this->willDestroy = false;

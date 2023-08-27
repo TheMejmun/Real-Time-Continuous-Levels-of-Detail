@@ -11,10 +11,11 @@
 uint32_t VulkanBuffers::maxAllocations = 0, VulkanBuffers::currentAllocations = 0;
 
 VkCommandBuffer VulkanBuffers::commandBuffer = nullptr; // Cleaned automatically by command pool clean.
-VkBuffer VulkanBuffers::vertexBuffer = nullptr;
-uint32_t VulkanBuffers::vertexCount = 0;
-VkBuffer VulkanBuffers::indexBuffer = nullptr;
-uint32_t VulkanBuffers::indexCount = 0;
+VkBuffer VulkanBuffers::vertexBuffer[] = {nullptr, nullptr, nullptr};
+uint32_t VulkanBuffers::vertexCount[] = {0, 0, 0};
+VkBuffer VulkanBuffers::indexBuffer[] = {nullptr, nullptr, nullptr};
+uint32_t VulkanBuffers::indexCount[] = {0, 0, 0};
+int VulkanBuffers::simplifiedMeshBuffersIndex = -1;
 
 extern const uint32_t VulkanBuffers::UBO_BUFFER_COUNT = 2;
 extern const uint32_t VulkanBuffers::DEFAULT_ALLOCATION_SIZE = FROM_MB(256); // 128MB is not enough
@@ -23,8 +24,8 @@ uint32_t VulkanBuffers::uniformBufferIndex = UBO_BUFFER_COUNT;
 
 VkPhysicalDeviceMemoryProperties VulkanBuffers::memProperties{};
 
-VkDeviceMemory VulkanBuffers::vertexBufferMemory = nullptr;
-VkDeviceMemory VulkanBuffers::indexBufferMemory = nullptr;
+VkDeviceMemory VulkanBuffers::vertexBufferMemory[] = {nullptr, nullptr, nullptr};
+VkDeviceMemory VulkanBuffers::indexBufferMemory[] = {nullptr, nullptr, nullptr};
 std::vector<VkBuffer> VulkanBuffers::uniformBuffers{};
 std::vector<VkDeviceMemory> VulkanBuffers::uniformBuffersMemory{};
 std::vector<void *> VulkanBuffers::uniformBuffersMapped{};
@@ -61,11 +62,15 @@ void VulkanBuffers::destroy() {
         vkFreeMemory(VulkanDevices::logical, VulkanBuffers::uniformBuffersMemory[i], nullptr);
     }
 
-    vkDestroyBuffer(VulkanDevices::logical, VulkanBuffers::vertexBuffer, nullptr);
-    vkFreeMemory(VulkanDevices::logical, VulkanBuffers::vertexBufferMemory, nullptr);
+    for (auto buffer: VulkanBuffers::vertexBuffer)
+        vkDestroyBuffer(VulkanDevices::logical, buffer, nullptr);
+    for (auto bufferMemory: VulkanBuffers::vertexBufferMemory)
+        vkFreeMemory(VulkanDevices::logical, bufferMemory, nullptr);
 
-    vkDestroyBuffer(VulkanDevices::logical, VulkanBuffers::indexBuffer, nullptr);
-    vkFreeMemory(VulkanDevices::logical, VulkanBuffers::indexBufferMemory, nullptr);
+    for (auto buffer: VulkanBuffers::indexBuffer)
+        vkDestroyBuffer(VulkanDevices::logical, buffer, nullptr);
+    for (auto bufferMemory: VulkanBuffers::indexBufferMemory)
+        vkFreeMemory(VulkanDevices::logical, bufferMemory, nullptr);
 
     vkDestroyCommandPool(VulkanDevices::logical, VulkanBuffers::transferCommandPool, nullptr);
 //    vkFreeCommandBuffers(VulkanDevices::logical, VulkanBuffers::transferCommandPool, 1, &VulkanBuffers::transferCommandBuffer);
@@ -87,7 +92,7 @@ VkBuffer VulkanBuffers::getCurrentUniformBuffer() {
     return VulkanBuffers::uniformBuffers[VulkanBuffers::uniformBufferIndex];
 }
 
-void VulkanBuffers::uploadVertices(const std::vector<Vertex> &vertices) {
+void VulkanBuffers::uploadVertices(const std::vector<Vertex> &vertices, int simplifiedIndex) {
     VkDeviceSize bufferSize = sizeof(Vertex) * vertices.size();
 
     VkBuffer stagingBuffer;
@@ -101,23 +106,30 @@ void VulkanBuffers::uploadVertices(const std::vector<Vertex> &vertices) {
     memcpy(data, vertices.data(), (size_t) bufferSize);
     vkUnmapMemory(VulkanDevices::logical, stagingBufferMemory);
 
-    copyBuffer(stagingBuffer, VulkanBuffers::vertexBuffer, bufferSize);
+    // +1 because -1 means that we are accessing a non-simplified buffer
+    copyBuffer(stagingBuffer, VulkanBuffers::vertexBuffer[simplifiedIndex + 1], bufferSize);
 
     // Cleanup
     vkDestroyBuffer(VulkanDevices::logical, stagingBuffer, nullptr);
     vkFreeMemory(VulkanDevices::logical, stagingBufferMemory, nullptr);
 
-    VulkanBuffers::vertexCount += vertices.size();
+    // TODO += -> = revert
+    VulkanBuffers::vertexCount[simplifiedIndex + 1] = vertices.size();
+
+    // TODO for now assume that initial buffer is only copied to once
+    VulkanBuffers::simplifiedMeshBuffersIndex = simplifiedIndex;
 }
 
 void VulkanBuffers::createVertexBuffer() {
     VkDeviceSize bufferSize = DEFAULT_ALLOCATION_SIZE;
 
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &VulkanBuffers::vertexBuffer, &VulkanBuffers::vertexBufferMemory);
+    for (int i = 0; i < 3; ++i)
+        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VulkanBuffers::vertexBuffer + i,
+                     VulkanBuffers::vertexBufferMemory + i);
 }
 
-void VulkanBuffers::uploadIndices(const std::vector<uint32_t> &indices) {
+void VulkanBuffers::uploadIndices(const std::vector<uint32_t> &indices, int simplifiedIndex) {
     VkDeviceSize bufferSize = sizeof(uint32_t) * indices.size();
 
     VkBuffer stagingBuffer;
@@ -131,19 +143,26 @@ void VulkanBuffers::uploadIndices(const std::vector<uint32_t> &indices) {
     memcpy(data, indices.data(), (size_t) bufferSize);
     vkUnmapMemory(VulkanDevices::logical, stagingBufferMemory);
 
-    copyBuffer(stagingBuffer, VulkanBuffers::indexBuffer, bufferSize);
+    // +1 because -1 means that we are accessing a non-simplified buffer
+    copyBuffer(stagingBuffer, VulkanBuffers::indexBuffer[simplifiedIndex + 1], bufferSize);
 
     vkDestroyBuffer(VulkanDevices::logical, stagingBuffer, nullptr);
     vkFreeMemory(VulkanDevices::logical, stagingBufferMemory, nullptr);
 
-    VulkanBuffers::indexCount += indices.size();
+    // TODO += -> = revert
+    VulkanBuffers::indexCount[simplifiedIndex + 1] = indices.size();
+
+    // TODO for now assume that initial buffer is only copied to once
+    VulkanBuffers::simplifiedMeshBuffersIndex = simplifiedIndex;
 }
 
 void VulkanBuffers::createIndexBuffer() {
     VkDeviceSize bufferSize = DEFAULT_ALLOCATION_SIZE;
 
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &VulkanBuffers::indexBuffer, &VulkanBuffers::indexBufferMemory);
+    for (int i = 0; i < 3; ++i)
+        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VulkanBuffers::indexBuffer + i,
+                     VulkanBuffers::indexBufferMemory + i);
 }
 
 void VulkanBuffers::createUniformBuffers() {

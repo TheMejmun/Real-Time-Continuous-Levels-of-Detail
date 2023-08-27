@@ -57,6 +57,9 @@ void Renderer::destroyVulkan() {
 void Renderer::destroy() {
     INF "Destroying Renderer" ENDL;
 
+    if (this->simplifiedMeshAllocationThreadRunning)
+        this->simplifiedMeshAllocationThread.join();
+
     // Wait until resources are not actively being used anymore
     vkDeviceWaitIdle(VulkanDevices::logical);
 
