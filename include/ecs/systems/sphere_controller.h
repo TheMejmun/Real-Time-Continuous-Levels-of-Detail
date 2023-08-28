@@ -12,6 +12,8 @@
 namespace SphereController {
     void update(const sec &delta, ECS &ecs, InputManager &inputManager);
 
+    void destroy();
+
     static inline bool EvaluatorRotatingSphere(const Components &components) {
         return components.transform != nullptr && components.isAlive() && components.isRotatingSphere;
     };

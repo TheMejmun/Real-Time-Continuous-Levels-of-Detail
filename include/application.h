@@ -13,8 +13,6 @@
 #include "io/input_manager.h"
 #include "ecs/ecs.h"
 #include "io/printer.h"
-#include "ecs/systems/camera_controller.h"
-#include "ecs/systems/sphere_controller.h"
 
 class Application {
 public:

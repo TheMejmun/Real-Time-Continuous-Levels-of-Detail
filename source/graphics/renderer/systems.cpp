@@ -18,28 +18,40 @@ void Renderer::uploadRenderables(ECS &ecs) {
     }
 }
 
+bool meshUploadDone = false;
+
 void Renderer::uploadSimplifiedMeshesThreadHelper(ECS &ecs) {
     if (this->simplifiedMeshAllocationThreadRunning) {
         this->simplifiedMeshAllocationThreadFrameCounter++;
-        if (this->simplifiedMeshAllocationThread.joinable()) {
+        if (meshUploadDone && this->simplifiedMeshAllocationThread.joinable()) {
             this->simplifiedMeshAllocationThread.join();
-            DBG "Upload thread took " << this->simplifiedMeshAllocationThreadFrameCounter << " frames" ENDL;
+            DBG
+                    "Upload thread took " << this->simplifiedMeshAllocationThreadFrameCounter << " frames"
+                                          ENDL;
             this->simplifiedMeshAllocationThreadRunning = false;
         }
     } else {
         this->simplifiedMeshAllocationThreadRunning = true;
         this->simplifiedMeshAllocationThreadFrameCounter = 0;
-        this->simplifiedMeshAllocationThread = std::thread([&] {
-            uploadSimplifiedMeshes(ecs);
-        });
+        meshUploadDone = false;
+        auto function = [this](ECS &ecs, uint32_t &bufferToUseAfter, bool &done) {
+            uploadSimplifiedMeshes(ecs, bufferToUseAfter);
+            done = true;
+        };
+
+        this->simplifiedMeshAllocationThread = std::thread(function, std::ref(ecs), std::ref(this->meshBufferToUse),
+                                                           std::ref(meshUploadDone));
+
     }
 }
 
-void Renderer::uploadSimplifiedMeshes(ECS &ecs) {
+void Renderer::uploadSimplifiedMeshes(ECS &ecs, uint32_t &bufferToUseAfter) {
     auto entities = ecs.requestEntities(Renderer::EvaluatorToAllocateSimplifiedMesh);
 
-    int bufferToUse = 1 - VulkanBuffers::simplifiedMeshBuffersIndex;
-    if (bufferToUse < 0) bufferToUse = 0;
+    int simplifiedMeshBuffer = 1 - VulkanBuffers::simplifiedMeshBuffersIndex;
+    if (simplifiedMeshBuffer < 0 || simplifiedMeshBuffer > 1) simplifiedMeshBuffer = 0;
+
+    bool didUpdateAny = false;
 
     for (auto components: entities) {
         if (components->simplifiedMeshMutex == nullptr) {
@@ -47,17 +59,22 @@ void Renderer::uploadSimplifiedMeshes(ECS &ecs) {
         }
         if (components->simplifiedMeshMutex->try_lock()) {
             auto &mesh = *components->renderMeshSimplified;
-            VulkanBuffers::uploadVertices(mesh.vertices, bufferToUse);
-            VulkanBuffers::uploadIndices(mesh.indices, bufferToUse);
+            // TODO this upload produced a bad access error
+            VulkanBuffers::uploadVertices(mesh.vertices, simplifiedMeshBuffer);
+            VulkanBuffers::uploadIndices(mesh.indices, simplifiedMeshBuffer);
             mesh.isAllocated = true;
-            mesh.bufferIndex = bufferToUse;
+            mesh.bufferIndex = simplifiedMeshBuffer;
             components->updateSimplifiedMesh = false;
             components->simplifiedMeshMutex->unlock();
+
+            didUpdateAny = true;
         }
     }
 
-    // TODO test if this actually modifies the renderer by reference
-    this->meshBufferToUse = bufferToUse;
+    if (didUpdateAny) {
+        // Treat this like a return
+        bufferToUseAfter = simplifiedMeshBuffer + 1;
+    }
 }
 
 void Renderer::destroyRenderables(ECS &ecs) {

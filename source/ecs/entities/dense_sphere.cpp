@@ -21,4 +21,6 @@ DenseSphere::DenseSphere() {
     this->components.transform->scale(2.0f);
 
     this->components.isRotatingSphere = true;
+
+    this->components.simplifyMesh = true;
 }

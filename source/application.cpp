@@ -7,6 +7,10 @@
 #include "io/printer.h"
 #include "ecs/entities/dense_sphere.h"
 #include "ecs/entities/camera.h"
+#include "ecs/systems/camera_controller.h"
+#include "ecs/systems/sphere_controller.h"
+
+#include "ecs/systems/mesh_simplifier_controller.h"
 
 void Application::run() {
     init();
@@ -44,6 +48,7 @@ void Application::mainLoop() {
 
         CameraController::update(this->deltaTime, this->ecs, this->inputManager);
         SphereController::update(this->deltaTime, this->ecs, this->inputManager);
+        MeshSimplifierController::update(this->ecs);
 
         // Render
         this->renderer.updateLastFrametime(this->deltaTime);
@@ -69,6 +74,10 @@ void Application::mainLoop() {
 
 void Application::destroy() {
     INF "Destroying Application" ENDL;
+
+    CameraController::destroy();
+    SphereController::destroy();
+    MeshSimplifierController::destroy();
 
     this->renderer.destroy();
     this->windowManager.destroy();

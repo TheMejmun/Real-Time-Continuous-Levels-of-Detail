@@ -12,6 +12,8 @@
 namespace CameraController{
     void update(const sec &delta, ECS &ecs, InputManager &inputManager);
 
+    void destroy();
+
     static inline bool EvaluatorActiveCamera(const Components &components) {
         return components.camera != nullptr && components.transform != nullptr && components.isAlive() && components.isMainCamera;
     };

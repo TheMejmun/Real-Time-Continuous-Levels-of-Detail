@@ -107,7 +107,8 @@ void VulkanBuffers::uploadVertices(const std::vector<Vertex> &vertices, int simp
     vkUnmapMemory(VulkanDevices::logical, stagingBufferMemory);
 
     // +1 because -1 means that we are accessing a non-simplified buffer
-    copyBuffer(stagingBuffer, VulkanBuffers::vertexBuffer[simplifiedIndex + 1], bufferSize);
+    auto dstBuffer = VulkanBuffers::vertexBuffer[simplifiedIndex + 1];
+    copyBuffer(stagingBuffer, dstBuffer, bufferSize);
 
     // Cleanup
     vkDestroyBuffer(VulkanDevices::logical, stagingBuffer, nullptr);

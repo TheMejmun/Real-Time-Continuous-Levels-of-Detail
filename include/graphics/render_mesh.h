@@ -14,7 +14,7 @@ struct RenderMesh {
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
     bool isAllocated = false;
-    int bufferIndex = -1;
+    int bufferIndex = 0;
 };
 
 #endif //REALTIME_CELL_COLLAPSE_RENDER_MESH_H

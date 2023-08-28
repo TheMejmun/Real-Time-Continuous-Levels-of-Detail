@@ -19,3 +19,7 @@ void CameraController::update(const sec &delta, ECS &ecs, InputManager &inputMan
     }
     camera.transform->translate(glm::vec3(0, 0, delta * move));
 }
+
+void CameraController::destroy() {
+
+}

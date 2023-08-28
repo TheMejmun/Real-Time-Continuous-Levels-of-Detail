@@ -23,3 +23,7 @@ void SphereController::update(const sec &delta, ECS &ecs, InputManager &inputMan
         }
     }
 }
+
+void SphereController::destroy() {
+
+}

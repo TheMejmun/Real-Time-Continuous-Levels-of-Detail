@@ -23,7 +23,8 @@ struct Components {
     RenderMesh *renderMeshSimplified = nullptr;
     // TODO move these somewhere else
     bool updateSimplifiedMesh = false;
-    std::mutex *simplifiedMeshMutex = nullptr;
+    std::mutex *simplifiedMeshMutex =new std::mutex{};
+    bool simplifyMesh = false;
 
     Transformer4 *transform = nullptr;
 

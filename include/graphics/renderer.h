@@ -97,7 +97,8 @@ private:
 
     void uploadRenderables(ECS &ecs);
 
-    void uploadSimplifiedMeshes(ECS &ecs);
+    // return buffer to use
+   void  uploadSimplifiedMeshes(ECS &ecs, uint32_t& bufferToUse);
 
     void uploadSimplifiedMeshesThreadHelper(ECS &ecs);
 
