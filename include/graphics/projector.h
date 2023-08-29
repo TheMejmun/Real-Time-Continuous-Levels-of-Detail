@@ -10,8 +10,8 @@
 
 struct Projector {
     float fovYRadians = glm::radians(45.0f);
-    float zNear = 0.01f;
-    float zFar = 100.0f;
+    float zNear = 1.f;
+    float zFar = 100.f;
     glm::vec4 worldUp = {0, -1, 0, 0};
     glm::vec4 cameraFront = {0, 0, 1, 1};
 

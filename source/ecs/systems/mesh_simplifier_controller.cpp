@@ -99,6 +99,29 @@ Triangle orientTriangle(const Triangle &triangle) {
     }
 }
 
+class IndexLut {
+public:
+    uint32_t getMapping(uint32_t forIndex) {
+        uint32_t found = forIndex;
+        while (this->indexMappings[found] != 0) {
+            found = this->indexMappings[found] - 1; // because the stored mappings are +1
+        }
+        return found;
+    }
+
+    void insertMapping(uint32_t from, uint32_t to) {
+        this->indexMappings[from] = to + 1;
+    }
+
+    void resize(size_t size) {
+        this->indexMappings.resize(size);
+    }
+
+private:
+    // Treat 0 as not set -> all ids += 1
+    std::vector<uint32_t> indexMappings{};
+};
+
 void simplify(const Components *camera, const Components *components) {
     // Init
     const auto model = components->transform->forward;
@@ -116,73 +139,93 @@ void simplify(const Components *camera, const Components *components) {
     indicesRaster.resize(rasterWidth * rasterHeight);
     DBG "Using raster " << rasterWidth << " * " << rasterHeight << " for meshSimplification" ENDL;
 
+    IndexLut lut{};
+    lut.resize(from.vertices.size());
+
     // Calculate raster positions
     for (uint32_t i = 0; i < from.vertices.size(); ++i) {
         const glm::vec4 projectedPos = proj * view * model * glm::vec4(from.vertices[i].pos, 1.0f);
-        const float depth = projectedPos.z;
+        const float depth = projectedPos.z/ projectedPos.w;
         const long x = lroundf((projectedPos.x * 0.5f / projectedPos.w + 0.5f) * static_cast<float>(rasterWidth));
         const long y = lroundf((projectedPos.y * 0.5f / projectedPos.w + 0.5f) * static_cast<float>(rasterHeight));
         const uint32_t rasterIndex = y * rasterWidth + x;
 
-//        DBG x << " " << y ENDL;
+//        printf("x: %d, y: %d, z: %3.3f, w: %3.3f\n", x, y, depth, projectedPos.w);
 
         if (x < 0 || x >= rasterWidth || y < 0 || y >= rasterHeight) {
             continue;
         }
 
-        if (!indicesRaster[rasterIndex].set || indicesRaster[rasterIndex].depth > depth) {
+        if (!indicesRaster[rasterIndex].set) {
             indicesRaster[rasterIndex] = {
                     .set = true,
                     .index = i,
                     .worldPos = from.vertices[i].pos,
                     .depth = depth
             };
+        } else if (indicesRaster[rasterIndex].depth > depth) {
+            // stored vertex is farther away
+            lut.insertMapping(indicesRaster[rasterIndex].index, i); // Map previously stored to the current vertex
+            indicesRaster[rasterIndex] = {
+                    .set = true,
+                    .index = i,
+                    .worldPos = from.vertices[i].pos,
+                    .depth = depth
+            };
+        } else {
+            // stored vertex is closer to the camera than the current
+            lut.insertMapping(i, indicesRaster[rasterIndex].index); // Map previously stored to the current vertex
         }
     }
     DBG "Calculated raster positions" ENDL;
 
-    // Count
-    std::vector<SVO> reducedSVOs{};
-    for (auto &svo: indicesRaster) {
-        if (svo.set) reducedSVOs.push_back(svo);
-    }
-    DBG "Using " << reducedSVOs.size() << " vertices, instead of " << from.vertices.size() << " before." ENDL;
-
-    // Map original vertices to reduced ones
-    std::vector<uint32_t> indexMappings{};
-    indexMappings.resize(from.vertices.size());
+    // Count vertices & store depth
+    uint32_t newVertexCount = 0;
     std::vector<float> mappedDepth{};
     mappedDepth.resize(from.vertices.size());
-
-    for (uint32_t i = 0; i < from.vertices.size(); ++i) {
-        // For each original vertex, find the closest new one
-        float closestDistance = std::numeric_limits<float>::max();
-        SVO *closest = nullptr;
-
-        for (auto &svo: reducedSVOs) {
-            // Check distance and pick index of closest -> put into mappings
-            const float distance = distance2(svo.worldPos, from.vertices[i].pos);
-            if (distance < closestDistance) {
-                closest = &svo;
-                closestDistance = distance;
-            }
+    for (auto &svo: indicesRaster) {
+        if (svo.set) {
+            newVertexCount++;
+            mappedDepth[svo.index] = svo.depth;
         }
-
-        indexMappings[i] = closest->index;
-        mappedDepth[i] = closest->depth;
     }
-    DBG "Mapped indices" ENDL;
+    DBG "Using " << newVertexCount << " vertices, instead of " << from.vertices.size() << " before." ENDL;
+
+//    // Map original vertices to reduced ones
+//    std::vector<uint32_t> indexMappings{};
+//    indexMappings.resize(from.vertices.size());
+//    std::vector<float> mappedDepth{};
+//    mappedDepth.resize(from.vertices.size());
+//
+//    for (uint32_t i = 0; i < from.vertices.size(); ++i) {
+//        // For each original vertex, find the closest new one
+//        float closestDistance = std::numeric_limits<float>::max();
+//        SVO *closest = nullptr;
+//
+//        for (auto &svo: reducedSVOs) {
+//            // Check distance and pick index of closest -> put into mappings
+//            const float distance = distance2(svo.worldPos, from.vertices[i].pos);
+//            if (distance < closestDistance) {
+//                closest = &svo;
+//                closestDistance = distance;
+//            }
+//        }
+//
+//        indexMappings[i] = closest->index;
+//        mappedDepth[i] = closest->depth;
+//    }
+//    DBG "Mapped indices" ENDL;
 
     // Filter triangles
     std::unordered_set<Triangle, Triangle> triangles{}; // Ordered set
     for (uint32_t i = 0; i < from.indices.size(); i += 3) {
-        const Triangle triangle = orientTriangle({
-                                                         .id1 = indexMappings[from.indices[i]],
-                                                         .id2 = indexMappings[from.indices[i + 1]],
-                                                         .id3 = indexMappings[from.indices[i + 2]],
-                                                         .minDepth = minDepth(mappedDepth[from.indices[i]],
-                                                                              mappedDepth[from.indices[i + 1]],
-                                                                              mappedDepth[from.indices[i + 2]])
+        const uint32_t id1 = lut.getMapping(from.indices[i]);
+        const uint32_t id2 = lut.getMapping(from.indices[i + 1]);
+        const uint32_t id3 = lut.getMapping(from.indices[i + 2]);
+        const Triangle triangle = orientTriangle({id1, id2, id3,
+                                                  minDepth(mappedDepth[id1],
+                                                           mappedDepth[id2],
+                                                           mappedDepth[id3])
                                                  });
         if (triangle.id1 != triangle.id2 &&
             triangle.id1 != triangle.id3 &&
