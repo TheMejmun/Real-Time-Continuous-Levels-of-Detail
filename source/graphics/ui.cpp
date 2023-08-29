@@ -13,6 +13,8 @@ void UI::update(RenderState &state) {
 
     ImGui::Begin("Realtime Cell Collapse");
 
+    ImGui::SeparatorText("Performance");
+
     if(!state.uiState.fps.frametimesLastSecond.empty()) {
         sec lastFrametime = state.uiState.fps.frametimesLastSecond.back();
         ImGui::Text("Total frame time: %1.4f seconds", lastFrametime);
@@ -45,6 +47,14 @@ void UI::update(RenderState &state) {
 
     ImGui::Text("Took: %3.2f seconds", state.uiState.meshUploadTimeTaken);
     ImGui::Text("Took: %d frames", state.uiState.meshUploadFramesTaken);
+
+    ImGui::SeparatorText("Controls");
+
+    ImGui::Text("W: Move camera forwards");
+    ImGui::Text("S: Move camera backwards");
+    ImGui::Text("Space: Start/Stop rotation");
+    ImGui::Text("M: Maximize/Minimize window");
+    ImGui::Text("Esc: Exit");
 
 
     ImGui::End();
