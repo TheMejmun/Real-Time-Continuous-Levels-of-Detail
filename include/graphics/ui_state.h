@@ -15,6 +15,7 @@ struct UiState {
     GLFWwindow *window = nullptr;
 
     FPSCounter fps{};
+    sec cpuWaitTime = 0;
 
     uint32_t currentMeshVertices = 0;
     uint32_t currentMeshTriangles = 0;

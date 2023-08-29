@@ -33,7 +33,7 @@ private:
     InputManager inputManager{};
 
     chrono_sec_point lastTimestamp = Timer::now();
-    sec currentGPUWaitTime;
+    sec currentCpuWaitTime;
     uint32_t currentFPS = 0;
     sec deltaTime = 0;
 };

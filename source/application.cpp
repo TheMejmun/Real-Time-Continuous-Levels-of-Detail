@@ -49,6 +49,7 @@ void Application::mainLoop() {
         // UI
         auto uiState = this->renderer.getUiState();
         uiState->fps.update(this->deltaTime);
+        uiState->cpuWaitTime = this->currentCpuWaitTime;
 
         // Systems
         CameraController::update(this->deltaTime, this->ecs, this->inputManager);
@@ -57,25 +58,15 @@ void Application::mainLoop() {
             MeshSimplifierController::update(this->ecs, &uiState->meshSimplifierTimeTaken, &uiState->meshSimplifierFramesTaken);
 
         // Render
-        if(uiState->returnToOriginalMeshBuffer)
+        if (uiState->returnToOriginalMeshBuffer)
             this->renderer.resetMesh();
-        auto gpuWaitTime = this->renderer.draw(this->deltaTime, this->ecs);
+        this->currentCpuWaitTime = this->renderer.draw(this->deltaTime, this->ecs);
 
         // Benchmark
         auto time = Timer::now();
         this->deltaTime = Timer::duration(this->lastTimestamp, time);
-        this->currentGPUWaitTime = gpuWaitTime;
-        this->currentFPS = (uint32_t) Timer::fps(this->deltaTime);
 
         this->lastTimestamp = time;
-
-        FPS std::fixed << std::setprecision(6) <<
-                       "FPS: " <<
-                       this->currentFPS <<
-                       "\tFrame time: " <<
-                       this->deltaTime <<
-                       "\tGPU wait time: " <<
-                       this->currentGPUWaitTime ENDL;
     }
 }
 

@@ -15,6 +15,7 @@ void UI::update(UiState &state) {
 
     ImGui::SeparatorText("Performance");
 
+    ImGui::Text("CPU wait time: %1.4f seconds", state.cpuWaitTime);
     if(!state.fps.frametimesLastSecond.empty()) {
         sec lastFrametime = state.fps.frametimesLastSecond.back();
         ImGui::Text("Total frame time: %1.4f seconds", lastFrametime);

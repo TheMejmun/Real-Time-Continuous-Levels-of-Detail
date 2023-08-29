@@ -72,7 +72,7 @@ void main() {
     vec3 V = normalize(CAMERA_POS - inWorldPos.xyz);
 
     float brightness = dot(N, L);
-    brightness = 1; // TODO
+//    brightness = 1; // TODO
 
     float lightFac = pow(clamp(brightness, 0, 1), LIGHT_POWER_FACTOR);
     float shadowFac = pow(clamp(-brightness, 0, 1), LIGHT_POWER_FACTOR);
