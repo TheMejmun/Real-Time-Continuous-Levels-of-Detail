@@ -4,9 +4,10 @@
 
 #include "ecs/ecs.h"
 #include "io/printer.h"
-#include <stdexcept>
 #include "ecs/entities/world.h"
 #include "ecs/entities/dense_sphere.h"
+
+#include <stdexcept>
 
 void ECS::create() {
     INF "Creating ECS" ENDL;

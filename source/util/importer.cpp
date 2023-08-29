@@ -2,12 +2,13 @@
 // Created by Sam on 2023-04-07.
 //
 
+#include "util/importer.h"
+#include "io/printer.h"
+
 #include <fstream>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include "util/importer.h"
-#include "io/printer.h"
 
 std::vector<char> Importinator::readFile(const std::string &filename) {
     std::ifstream file(filename, std::ios::ate | std::ios::binary);

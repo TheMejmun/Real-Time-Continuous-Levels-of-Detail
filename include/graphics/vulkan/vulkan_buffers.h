@@ -5,10 +5,11 @@
 #ifndef REALTIME_CELL_COLLAPSE_VULKAN_BUFFERS_H
 #define REALTIME_CELL_COLLAPSE_VULKAN_BUFFERS_H
 
-#include <vulkan/vulkan.h>
 #include "graphics/triangle.h"
 #include "util/byte_size.h"
 #include "vulkan_devices.h"
+
+#include <vulkan/vulkan.h>
 
 namespace VulkanBuffers {
     extern const uint32_t UBO_BUFFER_COUNT;

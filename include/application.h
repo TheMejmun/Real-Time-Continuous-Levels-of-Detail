@@ -5,14 +5,15 @@
 #ifndef REALTIME_CELL_COLLAPSE_APPLICATION_H
 #define REALTIME_CELL_COLLAPSE_APPLICATION_H
 
-#include <memory>
-#include <string>
 #include "graphics/renderer.h"
 #include "util/timer.h"
 #include "io/window_manager.h"
 #include "io/input_manager.h"
 #include "ecs/ecs.h"
 #include "io/printer.h"
+
+#include <memory>
+#include <string>
 
 class Application {
 public:

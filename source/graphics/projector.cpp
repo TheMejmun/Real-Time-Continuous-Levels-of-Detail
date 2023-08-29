@@ -3,9 +3,10 @@
 //
 
 #include "util/glm_include.h"
+#include "graphics/projector.h"
+
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
-#include "graphics/projector.h"
 
 glm::mat4 Projector::getProjection(float aspectRatio) const {
     return glm::perspective(

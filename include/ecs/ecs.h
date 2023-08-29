@@ -5,14 +5,15 @@
 #ifndef REALTIME_CELL_COLLAPSE_ECS_H
 #define REALTIME_CELL_COLLAPSE_ECS_H
 
+#include "graphics/render_mesh.h"
+#include "graphics/projector.h"
+
+#include <mutex>
 #include <vector>
 #include <optional>
 #include <tuple>
 #include <memory>
 #include <functional>
-#include "graphics/render_mesh.h"
-#include "graphics/projector.h"
-#include <mutex>
 
 struct Components {
     bool isDestroyed = false;

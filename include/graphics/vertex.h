@@ -6,9 +6,10 @@
 #define REALTIME_CELL_COLLAPSE_VERTEX_H
 
 #include "util/glm_include.h"
+#include "graphics/colors.h"
+
 #include <vulkan/vulkan.h>
 #include <array>
-#include "graphics/colors.h"
 
 // https://vulkan-tutorial.com/Uniform_buffers/Descriptor_pool_and_sets
 struct Vertex {

@@ -6,16 +6,6 @@
 #define REALTIME_CELL_COLLAPSE_RENDERER_H
 
 #include "util/glfw_include.h"
-#include <string>
-#include <utility>
-#include <vector>
-#include <optional>
-#include <stdexcept>
-#include <iostream>
-#include <cstring>
-#include <set>
-#include <limits> // Necessary for std::numeric_limits
-#include <algorithm> // Necessary for std::clamp
 #include "renderer.h"
 #include "util/importer.h"
 #include "vertex.h"
@@ -29,6 +19,17 @@
 #include "graphics/vulkan/vulkan_devices.h"
 #include "graphics/vulkan/vulkan_instance.h"
 #include "graphics/render_state.h"
+
+#include <string>
+#include <utility>
+#include <vector>
+#include <optional>
+#include <stdexcept>
+#include <iostream>
+#include <cstring>
+#include <set>
+#include <limits> // Necessary for std::numeric_limits
+#include <algorithm> // Necessary for std::clamp
 #include <thread>
 
 //#define WIREFRAME_MODE

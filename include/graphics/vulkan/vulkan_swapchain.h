@@ -5,10 +5,11 @@
 #ifndef REALTIME_CELL_COLLAPSE_VULKAN_SWAPCHAIN_H
 #define REALTIME_CELL_COLLAPSE_VULKAN_SWAPCHAIN_H
 
-#include <vulkan/vulkan.h>
-#include <vector>
 #include "util/glfw_include.h"
 #include "graphics/render_state.h"
+
+#include <vulkan/vulkan.h>
+#include <vector>
 
 //const int MAX_FRAMES_IN_FLIGHT = 2;
 

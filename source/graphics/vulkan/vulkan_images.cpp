@@ -4,10 +4,11 @@
 
 #define STB_IMAGE_IMPLEMENTATION // Only add this to one cpp file to create the implementation
 
-#include <vulkan/vulkan.h>
-#include <stb_image.h>
 #include "graphics/vulkan/vulkan_images.h"
 #include "io/printer.h"
+
+#include <vulkan/vulkan.h>
+#include <stb_image.h>
 
 void VulkanImages::createTextureImage() {
     int texWidth, texHeight, texChannels;

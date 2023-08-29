@@ -2,9 +2,10 @@
 // Created by Sam on 2023-04-08.
 //
 
-#include <iostream>
 #include "io/input_manager.h"
 #include "io/printer.h"
+
+#include <iostream>
 
 static InputManager *instance;
 

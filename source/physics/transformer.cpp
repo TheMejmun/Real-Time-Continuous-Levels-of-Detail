@@ -3,8 +3,9 @@
 //
 
 #include "util/glm_include.h"
-#include <glm/ext/matrix_transform.hpp>
 #include "physics/transformer.h"
+
+#include <glm/ext/matrix_transform.hpp>
 
 void Transformer4::translate(glm::vec3 translation) {
     this->forward = glm::translate(this->forward, translation);

@@ -2,6 +2,7 @@
 // Created by Sam on 2023-04-13.
 //
 #include "graphics/colors.h"
+
 #include <sstream>
 #include <iomanip>
 #include <random>

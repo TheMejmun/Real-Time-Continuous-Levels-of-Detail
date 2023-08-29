@@ -6,6 +6,7 @@
 #define REALTIME_CELL_COLLAPSE_COLORS_H
 
 #include "util/glm_include.h"
+
 #include <cmath>
 #include <string>
 

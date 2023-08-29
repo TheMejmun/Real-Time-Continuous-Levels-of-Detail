@@ -5,9 +5,10 @@
 #include "graphics/vulkan/vulkan_instance.h"
 #include "io/printer.h"
 #include "graphics/vulkan/vulkan_validation.h"
+#include "util/glfw_include.h"
+
 #include <vulkan/vulkan.h>
 #include <vector>
-#include "util/glfw_include.h"
 
 // Global
 VkInstance VulkanInstance::instance = nullptr;

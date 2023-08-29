@@ -5,9 +5,10 @@
 #ifndef REALTIME_CELL_COLLAPSE_RENDER_MESH_H
 #define REALTIME_CELL_COLLAPSE_RENDER_MESH_H
 
-#include <vector>
 #include "graphics/vertex.h"
 #include "physics/transformer.h"
+
+#include <vector>
 #include <vulkan/vulkan.h>
 
 struct RenderMesh {

@@ -5,9 +5,10 @@
 #ifndef REALTIME_CELL_COLLAPSE_WINDOW_MANAGER_H
 #define REALTIME_CELL_COLLAPSE_WINDOW_MANAGER_H
 
+#include "util/glfw_include.h"
+
 #include <memory>
 #include <string>
-#include "util/glfw_include.h"
 
 const int32_t DEFAULT_WIDTH = 1280;
 const int32_t DEFAULT_HEIGHT = 720;

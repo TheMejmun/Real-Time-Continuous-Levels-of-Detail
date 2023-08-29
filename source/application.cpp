@@ -2,15 +2,15 @@
 // Created by Sam on 2023-04-08.
 //
 
-#include <iomanip>
 #include "application.h"
 #include "io/printer.h"
 #include "ecs/entities/dense_sphere.h"
 #include "ecs/entities/camera.h"
 #include "ecs/systems/camera_controller.h"
 #include "ecs/systems/sphere_controller.h"
-
 #include "ecs/systems/mesh_simplifier_controller.h"
+
+#include <iomanip>
 
 void Application::run() {
     init();
