@@ -6,7 +6,7 @@
 #include "util/importer.h"
 #include "graphics/colors.h"
 
-//#define MONKEY
+#define MONKEY
 //#define SMALL_SPHERE
 
 DenseSphere::DenseSphere() {

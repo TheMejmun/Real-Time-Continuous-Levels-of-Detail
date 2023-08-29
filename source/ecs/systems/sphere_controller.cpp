@@ -6,7 +6,7 @@
 #include "io/printer.h"
 
 
-bool doSphereRotation = true;
+bool doSphereRotation = false;
 
 void SphereController::update(const sec &delta, ECS &ecs, InputManager &inputManager) {
     if (inputManager.consumeKeyState(IM_TOGGLE_ROTATION) == IM_DOWN_EVENT) {
