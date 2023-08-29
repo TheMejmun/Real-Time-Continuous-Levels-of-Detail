@@ -14,16 +14,21 @@
 #include <set>
 #include <algorithm>
 
+//#define OUTPUT_MAPPINGS
+
 std::thread thread;
 bool isRunning = false;
-const uint32_t MAX_PIXELS_PER_VERTEX = 1;
-//const uint32_t MAX_INDEX = std::numeric_limits<uint32_t>::max();
+const uint32_t MAX_PIXELS_PER_VERTEX = 2;
+const uint32_t MAX_INDEX = std::numeric_limits<uint32_t>::max();
 uint32_t simplifiedMeshCalculationThreadFrameCounter = 0;
+
 
 struct SVO { // Simplification Vertex Object
     bool set = false;
     uint32_t index = 0;
     glm::vec3 worldPos{};
+    uint32_t screenX = 0;
+    uint32_t screenY = 0;
     float depth = 0.0f;
 };
 
@@ -103,14 +108,14 @@ class IndexLut {
 public:
     uint32_t getMapping(uint32_t forIndex) {
         uint32_t found = forIndex;
-        while (this->indexMappings[found] != 0) {
-            found = this->indexMappings[found] - 1; // because the stored mappings are +1
+        while (found != MAX_INDEX && this->indexMappings[found] != 0) {
+            found = this->indexMappings[found] == MAX_INDEX ? MAX_INDEX : this->indexMappings[found] - 1; // because the stored mappings are +1
         }
         return found;
     }
 
     void insertMapping(uint32_t from, uint32_t to) {
-        this->indexMappings[from] = to + 1;
+        this->indexMappings[from] = to == MAX_INDEX ? MAX_INDEX : to + 1;
     }
 
     void resize(size_t size) {
@@ -125,6 +130,8 @@ private:
 void simplify(const Components *camera, const Components *components) {
     // Init
     const auto model = components->transform->forward;
+    const auto normalModel = glm::transpose(components->transform->inverse);
+    const auto cameraPos = camera->transform->getPosition();
     const auto view = camera->camera->getView(*camera->transform);
     const auto proj = camera->camera->getProjection(VulkanSwapchain::aspectRatio);
 
@@ -137,20 +144,26 @@ void simplify(const Components *camera, const Components *components) {
     const uint32_t rasterHeight = VulkanSwapchain::framebufferHeight / MAX_PIXELS_PER_VERTEX;
     std::vector<SVO> indicesRaster{};
     indicesRaster.resize(rasterWidth * rasterHeight);
-    DBG "Using raster " << rasterWidth << " * " << rasterHeight << " for meshSimplification" ENDL;
+    DBG "Using raster " << rasterWidth << " * " << rasterHeight << " for mesh simplification" ENDL;
 
     IndexLut lut{};
     lut.resize(from.vertices.size());
 
     // Calculate raster positions
     for (uint32_t i = 0; i < from.vertices.size(); ++i) {
-        const glm::vec4 projectedPos = proj * view * model * glm::vec4(from.vertices[i].pos, 1.0f);
-        const float depth = projectedPos.z/ projectedPos.w;
+        const glm::vec4 worldPos = model * glm::vec4(from.vertices[i].pos, 1.0f);
+
+        // Is facing away from camera
+        if (glm::dot(glm::vec4(cameraPos, 1.0f) - worldPos, normalModel * glm::vec4(from.vertices[i].normal, 1.0f)) < 0) {
+            lut.insertMapping(i, MAX_INDEX);
+            continue;
+        }
+
+        const glm::vec4 projectedPos = proj * view * worldPos;
+        const float depth = projectedPos.z / projectedPos.w;
         const long x = lroundf((projectedPos.x * 0.5f / projectedPos.w + 0.5f) * static_cast<float>(rasterWidth));
         const long y = lroundf((projectedPos.y * 0.5f / projectedPos.w + 0.5f) * static_cast<float>(rasterHeight));
         const uint32_t rasterIndex = y * rasterWidth + x;
-
-//        printf("x: %d, y: %d, z: %3.3f, w: %3.3f\n", x, y, depth, projectedPos.w);
 
         if (x < 0 || x >= rasterWidth || y < 0 || y >= rasterHeight) {
             continue;
@@ -160,7 +173,9 @@ void simplify(const Components *camera, const Components *components) {
             indicesRaster[rasterIndex] = {
                     .set = true,
                     .index = i,
-                    .worldPos = from.vertices[i].pos,
+                    .worldPos = worldPos,
+                    .screenX = static_cast<uint32_t>(x),
+                    .screenY = static_cast<uint32_t>(y),
                     .depth = depth
             };
         } else if (indicesRaster[rasterIndex].depth > depth) {
@@ -169,13 +184,31 @@ void simplify(const Components *camera, const Components *components) {
             indicesRaster[rasterIndex] = {
                     .set = true,
                     .index = i,
-                    .worldPos = from.vertices[i].pos,
+                    .worldPos = worldPos,
+                    .screenX = static_cast<uint32_t>(x),
+                    .screenY = static_cast<uint32_t>(y),
                     .depth = depth
             };
         } else {
             // stored vertex is closer to the camera than the current
             lut.insertMapping(i, indicesRaster[rasterIndex].index); // Map previously stored to the current vertex
         }
+
+#ifdef OUTPUT_MAPPINGS
+        auto mappedId = lut.getMapping(i);
+        auto result = std::find_if(indicesRaster.begin(), indicesRaster.end(), [&mappedId](const SVO &obj) { return obj.index == mappedId; });
+        uint32_t index;
+        if (result != indicesRaster.end())
+            index = std::distance(indicesRaster.begin(), result);
+        SVO mappedTo = indicesRaster[index];
+
+        if (mappedTo.index != i) {
+            printf("\tid: %d, screen: x: %d, y: %d, z: %1.3f,\tworld: x: %1.3f, y: %1.3f, z: %1.3f\n",
+                   i, x, y, depth, worldPos.x, worldPos.y, worldPos.z);
+            printf("->\tid: %d, screen: x: %d, y: %d, z: %1.3f,\tworld: x: %1.3f, y: %1.3f, z: %1.3f\n",
+                   mappedId, mappedTo.screenX, mappedTo.screenY, mappedTo.depth, mappedTo.worldPos.x, mappedTo.worldPos.y, mappedTo.worldPos.z);
+        }
+#endif
     }
     DBG "Calculated raster positions" ENDL;
 
@@ -222,15 +255,17 @@ void simplify(const Components *camera, const Components *components) {
         const uint32_t id1 = lut.getMapping(from.indices[i]);
         const uint32_t id2 = lut.getMapping(from.indices[i + 1]);
         const uint32_t id3 = lut.getMapping(from.indices[i + 2]);
+
+        if (id1 == MAX_INDEX || id2 == MAX_INDEX || id3 == MAX_INDEX ||
+            id1 == id2 || id1 == id3 || id2 == id3)
+            continue;
+
         const Triangle triangle = orientTriangle({id1, id2, id3,
                                                   minDepth(mappedDepth[id1],
                                                            mappedDepth[id2],
                                                            mappedDepth[id3])
                                                  });
-        if (triangle.id1 != triangle.id2 &&
-            triangle.id1 != triangle.id3 &&
-            triangle.id2 != triangle.id3)
-            triangles.insert(triangle);
+        triangles.insert(triangle);
     }
     DBG "Filtered triangles" ENDL;
 

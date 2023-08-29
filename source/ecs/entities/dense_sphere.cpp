@@ -6,9 +6,19 @@
 #include "util/importer.h"
 #include "graphics/colors.h"
 
+//#define MONKEY
+//#define SMALL_SPHERE
+
 DenseSphere::DenseSphere() {
-//    auto mesh = Importinator::importMesh("resources/models/dense_sphere.glb");
+
+#ifdef MONKEY
     auto mesh = Importinator::importMesh("resources/models/monkey.glb");
+#elif defined SMALL_SPHERE
+    auto mesh = Importinator::importMesh("resources/models/earth.glb");
+#else
+    auto mesh = Importinator::importMesh("resources/models/dense_sphere.glb");
+#endif
+
     this->components.renderMesh = new RenderMesh();
     this->components.renderMesh->indices = std::move(mesh.indices);
     // this->entities.renderable->indices = { 0, 500, 1000 };
@@ -18,7 +28,14 @@ DenseSphere::DenseSphere() {
     }
 
     this->components.transform = new Transformer4();
+
+#ifdef MONKEY
+    this->components.transform->scale(1.0f);
+#elif defined SMALL_SPHERE
+    this->components.transform->scale(0.001f);
+#else
     this->components.transform->scale(2.0f);
+#endif
 
     this->components.isRotatingSphere = true;
 
