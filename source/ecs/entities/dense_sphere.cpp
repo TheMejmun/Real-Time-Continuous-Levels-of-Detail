@@ -6,7 +6,7 @@
 #include "util/importer.h"
 #include "graphics/colors.h"
 
-#define MONKEY
+//#define MONKEY
 //#define SMALL_SPHERE
 
 DenseSphere::DenseSphere() {
@@ -21,7 +21,6 @@ DenseSphere::DenseSphere() {
 
     this->components.renderMesh = new RenderMesh();
     this->components.renderMesh->indices = std::move(mesh.indices);
-    // this->entities.renderable->indices = { 0, 500, 1000 };
     this->components.renderMesh->vertices = std::move(mesh.vertices);
     for (auto &v: this->components.renderMesh->vertices) {
         v.color = Color::random().getLAB();

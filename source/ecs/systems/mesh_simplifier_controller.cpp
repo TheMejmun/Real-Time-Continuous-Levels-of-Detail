@@ -7,6 +7,7 @@
 #include "ecs/systems/camera_controller.h"
 #include "ecs/entities/camera.h"
 #include "io/printer.h"
+#include "util/timer.h"
 
 #include <thread>
 #include <limits>
@@ -16,11 +17,14 @@
 
 //#define OUTPUT_MAPPINGS
 
-std::thread thread;
-bool isRunning = false;
 const uint32_t MAX_PIXELS_PER_VERTEX = 1;
 const uint32_t MAX_INDEX = std::numeric_limits<uint32_t>::max();
+
+std::thread thread;
+bool isRunning = false;
 uint32_t simplifiedMeshCalculationThreadFrameCounter = 0;
+chrono_sec_point simplifiedMeshCalculationThreadStartedTime{};
+bool meshCalculationDone = false;
 
 
 struct SVO { // Simplification Vertex Object
@@ -224,31 +228,6 @@ void simplify(const Components *camera, const Components *components) {
     }
     DBG "Using " << newVertexCount << " vertices, instead of " << from.vertices.size() << " before." ENDL;
 
-//    // Map original vertices to reduced ones
-//    std::vector<uint32_t> indexMappings{};
-//    indexMappings.resize(from.vertices.size());
-//    std::vector<float> mappedDepth{};
-//    mappedDepth.resize(from.vertices.size());
-//
-//    for (uint32_t i = 0; i < from.vertices.size(); ++i) {
-//        // For each original vertex, find the closest new one
-//        float closestDistance = std::numeric_limits<float>::max();
-//        SVO *closest = nullptr;
-//
-//        for (auto &svo: reducedSVOs) {
-//            // Check distance and pick index of closest -> put into mappings
-//            const float distance = distance2(svo.worldPos, from.vertices[i].pos);
-//            if (distance < closestDistance) {
-//                closest = &svo;
-//                closestDistance = distance;
-//            }
-//        }
-//
-//        indexMappings[i] = closest->index;
-//        mappedDepth[i] = closest->depth;
-//    }
-//    DBG "Mapped indices" ENDL;
-
     // Filter triangles
     std::unordered_set<Triangle, Triangle> triangles{}; // Ordered set
     for (uint32_t i = 0; i < from.indices.size(); i += 3) {
@@ -292,15 +271,15 @@ void simplify(const Components *camera, const Components *components) {
     DBG "Using " << to.indices.size() / 3 << " triangles, instead of " << from.indices.size() / 3 << " before." ENDL;
 }
 
-bool meshCalculationDone = false;
-
-void MeshSimplifierController::update(ECS &ecs) {
+void MeshSimplifierController::update(ECS &ecs, sec *timeTaken, uint32_t *framesTaken) {
     if (isRunning) {
         simplifiedMeshCalculationThreadFrameCounter++;
         if (meshCalculationDone && thread.joinable()) {
             DBG "Mesh calculation thread took " << simplifiedMeshCalculationThreadFrameCounter << " frames" ENDL;
             thread.join();
             isRunning = false;
+            *timeTaken = Timer::duration(simplifiedMeshCalculationThreadStartedTime, Timer::now());
+            *framesTaken = simplifiedMeshCalculationThreadFrameCounter;
         }
     } else {
         auto entities = ecs.requestEntities(MeshSimplifierController::EvaluatorToSimplify);
@@ -310,6 +289,7 @@ void MeshSimplifierController::update(ECS &ecs) {
             isRunning = true;
             meshCalculationDone = false;
             simplifiedMeshCalculationThreadFrameCounter = 0;
+            simplifiedMeshCalculationThreadStartedTime = Timer::now();
 
             auto function = [=](bool &done) {
                 for (auto components: entities) {

@@ -6,47 +6,47 @@
 
 #include <imgui.h>
 
-void UI::update(RenderState &state) {
-    if (state.uiState.returnToOriginalMeshBuffer) {
-        state.uiState.returnToOriginalMeshBuffer = false;
+void UI::update(UiState &state) {
+    if (state.returnToOriginalMeshBuffer) {
+        state.returnToOriginalMeshBuffer = false;
     }
 
     ImGui::Begin("Realtime Cell Collapse");
 
     ImGui::SeparatorText("Performance");
 
-    if(!state.uiState.fps.frametimesLastSecond.empty()) {
-        sec lastFrametime = state.uiState.fps.frametimesLastSecond.back();
+    if(!state.fps.frametimesLastSecond.empty()) {
+        sec lastFrametime = state.fps.frametimesLastSecond.back();
         ImGui::Text("Total frame time: %1.4f seconds", lastFrametime);
     }else{
         ImGui::Text("Total frame time: >1 second");
     }
-    ImGui::Text("Frames per second: %d", state.uiState.fps.currentFPS());
+    ImGui::Text("Frames per second: %d", state.fps.currentFPS());
 
     ImGui::SeparatorText("Mesh Info");
 
-    ImGui::Text("Current vertex count: %d", state.uiState.currentMeshVertices);
-    ImGui::Text("Current triangle count: %d", state.uiState.currentMeshTriangles);
-    ImGui::Text("Current projected mesh size: %3.1f px^2", state.uiState.currentMeshSizeSq);
+    ImGui::Text("Current vertex count: %d", state.currentMeshVertices);
+    ImGui::Text("Current triangle count: %d", state.currentMeshTriangles);
+    // ImGui::Text("Current projected mesh size: %3.1f px^2", state.currentMeshSizeSq); TODO
     if (ImGui::Button("Use original"))
-        state.uiState.returnToOriginalMeshBuffer = true;
+        state.returnToOriginalMeshBuffer = true;
 
     ImGui::SeparatorText("Mesh Optimizer");
 
-    ImGui::Text("Took: %3.2f seconds", state.uiState.meshSimplifierTimeTaken);
-    ImGui::Text("Took: %d frames", state.uiState.meshSimplifierFramesTaken);
-    if (state.uiState.runMeshSimplifier) {
+    ImGui::Text("Took: %3.4f seconds", state.meshSimplifierTimeTaken);
+    ImGui::Text("Took: %d frames", state.meshSimplifierFramesTaken);
+    if (state.runMeshSimplifier) {
         if (ImGui::Button("Stop"))
-            state.uiState.runMeshSimplifier = false;
+            state.runMeshSimplifier = false;
     } else {
         if (ImGui::Button("Start"))
-            state.uiState.runMeshSimplifier = true;
+            state.runMeshSimplifier = true;
     }
 
     ImGui::SeparatorText("Mesh Upload");
 
-    ImGui::Text("Took: %3.2f seconds", state.uiState.meshUploadTimeTaken);
-    ImGui::Text("Took: %d frames", state.uiState.meshUploadFramesTaken);
+    ImGui::Text("Took: %3.4f seconds", state.meshUploadTimeTaken);
+    ImGui::Text("Took: %d frames", state.meshUploadFramesTaken);
 
     ImGui::SeparatorText("Controls");
 

@@ -44,7 +44,9 @@ public:
 
     void destroy();
 
-    void updateLastFrametime(sec delta);
+    UiState *getUiState();
+
+    void resetMesh();
 
 private:
 
@@ -99,7 +101,7 @@ private:
     void uploadRenderables(ECS &ecs);
 
     // return buffer to use
-   void  uploadSimplifiedMeshes(ECS &ecs, uint32_t& bufferToUse);
+    static void uploadSimplifiedMeshes(ECS &ecs, uint32_t &bufferToUse, bool &uploadedAnySimplifiedMeshes);
 
     void uploadSimplifiedMeshesThreadHelper(ECS &ecs);
 
@@ -112,7 +114,6 @@ private:
     chrono_sec_point lastTimestamp = Timer::now();
     std::thread simplifiedMeshAllocationThread{};
     bool simplifiedMeshAllocationThreadRunning = false;
-    uint32_t simplifiedMeshAllocationThreadFrameCounter = 0;
 
     uint32_t meshBufferToUse = 0;
 

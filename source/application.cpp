@@ -46,12 +46,19 @@ void Application::mainLoop() {
             this->windowManager.toggleFullscreen();
         }
 
+        // UI
+        auto uiState = this->renderer.getUiState();
+        uiState->fps.update(this->deltaTime);
+
+        // Systems
         CameraController::update(this->deltaTime, this->ecs, this->inputManager);
         SphereController::update(this->deltaTime, this->ecs, this->inputManager);
-        MeshSimplifierController::update(this->ecs);
+        if (uiState->runMeshSimplifier)
+            MeshSimplifierController::update(this->ecs, &uiState->meshSimplifierTimeTaken, &uiState->meshSimplifierFramesTaken);
 
         // Render
-        this->renderer.updateLastFrametime(this->deltaTime);
+        if(uiState->returnToOriginalMeshBuffer)
+            this->renderer.resetMesh();
         auto gpuWaitTime = this->renderer.draw(this->deltaTime, this->ecs);
 
         // Benchmark

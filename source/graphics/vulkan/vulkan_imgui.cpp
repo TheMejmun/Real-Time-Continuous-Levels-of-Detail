@@ -127,7 +127,7 @@ void VulkanImgui::draw(RenderState &state) {
     ImGui_ImplVulkan_NewFrame();
     ImGui::NewFrame();
 
-    UI::update(state);
+    UI::update(state.uiState);
 
     ImGui::Render();
     ImDrawData *draw_data = ImGui::GetDrawData();

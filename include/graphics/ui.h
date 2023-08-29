@@ -8,7 +8,7 @@
 #include "render_state.h"
 
 namespace UI {
-    void update(RenderState &state);
+    void update(UiState &state);
 }
 
 #endif //REALTIME_CELL_COLLAPSE_UI_H

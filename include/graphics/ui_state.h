@@ -7,8 +7,14 @@
 
 #include "util/timer.h"
 
+#include <glfw/glfw3.h>
+#include <string>
+
 struct UiState {
-    FPSCounter fps = {};
+    std::string title{};
+    GLFWwindow *window = nullptr;
+
+    FPSCounter fps{};
 
     uint32_t currentMeshVertices = 0;
     uint32_t currentMeshTriangles = 0;

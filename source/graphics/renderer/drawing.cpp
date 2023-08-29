@@ -332,7 +332,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
 //    DBG "Drawing with mesh buffer " << this->meshBufferToUse ENDL;
     vkCmdDrawIndexed(buffer, VulkanBuffers::indexCount[this->meshBufferToUse], 25, 0, 0, 0);
 
-    VulkanImgui::draw(this->state);
+    this->drawUi();
 
     vkCmdEndRenderPass(buffer);
 

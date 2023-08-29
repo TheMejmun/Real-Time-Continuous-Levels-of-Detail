@@ -4,11 +4,18 @@
 
 
 #include "graphics/renderer.h"
+#include "graphics/vulkan/vulkan_imgui.h"
 
-void Renderer::updateLastFrametime(sec delta) {
-    this->state.uiState.fps.update(delta);
+UiState *Renderer::getUiState() {
+    return &this->state.uiState;
 }
 
-void Renderer::drawUi() {
+void Renderer::resetMesh() {
+    this->meshBufferToUse = 0;
+}
 
+void Renderer::drawUi(){
+    this->state.uiState.currentMeshVertices = VulkanBuffers::vertexCount[this->meshBufferToUse];
+    this->state.uiState.currentMeshTriangles = VulkanBuffers::indexCount[this->meshBufferToUse] / 3;
+    VulkanImgui::draw(this->state);
 }

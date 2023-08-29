@@ -18,38 +18,44 @@ void Renderer::uploadRenderables(ECS &ecs) {
     }
 }
 
-bool meshUploadDone = false;
+uint32_t simplifiedMeshUploadThreadFrameCounter = 0;
+chrono_sec_point simplifiedMeshUploadThreadStartedTime{};
+bool simplifiedMeshUploadDone = false;
+bool uploadedAnySimplifiedMeshes = false;
 
 void Renderer::uploadSimplifiedMeshesThreadHelper(ECS &ecs) {
     if (this->simplifiedMeshAllocationThreadRunning) {
-        this->simplifiedMeshAllocationThreadFrameCounter++;
-        if (meshUploadDone && this->simplifiedMeshAllocationThread.joinable()) {
+        simplifiedMeshUploadThreadFrameCounter++;
+        if (simplifiedMeshUploadDone && this->simplifiedMeshAllocationThread.joinable()) {
             this->simplifiedMeshAllocationThread.join();
-//            DBG "Upload thread took " << this->simplifiedMeshAllocationThreadFrameCounter << " frames" ENDL;
+            if (uploadedAnySimplifiedMeshes) {
+                this->state.uiState.meshUploadTimeTaken = Timer::duration(simplifiedMeshUploadThreadStartedTime, Timer::now());
+                this->state.uiState.meshUploadFramesTaken = simplifiedMeshUploadThreadFrameCounter;
+            }
             this->simplifiedMeshAllocationThreadRunning = false;
         }
     } else {
         this->simplifiedMeshAllocationThreadRunning = true;
-        this->simplifiedMeshAllocationThreadFrameCounter = 0;
-        meshUploadDone = false;
-        auto function = [this](ECS &ecs, uint32_t &bufferToUseAfter, bool &done) {
-            uploadSimplifiedMeshes(ecs, bufferToUseAfter);
+        simplifiedMeshUploadThreadFrameCounter = 0;
+        simplifiedMeshUploadDone = false;
+        simplifiedMeshUploadThreadStartedTime = Timer::now();
+        uploadedAnySimplifiedMeshes = false;
+        auto function = [this](ECS &ecs, uint32_t &bufferToUseAfter, bool &done, bool &uploadedAnySimplifiedMeshes) {
+            Renderer::uploadSimplifiedMeshes(ecs, bufferToUseAfter, uploadedAnySimplifiedMeshes);
             done = true;
         };
 
         this->simplifiedMeshAllocationThread = std::thread(function, std::ref(ecs), std::ref(this->meshBufferToUse),
-                                                           std::ref(meshUploadDone));
-
+                                                           std::ref(simplifiedMeshUploadDone), std::ref(uploadedAnySimplifiedMeshes));
     }
 }
 
-void Renderer::uploadSimplifiedMeshes(ECS &ecs, uint32_t &bufferToUseAfter) {
+void Renderer::uploadSimplifiedMeshes(ECS &ecs, uint32_t &bufferToUseAfter, bool &uploadedAny) {
     auto entities = ecs.requestEntities(Renderer::EvaluatorToAllocateSimplifiedMesh);
 
     int simplifiedMeshBuffer = 1 - VulkanBuffers::simplifiedMeshBuffersIndex;
     if (simplifiedMeshBuffer < 0 || simplifiedMeshBuffer > 1) simplifiedMeshBuffer = 0;
 
-    bool didUpdateAny = false;
 
     for (auto components: entities) {
         if (components->simplifiedMeshMutex == nullptr) {
@@ -65,11 +71,11 @@ void Renderer::uploadSimplifiedMeshes(ECS &ecs, uint32_t &bufferToUseAfter) {
             components->updateSimplifiedMesh = false;
             components->simplifiedMeshMutex->unlock();
 
-            didUpdateAny = true;
+            uploadedAny = true;
         }
     }
 
-    if (didUpdateAny) {
+    if (uploadedAny) {
         // Treat this like a return
         bufferToUseAfter = simplifiedMeshBuffer + 1;
     }
