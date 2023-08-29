@@ -176,7 +176,7 @@ bool VulkanSwapchain::createSwapchain() {
         VulkanSwapchain::minImageCount > swapchainSupport.capabilities.maxImageCount) {
         VulkanSwapchain::minImageCount = swapchainSupport.capabilities.maxImageCount;
     }
-    VRB "Creating the Swapchain with at least " << VulkanSwapchain::minImageCount << " images!" ENDL;
+    VRB "Creating the swapchain with at least " << VulkanSwapchain::minImageCount << " images!" ENDL;
 
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -216,7 +216,7 @@ bool VulkanSwapchain::createSwapchain() {
     createInfo.oldSwapchain = nullptr; // Put previous swapchain here if overridden, e.g. if window size changed
 
     if (vkCreateSwapchainKHR(VulkanDevices::logical, &createInfo, nullptr, &VulkanSwapchain::swapchain) != VK_SUCCESS) {
-        THROW("Failed to create swap chain!");
+        THROW("Failed to create swapchain!");
     }
 
     // imageCount only specified a minimum!

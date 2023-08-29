@@ -12,6 +12,7 @@
 #include <limits>
 #include <unordered_set>
 #include <set>
+#include <algorithm>
 
 std::thread thread;
 bool isRunning = false;
@@ -23,7 +24,6 @@ struct SVO { // Simplification Vertex Object
     bool set = false;
     uint32_t index = 0;
     glm::vec3 worldPos{};
-    glm::vec3 projectedPos{};
     float depth = 0.0f;
 };
 
@@ -33,10 +33,19 @@ inline float distance2(const glm::vec3 &a, const glm::vec3 &b) {
            (a.z - b.z) * (a.z - b.z);
 }
 
+float minDepth(const float depth1, const float depth2, const float depth3) {
+    return (depth1 < depth2 && depth1 < depth3) ?
+           depth1 : (
+                   (depth2 < depth1 && depth2 < depth3) ?
+                   depth2 : depth3
+           );
+}
+
 struct Triangle {
     uint32_t id1;
     uint32_t id2;
     uint32_t id3;
+    float minDepth = 0.0f;
 
     // This function is used by unordered_set to compare
     bool operator==(const Triangle &other) const {
@@ -73,6 +82,7 @@ struct Triangle {
 
         return lhsHash < rhsHash;
     }
+
 };
 
 // Change the triangle to start with the lowest index, but retain the face direction
@@ -82,39 +92,37 @@ Triangle orientTriangle(const Triangle &triangle) {
         return triangle;
     } else if (triangle.id2 < triangle.id1 && triangle.id2 < triangle.id1) {
         // id2 is smallest
-        return {triangle.id2, triangle.id3, triangle.id1};
+        return {triangle.id2, triangle.id3, triangle.id1, triangle.minDepth};
     } else {
         // id3 is smallest
-        return {triangle.id3, triangle.id1, triangle.id2};
+        return {triangle.id3, triangle.id1, triangle.id2, triangle.minDepth};
     }
 }
 
 void simplify(const Components *camera, const Components *components) {
     // Init
-    auto model = components->transform->forward;
-    auto view = camera->camera->getView(*camera->transform);
-    auto proj = camera->camera->getProjection(VulkanSwapchain::aspectRatio);
+    const auto model = components->transform->forward;
+    const auto view = camera->camera->getView(*camera->transform);
+    const auto proj = camera->camera->getProjection(VulkanSwapchain::aspectRatio);
 
     auto &to = *components->renderMeshSimplified;
     auto &from = *components->renderMesh;
-
     to.vertices = from.vertices; // TODO
     to.indices.clear();
 
-    uint32_t rasterWidth = VulkanSwapchain::framebufferWidth / MAX_PIXELS_PER_VERTEX;
-    uint32_t rasterHeight = VulkanSwapchain::framebufferHeight / MAX_PIXELS_PER_VERTEX;
-    DBG "Using raster " << rasterWidth << " * " << rasterHeight << " for meshSimplification" ENDL;
-
+    const uint32_t rasterWidth = VulkanSwapchain::framebufferWidth / MAX_PIXELS_PER_VERTEX;
+    const uint32_t rasterHeight = VulkanSwapchain::framebufferHeight / MAX_PIXELS_PER_VERTEX;
     std::vector<SVO> indicesRaster{};
     indicesRaster.resize(rasterWidth * rasterHeight);
+    DBG "Using raster " << rasterWidth << " * " << rasterHeight << " for meshSimplification" ENDL;
 
     // Calculate raster positions
     for (uint32_t i = 0; i < from.vertices.size(); ++i) {
-        glm::vec4 projectedPos = proj * view * model * glm::vec4(from.vertices[i].pos, 1.0f);
-        float depth = projectedPos.z;
-        long x = lroundf((projectedPos.x * 0.5f / projectedPos.w + 0.5f) * static_cast<float>(rasterWidth));
-        long y = lroundf((projectedPos.y * 0.5f / projectedPos.w + 0.5f) * static_cast<float>(rasterHeight));
-        uint32_t rasterIndex = y * rasterWidth + x;
+        const glm::vec4 projectedPos = proj * view * model * glm::vec4(from.vertices[i].pos, 1.0f);
+        const float depth = projectedPos.z;
+        const long x = lroundf((projectedPos.x * 0.5f / projectedPos.w + 0.5f) * static_cast<float>(rasterWidth));
+        const long y = lroundf((projectedPos.y * 0.5f / projectedPos.w + 0.5f) * static_cast<float>(rasterHeight));
+        const uint32_t rasterIndex = y * rasterWidth + x;
 
 //        DBG x << " " << y ENDL;
 
@@ -127,11 +135,11 @@ void simplify(const Components *camera, const Components *components) {
                     .set = true,
                     .index = i,
                     .worldPos = from.vertices[i].pos,
-                    .projectedPos = projectedPos,
                     .depth = depth
             };
         }
     }
+    DBG "Calculated raster positions" ENDL;
 
     // Count
     std::vector<SVO> reducedSVOs{};
@@ -140,44 +148,64 @@ void simplify(const Components *camera, const Components *components) {
     }
     DBG "Using " << reducedSVOs.size() << " vertices, instead of " << from.vertices.size() << " before." ENDL;
 
-    // We map the original vertices to the reduced ones and then discard duplicate triangles
+    // Map original vertices to reduced ones
     std::vector<uint32_t> indexMappings{};
     indexMappings.resize(from.vertices.size());
+    std::vector<float> mappedDepth{};
+    mappedDepth.resize(from.vertices.size());
 
     for (uint32_t i = 0; i < from.vertices.size(); ++i) {
         // For each original vertex, find the closest new one
         float closestDistance = std::numeric_limits<float>::max();
-        uint32_t closestId = 0;
+        SVO *closest = nullptr;
 
         for (auto &svo: reducedSVOs) {
             // Check distance and pick index of closest -> put into mappings
-            float distance = distance2(svo.worldPos, from.vertices[i].pos);
+            const float distance = distance2(svo.worldPos, from.vertices[i].pos);
             if (distance < closestDistance) {
-                closestId = svo.index;
+                closest = &svo;
                 closestDistance = distance;
             }
         }
 
-        indexMappings[i] = closestId;
+        indexMappings[i] = closest->index;
+        mappedDepth[i] = closest->depth;
     }
+    DBG "Mapped indices" ENDL;
 
     // Filter triangles
-    std::set<Triangle> triangles{}; // Ordered set
+    std::unordered_set<Triangle, Triangle> triangles{}; // Ordered set
     for (uint32_t i = 0; i < from.indices.size(); i += 3) {
-        auto triangle = orientTriangle({
-                                               indexMappings[from.indices[i]],
-                                               indexMappings[from.indices[i + 1]],
-                                               indexMappings[from.indices[i + 2]]
-                                       });
+        const Triangle triangle = orientTriangle({
+                                                         .id1 = indexMappings[from.indices[i]],
+                                                         .id2 = indexMappings[from.indices[i + 1]],
+                                                         .id3 = indexMappings[from.indices[i + 2]],
+                                                         .minDepth = minDepth(mappedDepth[from.indices[i]],
+                                                                              mappedDepth[from.indices[i + 1]],
+                                                                              mappedDepth[from.indices[i + 2]])
+                                                 });
         if (triangle.id1 != triangle.id2 &&
             triangle.id1 != triangle.id3 &&
             triangle.id2 != triangle.id3)
             triangles.insert(triangle);
     }
+    DBG "Filtered triangles" ENDL;
+
+    // Sort
+    std::vector<Triangle> trianglesSorted{};
+    trianglesSorted.reserve(triangles.size());
+    for (auto it = triangles.begin(); it != triangles.end();) {
+        trianglesSorted.push_back(triangles.extract(it++).value());
+    }
+    auto sorter = [&](const Triangle &lhs, const Triangle &rhs) -> bool {
+        return lhs.minDepth > rhs.minDepth;
+    };
+    std::sort(trianglesSorted.begin(), trianglesSorted.end(), sorter);
+    DBG "Sorted by depth" ENDL;
 
     // Push
-    to.indices.reserve(triangles.size());
-    for (const Triangle &triangle: triangles) {
+    to.indices.reserve(trianglesSorted.size());
+    for (const Triangle &triangle: trianglesSorted) {
         to.indices.push_back(triangle.id1);
         to.indices.push_back(triangle.id2);
         to.indices.push_back(triangle.id3);

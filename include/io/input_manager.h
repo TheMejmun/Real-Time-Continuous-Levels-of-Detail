@@ -28,7 +28,7 @@ class InputManager {
 public:
     void create(GLFWwindow *window);
 
-    void poll();
+    static void poll();
 
     KeyState getKeyState(const KeyCode &key);
 

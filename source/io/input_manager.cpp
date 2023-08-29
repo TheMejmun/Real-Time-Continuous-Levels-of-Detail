@@ -99,14 +99,11 @@ void InputManager::handleKey(KeyState *key, const int &actionCode) {
     }
 }
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "readability-convert-member-functions-to-static"
 
 void InputManager::poll() {
     glfwPollEvents();
 }
 
-#pragma clang diagnostic pop
 
 KeyState InputManager::getKeyState(const KeyCode &key) {
     return *keySwitch(key);;
