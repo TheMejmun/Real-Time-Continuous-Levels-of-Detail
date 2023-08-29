@@ -154,67 +154,71 @@ void simplify(const Components *camera, const Components *components) {
     lut.resize(from.vertices.size());
 
     // Calculate raster positions
-    for (uint32_t i = 0; i < from.vertices.size(); ++i) {
-        const glm::vec4 worldPos = model * glm::vec4(from.vertices[i].pos, 1.0f);
+    {
+//        START_TRACE
+        for (uint32_t i = 0; i < from.vertices.size(); ++i) {
+            const glm::vec4 worldPos = model * glm::vec4(from.vertices[i].pos, 1.0f);
 
-        // Is facing away from camera
-        if (glm::dot(glm::vec4(cameraPos, 1.0f) - worldPos, normalModel * glm::vec4(from.vertices[i].normal, 1.0f)) < 0) {
-            lut.insertMapping(i, MAX_INDEX);
-            continue;
-        }
+            // Is facing away from camera
+            if (glm::dot(glm::vec4(cameraPos, 1.0f) - worldPos, normalModel * glm::vec4(from.vertices[i].normal, 1.0f)) < 0) {
+                lut.insertMapping(i, MAX_INDEX);
+                continue;
+            }
 
-        const glm::vec4 projectedPos = proj * view * worldPos;
-        const float depth = projectedPos.z / projectedPos.w;
-        const long x = lroundf((projectedPos.x * 0.5f / projectedPos.w + 0.5f) * static_cast<float>(rasterWidth));
-        const long y = lroundf((projectedPos.y * 0.5f / projectedPos.w + 0.5f) * static_cast<float>(rasterHeight));
-        const uint32_t rasterIndex = y * rasterWidth + x;
+            const glm::vec4 projectedPos = proj * view * worldPos;
+            const float depth = projectedPos.z / projectedPos.w;
+            const long x = lroundf((projectedPos.x * 0.5f / projectedPos.w + 0.5f) * static_cast<float>(rasterWidth));
+            const long y = lroundf((projectedPos.y * 0.5f / projectedPos.w + 0.5f) * static_cast<float>(rasterHeight));
+            const uint32_t rasterIndex = y * rasterWidth + x;
 
-        if (x < 0 || x >= rasterWidth || y < 0 || y >= rasterHeight) {
-            continue;
-        }
+            if (x < 0 || x >= rasterWidth || y < 0 || y >= rasterHeight) {
+                lut.insertMapping(i, MAX_INDEX);
+                continue;
+            }
 
-        if (!indicesRaster[rasterIndex].set) {
-            indicesRaster[rasterIndex] = {
-                    .set = true,
-                    .index = i,
-                    .worldPos = worldPos,
-                    .screenX = static_cast<uint32_t>(x),
-                    .screenY = static_cast<uint32_t>(y),
-                    .depth = depth
-            };
-        } else if (indicesRaster[rasterIndex].depth > depth) {
-            // stored vertex is farther away
-            lut.insertMapping(indicesRaster[rasterIndex].index, i); // Map previously stored to the current vertex
-            indicesRaster[rasterIndex] = {
-                    .set = true,
-                    .index = i,
-                    .worldPos = worldPos,
-                    .screenX = static_cast<uint32_t>(x),
-                    .screenY = static_cast<uint32_t>(y),
-                    .depth = depth
-            };
-        } else {
-            // stored vertex is closer to the camera than the current
-            lut.insertMapping(i, indicesRaster[rasterIndex].index); // Map previously stored to the current vertex
-        }
+            if (!indicesRaster[rasterIndex].set) {
+                indicesRaster[rasterIndex] = {
+                        .set = true,
+                        .index = i,
+                        .worldPos = worldPos,
+                        .screenX = static_cast<uint32_t>(x),
+                        .screenY = static_cast<uint32_t>(y),
+                        .depth = depth
+                };
+            } else if (indicesRaster[rasterIndex].depth > depth) {
+                // stored vertex is farther away
+                lut.insertMapping(indicesRaster[rasterIndex].index, i); // Map previously stored to the current vertex
+                indicesRaster[rasterIndex] = {
+                        .set = true,
+                        .index = i,
+                        .worldPos = worldPos,
+                        .screenX = static_cast<uint32_t>(x),
+                        .screenY = static_cast<uint32_t>(y),
+                        .depth = depth
+                };
+            } else {
+                // stored vertex is closer to the camera than the current
+                lut.insertMapping(i, indicesRaster[rasterIndex].index); // Map previously stored to the current vertex
+            }
 
 #ifdef OUTPUT_MAPPINGS
-        auto mappedId = lut.getMapping(i);
-        auto result = std::find_if(indicesRaster.begin(), indicesRaster.end(), [&mappedId](const SVO &obj) { return obj.index == mappedId; });
-        uint32_t index;
-        if (result != indicesRaster.end())
-            index = std::distance(indicesRaster.begin(), result);
-        SVO mappedTo = indicesRaster[index];
+            auto mappedId = lut.getMapping(i);
+            auto result = std::find_if(indicesRaster.begin(), indicesRaster.end(), [&mappedId](const SVO &obj) { return obj.index == mappedId; });
+            uint32_t index;
+            if (result != indicesRaster.end())
+                index = std::distance(indicesRaster.begin(), result);
+            SVO mappedTo = indicesRaster[index];
 
-        if (mappedTo.index != i) {
-            printf("\tid: %d, screen: x: %d, y: %d, z: %1.3f,\tworld: x: %1.3f, y: %1.3f, z: %1.3f\n",
-                   i, x, y, depth, worldPos.x, worldPos.y, worldPos.z);
-            printf("->\tid: %d, screen: x: %d, y: %d, z: %1.3f,\tworld: x: %1.3f, y: %1.3f, z: %1.3f\n",
-                   mappedId, mappedTo.screenX, mappedTo.screenY, mappedTo.depth, mappedTo.worldPos.x, mappedTo.worldPos.y, mappedTo.worldPos.z);
-        }
+            if (mappedTo.index != i) {
+                printf("\tid: %d, screen: x: %d, y: %d, z: %1.3f,\tworld: x: %1.3f, y: %1.3f, z: %1.3f\n",
+                       i, x, y, depth, worldPos.x, worldPos.y, worldPos.z);
+                printf("->\tid: %d, screen: x: %d, y: %d, z: %1.3f,\tworld: x: %1.3f, y: %1.3f, z: %1.3f\n",
+                       mappedId, mappedTo.screenX, mappedTo.screenY, mappedTo.depth, mappedTo.worldPos.x, mappedTo.worldPos.y, mappedTo.worldPos.z);
+            }
 #endif
+        }
+//        END_TRACE("Calculate raster positions")
     }
-    DBG "Calculated raster positions" ENDL;
 
     // Count vertices & store depth
     uint32_t newVertexCount = 0;
@@ -230,23 +234,26 @@ void simplify(const Components *camera, const Components *components) {
 
     // Filter triangles
     std::unordered_set<Triangle, Triangle> triangles{}; // Ordered set
-    for (uint32_t i = 0; i < from.indices.size(); i += 3) {
-        const uint32_t id1 = lut.getMapping(from.indices[i]);
-        const uint32_t id2 = lut.getMapping(from.indices[i + 1]);
-        const uint32_t id3 = lut.getMapping(from.indices[i + 2]);
+    {
+//        START_TRACE
+        for (uint32_t i = 0; i < from.indices.size(); i += 3) {
+            const uint32_t id1 = lut.getMapping(from.indices[i]);
+            const uint32_t id2 = lut.getMapping(from.indices[i + 1]);
+            const uint32_t id3 = lut.getMapping(from.indices[i + 2]);
 
-        if (id1 == MAX_INDEX || id2 == MAX_INDEX || id3 == MAX_INDEX ||
-            id1 == id2 || id1 == id3 || id2 == id3)
-            continue;
+            if (id1 == MAX_INDEX || id2 == MAX_INDEX || id3 == MAX_INDEX ||
+                id1 == id2 || id1 == id3 || id2 == id3)
+                continue;
 
-        const Triangle triangle = orientTriangle({id1, id2, id3,
-                                                  minDepth(mappedDepth[id1],
-                                                           mappedDepth[id2],
-                                                           mappedDepth[id3])
-                                                 });
-        triangles.insert(triangle);
+            const Triangle triangle = orientTriangle({id1, id2, id3,
+                                                      minDepth(mappedDepth[id1],
+                                                               mappedDepth[id2],
+                                                               mappedDepth[id3])
+                                                     });
+            triangles.insert(triangle);
+        }
+//        END_TRACE("Filter triangles")
     }
-    DBG "Filtered triangles" ENDL;
 
     // Sort
     std::vector<Triangle> trianglesSorted{};
@@ -258,7 +265,6 @@ void simplify(const Components *camera, const Components *components) {
         return lhs.minDepth > rhs.minDepth;
     };
     std::sort(trianglesSorted.begin(), trianglesSorted.end(), sorter);
-    DBG "Sorted by depth" ENDL;
 
     // Push
     to.indices.reserve(trianglesSorted.size());
@@ -267,8 +273,6 @@ void simplify(const Components *camera, const Components *components) {
         to.indices.push_back(triangle.id2);
         to.indices.push_back(triangle.id3);
     }
-
-    DBG "Using " << to.indices.size() / 3 << " triangles, instead of " << from.indices.size() / 3 << " before." ENDL;
 }
 
 void MeshSimplifierController::update(ECS &ecs, sec *timeTaken, uint32_t *framesTaken) {

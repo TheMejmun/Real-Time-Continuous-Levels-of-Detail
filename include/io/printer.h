@@ -45,7 +45,7 @@
 #define END_TRACE(name) { \
     auto _trace_after = Timer::now(); \
     auto _duration = std::to_string(Timer::duration(_trace_before, _trace_after)); \
-    TRC name << ": " << _duration ENDL; \
+    INF name << ": " << _duration ENDL; \
 }
 
 
