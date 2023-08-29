@@ -8,6 +8,6 @@
 
 Camera::Camera() {
     this->components.transform = new Transformer4();
-    this->components.transform->translate(glm::vec3(0, 0, -40));
+    this->components.transform->translate(glm::vec3(0, 0, -5));
     this->components.camera = new Projector();
 }
