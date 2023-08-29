@@ -111,9 +111,9 @@ void simplify(const Components *camera, const Components *components) {
     // Calculate raster positions
     for (uint32_t i = 0; i < from.vertices.size(); ++i) {
         glm::vec4 projectedPos = proj * view * model * glm::vec4(from.vertices[i].pos, 1.0f);
-        long x = lroundf((projectedPos.x * 0.5f + 0.5f) * static_cast<float>(rasterWidth));
-        long y = lroundf((projectedPos.y * 0.5f + 0.5f) * static_cast<float>(rasterHeight));
         float depth = projectedPos.z;
+        long x = lroundf((projectedPos.x * 0.5f / projectedPos.w + 0.5f) * static_cast<float>(rasterWidth));
+        long y = lroundf((projectedPos.y * 0.5f / projectedPos.w + 0.5f) * static_cast<float>(rasterHeight));
         uint32_t rasterIndex = y * rasterWidth + x;
 
 //        DBG x << " " << y ENDL;
@@ -164,11 +164,15 @@ void simplify(const Components *camera, const Components *components) {
     // Filter triangles
     std::set<Triangle> triangles{}; // Ordered set
     for (uint32_t i = 0; i < from.indices.size(); i += 3) {
-        triangles.insert(orientTriangle({
-                                                indexMappings[from.indices[i]],
-                                                indexMappings[from.indices[i + 1]],
-                                                indexMappings[from.indices[i + 2]]
-                                        }));
+        auto triangle = orientTriangle({
+                                               indexMappings[from.indices[i]],
+                                               indexMappings[from.indices[i + 1]],
+                                               indexMappings[from.indices[i + 2]]
+                                       });
+        if (triangle.id1 != triangle.id2 &&
+            triangle.id1 != triangle.id3 &&
+            triangle.id2 != triangle.id3)
+            triangles.insert(triangle);
     }
 
     // Push
