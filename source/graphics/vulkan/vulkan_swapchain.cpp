@@ -2,14 +2,16 @@
 // Created by Saman on 24.08.23.
 //
 
+#include "io/printer.h"
+#include "util/glfw_include.h"
 #include "graphics/vulkan/vulkan_swapchain.h"
 #include "graphics/vulkan/vulkan_instance.h"
 #include "graphics/vulkan/vulkan_devices.h"
-#include "io/printer.h"
-#include "util/glfw_include.h"
 #include "graphics/vulkan/vulkan_renderpasses.h"
 #include "graphics/vulkan/vulkan_memory.h"
 #include "graphics/vulkan/vulkan_imgui.h"
+
+#include <algorithm>
 
 // Global
 VkSurfaceKHR VulkanSwapchain::surface = nullptr;

@@ -3,7 +3,9 @@
 //
 
 #include "graphics/vulkan/vulkan_validation.h"
+
 #include <vulkan/vulkan.h>
+#include <cstring>
 
 // Constant
 #ifdef NDEBUG

@@ -3,8 +3,6 @@
 //
 
 
-#include <imgui_impl_vulkan.h>
-#include <imgui_impl_glfw.h>
 #include "graphics/vulkan/vulkan_imgui.h"
 #include "io/printer.h"
 #include "graphics/vulkan/vulkan_instance.h"
@@ -13,6 +11,9 @@
 #include "graphics/vulkan/vulkan_renderpasses.h"
 #include "graphics/vulkan/vulkan_buffers.h"
 #include "graphics/ui.h"
+
+#include <imgui_impl_vulkan.h>
+#include <imgui_impl_glfw.h>
 #include <sstream>
 
 VkDescriptorPool uiDescriptorPool;
@@ -77,8 +78,8 @@ void VulkanImgui::create(RenderState &state) {
     ImGui_ImplVulkan_Init(&initInfo, VulkanRenderPasses::renderPass);
 
     // Fonts:
-    VkCommandPool command_pool = state.vulkanState.commandPool;
-    VkCommandBuffer command_buffer = VulkanBuffers::commandBuffer;
+    VkCommandPool command_pool = VulkanBuffers::transferCommandPool;
+    VkCommandBuffer command_buffer = VulkanBuffers::transferCommandBuffer;
 
     checkVkResult(vkResetCommandPool(VulkanDevices::logical, command_pool, 0));
     VkCommandBufferBeginInfo beginInfo = {};

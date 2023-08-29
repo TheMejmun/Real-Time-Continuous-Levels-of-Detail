@@ -2,8 +2,9 @@
 // Created by Saman on 26.08.23.
 //
 
-#include <imgui.h>
 #include "graphics/ui.h"
+
+#include <imgui.h>
 
 void UI::update(RenderState &state) {
     ImGui::Begin("Performance");

@@ -6,22 +6,14 @@ set(CMAKE_CXX_STANDARD 20)
 add_link_options("-v")
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-# flags
-#add_definitions("-DGLM_FORCE_MESSAGES")
-#add_definitions("-DGLM_FORCE_DEPTH_ZERO_TO_ONE")
-#set(GLM_FORCE_MESSAGES ON)
-#vcpkg_configure_cmake(
-#        SOURCE_PATH ${SOURCE_PATH}
-#        OPTIONS
-#            -DGLM_FORCE_MESSAGES=ON
-#)
-
 if (WIN32)
     message(STATUS "Windows mode")
     set(VK_FOLDER "C:/VulkanSDK/1.3.239.0")
+    message(STATUS "VULKAN_SDK: $ENV{VULKAN_SDK}")
 elseif (LINUX)
     message(STATUS "Linux mode")
     set(VK_FOLDER "$ENV{HOME}/VulkanSDK/1.3.239.0")
+    message(STATUS "VULKAN_SDK: $ENV{VULKAN_SDK}")
 elseif (UNIX)
     message(STATUS "Unix mode")
     set(VK_FOLDER "$ENV{HOME}/VulkanSDK/1.3.239.0/macOS")
@@ -37,8 +29,8 @@ set(LIB_FOLDER lib)
 # Add any added source/header files here
 set(HEADER_FILES
         ${HEADER_FOLDER}/application.h
-        ${HEADER_FOLDER}/imgui_example.h
 
+        ${HEADER_FOLDER}/graphics/ui.h
         ${HEADER_FOLDER}/graphics/renderer.h
         ${HEADER_FOLDER}/graphics/colors.h
         ${HEADER_FOLDER}/graphics/vertex.h
@@ -72,6 +64,7 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/ecs/entities/camera.h
         ${HEADER_FOLDER}/ecs/systems/camera_controller.h
         ${HEADER_FOLDER}/ecs/systems/sphere_controller.h
+        ${HEADER_FOLDER}/ecs/systems/mesh_simplifier_controller.h
 
         ${HEADER_FOLDER}/physics/transformer.h
 
@@ -79,14 +72,12 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/util/importer.h
         ${HEADER_FOLDER}/util/byte_size.h
         ${HEADER_FOLDER}/util/glm_include.h
-        ${HEADER_FOLDER}/util/glfw_include.h
-        include/graphics/ui.h
-        include/ecs/systems/mesh_simplifier_controller.h)
+        ${HEADER_FOLDER}/util/glfw_include.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
         ${SOURCE_FOLDER}/application.cpp
-        ${SOURCE_FOLDER}/imgui_example.cpp
 
+        ${SOURCE_FOLDER}/graphics/ui.cpp
         ${SOURCE_FOLDER}/graphics/renderer/drawing.cpp
         ${SOURCE_FOLDER}/graphics/renderer/common.cpp
         ${SOURCE_FOLDER}/graphics/renderer/shaders.cpp
@@ -115,13 +106,12 @@ set(SOURCE_FILES
         ${SOURCE_FOLDER}/ecs/entities/camera.cpp
         ${SOURCE_FOLDER}/ecs/systems/camera_controller.cpp
         ${SOURCE_FOLDER}/ecs/systems/sphere_controller.cpp
+        ${SOURCE_FOLDER}/ecs/systems/mesh_simplifier_controller.cpp
 
         ${SOURCE_FOLDER}/physics/transformer.cpp
 
         ${SOURCE_FOLDER}/util/importer.cpp
-        ${SOURCE_FOLDER}/util/timer.cpp
-        source/graphics/ui.cpp
-        source/ecs/systems/mesh_simplifier_controller.cpp)
+        ${SOURCE_FOLDER}/util/timer.cpp)
 message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable
 add_executable(Realtime_Cell_Collapse ${SOURCE_FOLDER}/main.cpp ${HEADER_FILES} ${SOURCE_FILES})
