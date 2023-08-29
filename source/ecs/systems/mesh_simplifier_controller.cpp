@@ -18,7 +18,7 @@
 
 std::thread thread;
 bool isRunning = false;
-const uint32_t MAX_PIXELS_PER_VERTEX = 2;
+const uint32_t MAX_PIXELS_PER_VERTEX = 1;
 const uint32_t MAX_INDEX = std::numeric_limits<uint32_t>::max();
 uint32_t simplifiedMeshCalculationThreadFrameCounter = 0;
 

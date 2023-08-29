@@ -6,7 +6,7 @@
 #include "util/importer.h"
 #include "graphics/colors.h"
 
-//#define MONKEY
+#define MONKEY
 //#define SMALL_SPHERE
 
 DenseSphere::DenseSphere() {
@@ -32,7 +32,7 @@ DenseSphere::DenseSphere() {
 #ifdef MONKEY
     this->components.transform->scale(1.0f);
 #elif defined SMALL_SPHERE
-    this->components.transform->scale(0.001f);
+    this->components.transform->scale(0.003f);
 #else
     this->components.transform->scale(2.0f);
 #endif
