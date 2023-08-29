@@ -25,9 +25,7 @@ void Renderer::uploadSimplifiedMeshesThreadHelper(ECS &ecs) {
         this->simplifiedMeshAllocationThreadFrameCounter++;
         if (meshUploadDone && this->simplifiedMeshAllocationThread.joinable()) {
             this->simplifiedMeshAllocationThread.join();
-            DBG
-                    "Upload thread took " << this->simplifiedMeshAllocationThreadFrameCounter << " frames"
-                                          ENDL;
+//            DBG "Upload thread took " << this->simplifiedMeshAllocationThreadFrameCounter << " frames" ENDL;
             this->simplifiedMeshAllocationThreadRunning = false;
         }
     } else {

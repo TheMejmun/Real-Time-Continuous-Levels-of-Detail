@@ -116,7 +116,7 @@ void simplify(const Components *camera, const Components *components) {
         float depth = projectedPos.z;
         uint32_t rasterIndex = y * rasterWidth + x;
 
-        DBG x << " " << y ENDL;
+//        DBG x << " " << y ENDL;
 
         if (x < 0 || x >= rasterWidth || y < 0 || y >= rasterHeight) {
             continue;
