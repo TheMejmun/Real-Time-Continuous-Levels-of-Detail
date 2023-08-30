@@ -5,6 +5,8 @@
 #ifndef REALTIME_CELL_COLLAPSE_VULKAN_INSTANCE_H
 #define REALTIME_CELL_COLLAPSE_VULKAN_INSTANCE_H
 
+#include "preprocessor.h"
+
 #include <string>
 #include <vulkan/vulkan.h>
 

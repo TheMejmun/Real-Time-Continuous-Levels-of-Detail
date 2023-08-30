@@ -5,6 +5,8 @@
 #ifndef REALTIME_CELL_COLLAPSE_BYTE_SIZE_H
 #define REALTIME_CELL_COLLAPSE_BYTE_SIZE_H
 
+#include "preprocessor.h"
+
 #include <cstdint>
 
 #define TO_KB(bytes) (static_cast<float>(bytes) / 1024.0f)

@@ -5,6 +5,8 @@
 #ifndef REALTIME_CELL_COLLAPSE_VULKAN_IMAGES_H
 #define REALTIME_CELL_COLLAPSE_VULKAN_IMAGES_H
 
+#include "preprocessor.h"
+
 namespace VulkanImages{
     void createTextureImage();
 }

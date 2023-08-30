@@ -71,8 +71,7 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/util/timer.h
         ${HEADER_FOLDER}/util/importer.h
         ${HEADER_FOLDER}/util/byte_size.h
-        ${HEADER_FOLDER}/util/glm_include.h
-        ${HEADER_FOLDER}/util/glfw_include.h)
+        include/preprocessor.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
         ${SOURCE_FOLDER}/application.cpp

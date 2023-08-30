@@ -5,7 +5,7 @@
 #ifndef REALTIME_CELL_COLLAPSE_RENDERER_H
 #define REALTIME_CELL_COLLAPSE_RENDERER_H
 
-#include "util/glfw_include.h"
+#include "preprocessor.h"
 #include "renderer.h"
 #include "util/importer.h"
 #include "vertex.h"
@@ -15,11 +15,12 @@
 #include "graphics/vulkan/vulkan_buffers.h"
 #include "projector.h"
 #include "ecs/ecs.h"
-#include "util/glm_include.h"
 #include "graphics/vulkan/vulkan_devices.h"
 #include "graphics/vulkan/vulkan_instance.h"
 #include "graphics/render_state.h"
 
+#include <glm/glm.hpp>
+#include <GLFW/glfw3.h>
 #include <string>
 #include <utility>
 #include <vector>

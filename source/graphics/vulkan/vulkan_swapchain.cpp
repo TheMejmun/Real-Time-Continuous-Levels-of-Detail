@@ -3,7 +3,6 @@
 //
 
 #include "io/printer.h"
-#include "util/glfw_include.h"
 #include "graphics/vulkan/vulkan_swapchain.h"
 #include "graphics/vulkan/vulkan_instance.h"
 #include "graphics/vulkan/vulkan_devices.h"
@@ -11,6 +10,7 @@
 #include "graphics/vulkan/vulkan_memory.h"
 #include "graphics/vulkan/vulkan_imgui.h"
 
+#include <GLFW/glfw3.h>
 #include <algorithm>
 
 // Global

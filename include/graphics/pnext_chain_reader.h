@@ -5,6 +5,8 @@
 #ifndef REALTIME_CELL_COLLAPSE_PNEXT_CHAIN_READER_H
 #define REALTIME_CELL_COLLAPSE_PNEXT_CHAIN_READER_H
 
+#include "preprocessor.h"
+
 #include <vulkan/vulkan.h>
 
 // TODO Test

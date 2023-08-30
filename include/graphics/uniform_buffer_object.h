@@ -5,7 +5,9 @@
 #ifndef REALTIME_CELL_COLLAPSE_UNIFORM_BUFFER_OBJECT_H
 #define REALTIME_CELL_COLLAPSE_UNIFORM_BUFFER_OBJECT_H
 
-#include "util/glm_include.h"
+#include "preprocessor.h"
+
+#include <glm/glm.hpp>
 
 struct UniformBufferObject {
     alignas(16) glm::mat4 model;

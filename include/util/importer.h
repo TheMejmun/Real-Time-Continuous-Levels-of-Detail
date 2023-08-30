@@ -5,6 +5,7 @@
 #ifndef REALTIME_CELL_COLLAPSE_IMPORTER_H
 #define REALTIME_CELL_COLLAPSE_IMPORTER_H
 
+#include "preprocessor.h"
 #include "graphics/vertex.h"
 
 #include <vector>

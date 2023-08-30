@@ -2,9 +2,9 @@
 // Created by Sam on 2023-04-15.
 //
 
-#include "util/glm_include.h"
 #include "physics/transformer.h"
 
+#include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
 void Transformer4::translate(glm::vec3 translation) {

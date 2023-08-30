@@ -5,6 +5,8 @@
 #ifndef REALTIME_CELL_COLLAPSE_VULKAN_DEVICES_H
 #define REALTIME_CELL_COLLAPSE_VULKAN_DEVICES_H
 
+#include "preprocessor.h"
+
 #include <vulkan/vulkan.h>
 #include <optional>
 #include <vector>

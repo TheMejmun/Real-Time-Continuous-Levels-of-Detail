@@ -5,6 +5,7 @@
 #ifndef REALTIME_CELL_COLLAPSE_VULKAN_IMGUI_H
 #define REALTIME_CELL_COLLAPSE_VULKAN_IMGUI_H
 
+#include "preprocessor.h"
 #include "graphics/ui_state.h"
 #include "graphics/render_state.h"
 

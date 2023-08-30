@@ -5,8 +5,10 @@
 #ifndef REALTIME_CELL_COLLAPSE_PROJECTOR_H
 #define REALTIME_CELL_COLLAPSE_PROJECTOR_H
 
-#include "util/glm_include.h"
+#include "preprocessor.h"
 #include "physics/transformer.h"
+
+#include <glm/glm.hpp>
 
 struct Projector {
     float fovYRadians = glm::radians(45.0f);

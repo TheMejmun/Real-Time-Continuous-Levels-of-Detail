@@ -5,6 +5,7 @@
 #ifndef REALTIME_CELL_COLLAPSE_UI_H
 #define REALTIME_CELL_COLLAPSE_UI_H
 
+#include "preprocessor.h"
 #include "render_state.h"
 
 namespace UI {

@@ -5,9 +5,10 @@
 #ifndef REALTIME_CELL_COLLAPSE_VERTEX_H
 #define REALTIME_CELL_COLLAPSE_VERTEX_H
 
-#include "util/glm_include.h"
+#include "preprocessor.h"
 #include "graphics/colors.h"
 
+#include <glm/glm.hpp>
 #include <vulkan/vulkan.h>
 #include <array>
 

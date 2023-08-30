@@ -5,6 +5,8 @@
 #ifndef REALTIME_CELL_COLLAPSE_VULKAN_STATE_H
 #define REALTIME_CELL_COLLAPSE_VULKAN_STATE_H
 
+#include "preprocessor.h"
+
 #include <vulkan/vulkan.h>
 
 struct VulkanState {

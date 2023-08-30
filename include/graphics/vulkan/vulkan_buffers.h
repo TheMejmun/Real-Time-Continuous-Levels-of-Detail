@@ -5,6 +5,7 @@
 #ifndef REALTIME_CELL_COLLAPSE_VULKAN_BUFFERS_H
 #define REALTIME_CELL_COLLAPSE_VULKAN_BUFFERS_H
 
+#include "preprocessor.h"
 #include "graphics/triangle.h"
 #include "util/byte_size.h"
 #include "vulkan_devices.h"

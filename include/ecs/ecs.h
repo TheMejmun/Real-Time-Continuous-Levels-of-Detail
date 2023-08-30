@@ -5,6 +5,7 @@
 #ifndef REALTIME_CELL_COLLAPSE_ECS_H
 #define REALTIME_CELL_COLLAPSE_ECS_H
 
+#include "preprocessor.h"
 #include "graphics/render_mesh.h"
 #include "graphics/projector.h"
 

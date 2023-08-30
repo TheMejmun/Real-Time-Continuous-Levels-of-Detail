@@ -5,6 +5,7 @@
 #ifndef REALTIME_CELL_COLLAPSE_SPHERE_CONTROLLER_H
 #define REALTIME_CELL_COLLAPSE_SPHERE_CONTROLLER_H
 
+#include "preprocessor.h"
 #include "util/timer.h"
 #include "ecs/ecs.h"
 #include "io/input_manager.h"

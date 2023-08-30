@@ -5,6 +5,8 @@
 #ifndef REALTIME_CELL_COLLAPSE_VULKAN_VALIDATION_H
 #define REALTIME_CELL_COLLAPSE_VULKAN_VALIDATION_H
 
+#include "preprocessor.h"
+
 #include <vector>
 
 namespace VulkanValidation {

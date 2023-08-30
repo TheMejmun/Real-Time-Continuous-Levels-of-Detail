@@ -5,6 +5,7 @@
 #ifndef REALTIME_CELL_COLLAPSE_MESH_SIMPLIFIER_CONTROLLER_H
 #define REALTIME_CELL_COLLAPSE_MESH_SIMPLIFIER_CONTROLLER_H
 
+#include "preprocessor.h"
 #include "util/timer.h"
 #include "ecs/ecs.h"
 

@@ -5,6 +5,8 @@
 #ifndef REALTIME_CELL_COLLAPSE_TIMER_H
 #define REALTIME_CELL_COLLAPSE_TIMER_H
 
+#include "preprocessor.h"
+
 #include <iostream>
 #include <chrono>
 #include <cmath>

@@ -5,6 +5,7 @@
 #ifndef REALTIME_CELL_COLLAPSE_APPLICATION_H
 #define REALTIME_CELL_COLLAPSE_APPLICATION_H
 
+#include "preprocessor.h"
 #include "graphics/renderer.h"
 #include "util/timer.h"
 #include "io/window_manager.h"

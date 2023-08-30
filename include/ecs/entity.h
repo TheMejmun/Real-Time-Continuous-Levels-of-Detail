@@ -5,6 +5,7 @@
 #ifndef REALTIME_CELL_COLLAPSE_ENTITY_H
 #define REALTIME_CELL_COLLAPSE_ENTITY_H
 
+#include "preprocessor.h"
 #include "ecs.h"
 
 class Entity{

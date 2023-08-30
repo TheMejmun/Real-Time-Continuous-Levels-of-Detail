@@ -5,6 +5,7 @@
 #ifndef REALTIME_CELL_COLLAPSE_TRIANGLE_H
 #define REALTIME_CELL_COLLAPSE_TRIANGLE_H
 
+#include "preprocessor.h"
 #include "render_mesh.h"
 #include "graphics/colors.h"
 

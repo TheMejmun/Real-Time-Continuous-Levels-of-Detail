@@ -5,6 +5,7 @@
 #ifndef REALTIME_CELL_COLLAPSE_DENSE_SPHERE_H
 #define REALTIME_CELL_COLLAPSE_DENSE_SPHERE_H
 
+#include "preprocessor.h"
 #include "ecs/entity.h"
 
 class DenseSphere: public Entity{

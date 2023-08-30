@@ -5,6 +5,7 @@
 #ifndef REALTIME_CELL_COLLAPSE_UI_STATE_H
 #define REALTIME_CELL_COLLAPSE_UI_STATE_H
 
+#include "preprocessor.h"
 #include "util/timer.h"
 
 #include <glfw/glfw3.h>
