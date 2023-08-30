@@ -4,7 +4,6 @@
 
 #include "ecs/ecs.h"
 #include "io/printer.h"
-#include "ecs/entities/world.h"
 #include "ecs/entities/dense_sphere.h"
 
 #include <stdexcept>

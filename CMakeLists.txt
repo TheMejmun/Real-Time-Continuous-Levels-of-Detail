@@ -60,7 +60,6 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/ecs/ecs.h
         ${HEADER_FOLDER}/ecs/entity.h
         ${HEADER_FOLDER}/ecs/entities/dense_sphere.h
-        ${HEADER_FOLDER}/ecs/entities/world.h
         ${HEADER_FOLDER}/ecs/entities/camera.h
         ${HEADER_FOLDER}/ecs/systems/camera_controller.h
         ${HEADER_FOLDER}/ecs/systems/sphere_controller.h
@@ -101,7 +100,6 @@ set(SOURCE_FILES
         ${SOURCE_FOLDER}/ecs/ecs.cpp
         ${SOURCE_FOLDER}/ecs/entity.cpp
         ${SOURCE_FOLDER}/ecs/entities/dense_sphere.cpp
-        ${SOURCE_FOLDER}/ecs/entities/world.cpp
         ${SOURCE_FOLDER}/ecs/entities/camera.cpp
         ${SOURCE_FOLDER}/ecs/systems/camera_controller.cpp
         ${SOURCE_FOLDER}/ecs/systems/sphere_controller.cpp
