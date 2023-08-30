@@ -114,7 +114,6 @@ private:
 
     chrono_sec_point lastTimestamp = Timer::now();
     std::thread simplifiedMeshAllocationThread{};
-    bool simplifiedMeshAllocationThreadRunning = false;
 
     uint32_t meshBufferToUse = 0;
 

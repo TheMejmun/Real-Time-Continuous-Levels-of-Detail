@@ -24,7 +24,7 @@ bool simplifiedMeshUploadDone = false;
 bool uploadedAnySimplifiedMeshes = false;
 
 void Renderer::uploadSimplifiedMeshesThreadHelper(ECS &ecs) {
-    if (this->simplifiedMeshAllocationThreadRunning) {
+    if (this->simplifiedMeshAllocationThread.joinable()) {
         simplifiedMeshUploadThreadFrameCounter++;
         if (simplifiedMeshUploadDone && this->simplifiedMeshAllocationThread.joinable()) {
             this->simplifiedMeshAllocationThread.join();
@@ -32,10 +32,8 @@ void Renderer::uploadSimplifiedMeshesThreadHelper(ECS &ecs) {
                 this->state.uiState.meshUploadTimeTaken = Timer::duration(simplifiedMeshUploadThreadStartedTime, Timer::now());
                 this->state.uiState.meshUploadFramesTaken = simplifiedMeshUploadThreadFrameCounter;
             }
-            this->simplifiedMeshAllocationThreadRunning = false;
         }
     } else {
-        this->simplifiedMeshAllocationThreadRunning = true;
         simplifiedMeshUploadThreadFrameCounter = 0;
         simplifiedMeshUploadDone = false;
         simplifiedMeshUploadThreadStartedTime = Timer::now();

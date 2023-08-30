@@ -21,7 +21,6 @@ const uint32_t MAX_PIXELS_PER_VERTEX = 1;
 const uint32_t MAX_INDEX = std::numeric_limits<uint32_t>::max();
 
 std::thread thread;
-bool isRunning = false;
 uint32_t simplifiedMeshCalculationThreadFrameCounter = 0;
 chrono_sec_point simplifiedMeshCalculationThreadStartedTime{};
 bool meshCalculationDone = false;
@@ -113,7 +112,8 @@ public:
     uint32_t getMapping(uint32_t forIndex) {
         uint32_t found = forIndex;
         while (found != MAX_INDEX && this->indexMappings[found] != 0) {
-            found = this->indexMappings[found] == MAX_INDEX ? MAX_INDEX : this->indexMappings[found] - 1; // because the stored mappings are +1
+            found = this->indexMappings[found] == MAX_INDEX ? MAX_INDEX : this->indexMappings[found] -
+                                                                          1; // because the stored mappings are +1
         }
         return found;
     }
@@ -160,7 +160,8 @@ void simplify(const Components *camera, const Components *components) {
             const glm::vec4 worldPos = model * glm::vec4(from.vertices[i].pos, 1.0f);
 
             // Is facing away from camera
-            if (glm::dot(glm::vec4(cameraPos, 1.0f) - worldPos, normalModel * glm::vec4(from.vertices[i].normal, 1.0f)) < 0) {
+            if (glm::dot(glm::vec4(cameraPos, 1.0f) - worldPos,
+                         normalModel * glm::vec4(from.vertices[i].normal, 1.0f)) < 0) {
                 lut.insertMapping(i, MAX_INDEX);
                 continue;
             }
@@ -276,12 +277,11 @@ void simplify(const Components *camera, const Components *components) {
 }
 
 void MeshSimplifierController::update(ECS &ecs, sec *timeTaken, uint32_t *framesTaken) {
-    if (isRunning) {
+    if (thread.joinable()) {
         simplifiedMeshCalculationThreadFrameCounter++;
-        if (meshCalculationDone && thread.joinable()) {
+        if (meshCalculationDone) {
             DBG "Mesh calculation thread took " << simplifiedMeshCalculationThreadFrameCounter << " frames" ENDL;
             thread.join();
-            isRunning = false;
             *timeTaken = Timer::duration(simplifiedMeshCalculationThreadStartedTime, Timer::now());
             *framesTaken = simplifiedMeshCalculationThreadFrameCounter;
         }
@@ -290,7 +290,6 @@ void MeshSimplifierController::update(ECS &ecs, sec *timeTaken, uint32_t *frames
         auto camera = ecs.requestEntities(CameraController::EvaluatorActiveCamera)[0];
 
         if (!entities.empty()) {
-            isRunning = true;
             meshCalculationDone = false;
             simplifiedMeshCalculationThreadFrameCounter = 0;
             simplifiedMeshCalculationThreadStartedTime = Timer::now();
@@ -319,6 +318,6 @@ void MeshSimplifierController::update(ECS &ecs, sec *timeTaken, uint32_t *frames
 }
 
 void MeshSimplifierController::destroy() {
-    if (isRunning)
+    if (thread.joinable())
         thread.join();
 }

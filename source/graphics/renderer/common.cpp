@@ -60,7 +60,7 @@ void Renderer::destroyVulkan() {
 void Renderer::destroy() {
     INF "Destroying Renderer" ENDL;
 
-    if (this->simplifiedMeshAllocationThreadRunning)
+    if (this->simplifiedMeshAllocationThread.joinable())
         this->simplifiedMeshAllocationThread.join();
 
     // Wait until resources are not actively being used anymore
