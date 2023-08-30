@@ -30,6 +30,7 @@ DenseSphere::DenseSphere() {
 
 #ifdef MONKEY
     this->components.transform->scale(1.0f);
+    this->components.transform->rotate(glm::radians(180.0), glm::vec3(0, 1, 0));
 #elif defined SMALL_SPHERE
     this->components.transform->scale(0.003f);
 #else
