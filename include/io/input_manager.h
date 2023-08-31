@@ -13,7 +13,7 @@
 #include <GLFW/glfw3.h>
 #include <memory>
 
-class InputManagerController : public System {
+class InputController : public System {
 public:
     void create(GLFWwindow *window);
 

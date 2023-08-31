@@ -9,7 +9,7 @@
 bool doSphereRotation = false;
 
 void SphereController::update(const sec &delta, ECS &ecs) {
-    auto &inputState = *ecs.requestEntities(InputManagerController::EvaluatorInputManagerEntity)[0]->inputState;
+    auto &inputState = *ecs.requestEntities(InputController::EvaluatorInputManagerEntity)[0]->inputState;
 
     if (inputState.toggleRotation == IM_DOWN_EVENT) {
         doSphereRotation = !doSphereRotation;

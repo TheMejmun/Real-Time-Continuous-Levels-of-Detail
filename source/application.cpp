@@ -43,7 +43,7 @@ void Application::mainLoop() {
 
         // Input
         this->inputManager.update(this->deltaTime, this->ecs);
-        auto inputState = ecs.requestEntities(InputManagerController::EvaluatorInputManagerEntity)[0]->inputState;
+        auto inputState = ecs.requestEntities(InputController::EvaluatorInputManagerEntity)[0]->inputState;
         if (inputState->closeWindow == IM_DOWN_EVENT)
             this->windowManager.close();
         if (inputState->toggleFullscreen == IM_DOWN_EVENT)

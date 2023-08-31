@@ -7,9 +7,9 @@
 
 #include <iostream>
 
-static InputManagerController *instance;
+static InputController *instance;
 
-void InputManagerController::create(GLFWwindow *w) {
+void InputController::create(GLFWwindow *w) {
     INF "Creating InputManager" ENDL;
 
     this->window = w;
@@ -18,16 +18,16 @@ void InputManagerController::create(GLFWwindow *w) {
     glfwSetKeyCallback(window, _callback);
 }
 
-void InputManagerController::update(sec delta, ECS &ecs) {
-    InputManagerController::handleKey(keySwitch(IM_CLOSE_WINDOW), -1);
-    InputManagerController::handleKey(keySwitch(IM_FULLSCREEN), -1);
-    InputManagerController::handleKey(keySwitch(IM_MOVE_FORWARD), -1);
-    InputManagerController::handleKey(keySwitch(IM_MOVE_BACKWARD), -1);
-    InputManagerController::handleKey(keySwitch(IM_TOGGLE_ROTATION), -1);
+void InputController::update(sec delta, ECS &ecs) {
+    InputController::handleKey(keySwitch(IM_CLOSE_WINDOW), -1);
+    InputController::handleKey(keySwitch(IM_FULLSCREEN), -1);
+    InputController::handleKey(keySwitch(IM_MOVE_FORWARD), -1);
+    InputController::handleKey(keySwitch(IM_MOVE_BACKWARD), -1);
+    InputController::handleKey(keySwitch(IM_TOGGLE_ROTATION), -1);
 
     glfwPollEvents();
 
-    auto entities = ecs.requestEntities(InputManagerController::EvaluatorInputManagerEntity);
+    auto entities = ecs.requestEntities(InputController::EvaluatorInputManagerEntity);
 
     for (auto e: entities) {
         auto state = e->inputState;
@@ -39,19 +39,19 @@ void InputManagerController::update(sec delta, ECS &ecs) {
     }
 }
 
-void InputManagerController::_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+void InputController::_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
     instance->processInput(window, key, scancode, action, mods);
 }
 
-void InputManagerController::processInput(GLFWwindow *w, int key, int scancode, int action, int mods) {
-    if (key == GLFW_KEY_ESCAPE) InputManagerController::handleKey(&this->closeWindow, action);
-    if (key == GLFW_KEY_M) InputManagerController::handleKey(&this->toggleFullscreen, action);
-    if (key == GLFW_KEY_W) InputManagerController::handleKey(&this->moveForward, action);
-    if (key == GLFW_KEY_S) InputManagerController::handleKey(&this->moveBackward, action);
-    if (key == GLFW_KEY_SPACE) InputManagerController::handleKey(&this->toggleRotation, action);
+void InputController::processInput(GLFWwindow *w, int key, int scancode, int action, int mods) {
+    if (key == GLFW_KEY_ESCAPE) InputController::handleKey(&this->closeWindow, action);
+    if (key == GLFW_KEY_M) InputController::handleKey(&this->toggleFullscreen, action);
+    if (key == GLFW_KEY_W) InputController::handleKey(&this->moveForward, action);
+    if (key == GLFW_KEY_S) InputController::handleKey(&this->moveBackward, action);
+    if (key == GLFW_KEY_SPACE) InputController::handleKey(&this->toggleRotation, action);
 }
 
-KeyState *InputManagerController::keySwitch(const KeyCode &key) {
+KeyState *InputController::keySwitch(const KeyCode &key) {
     KeyState *out;
     switch (key) {
         case IM_CLOSE_WINDOW:
@@ -75,7 +75,7 @@ KeyState *InputManagerController::keySwitch(const KeyCode &key) {
     return out;
 }
 
-void InputManagerController::handleKey(KeyState *key, const int &actionCode) {
+void InputController::handleKey(KeyState *key, const int &actionCode) {
     switch (actionCode) {
         case GLFW_PRESS:
         case GLFW_REPEAT:
@@ -120,4 +120,4 @@ void InputManagerController::handleKey(KeyState *key, const int &actionCode) {
     }
 }
 
-void InputManagerController::destroy() {}
+void InputController::destroy() {}

@@ -7,7 +7,7 @@
 
 void CameraController::update(const sec &delta, ECS &ecs) {
     auto &camera = *ecs.requestEntities(CameraController::EvaluatorActiveCamera)[0];
-    auto &inputState = *ecs.requestEntities(InputManagerController::EvaluatorInputManagerEntity)[0]->inputState;
+    auto &inputState = *ecs.requestEntities(InputController::EvaluatorInputManagerEntity)[0]->inputState;
 
     int move = 0;
     if (inputState.moveForward == IM_DOWN_EVENT ||
