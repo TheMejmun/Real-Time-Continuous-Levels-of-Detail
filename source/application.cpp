@@ -5,6 +5,7 @@
 #include "application.h"
 #include "io/printer.h"
 #include "ecs/entities/dense_sphere.h"
+#include "ecs/entities/monkey.h"
 #include "ecs/entities/camera.h"
 #include "ecs/systems/camera_controller.h"
 #include "ecs/systems/sphere_controller.h"
@@ -34,8 +35,10 @@ void Application::init() {
     camera.components.isMainCamera = true;
     camera.upload(this->ecs);
 
-    DenseSphere sphere{};
-    sphere.upload(this->ecs);
+//    DenseSphere sphere{};
+//    sphere.upload(this->ecs);
+    Monkey monkey{};
+    monkey.upload(this->ecs);
 }
 
 void Application::mainLoop() {
@@ -43,10 +46,10 @@ void Application::mainLoop() {
 
         // Input
         this->inputManager.update(this->deltaTime, this->ecs);
-        auto inputState = ecs.requestEntities(InputController::EvaluatorInputManagerEntity)[0]->inputState;
-        if (inputState->closeWindow == IM_DOWN_EVENT)
+        auto &inputState = *ecs.requestEntities(InputController::EvaluatorInputManagerEntity)[0]->inputState;
+        if (inputState.closeWindow == IM_DOWN_EVENT)
             this->windowManager.close();
-        if (inputState->toggleFullscreen == IM_DOWN_EVENT)
+        if (inputState.toggleFullscreen == IM_DOWN_EVENT)
             this->windowManager.toggleFullscreen();
 
         // UI

@@ -7,29 +7,27 @@
 
 #include "preprocessor.h"
 #include "graphics/render_mesh.h"
+#include "graphics/render_mesh_simplifiable.h"
 #include "graphics/projector.h"
 #include "io/input_state.h"
 
 #include <mutex>
+#include <memory>
 
 struct Components {
     bool isDestroyed = false;
     bool willDestroy = false;
     uint32_t index = 0;
 
-    InputState *inputState = nullptr;
+    std::unique_ptr<InputState> inputState{nullptr};
 
-    RenderMesh *renderMesh = nullptr;
-    RenderMesh *renderMeshSimplified = nullptr;
-    // TODO move these somewhere else
-    bool updateSimplifiedMesh = false;
-    std::mutex *simplifiedMeshMutex = new std::mutex{};
-    bool simplifyMesh = false;
+    std::unique_ptr<RenderMesh> renderMesh{nullptr};
+    std::unique_ptr<RenderMeshSimplifiable> renderMeshSimplifiable{nullptr};
 
-    Transformer4 *transform = nullptr;
+    std::unique_ptr<Transformer4> transform{nullptr};
 
+    std::unique_ptr<Projector> camera{nullptr};
     bool isMainCamera = false;
-    Projector *camera = nullptr;
 
     bool isRotatingSphere = false;
 
@@ -39,17 +37,11 @@ struct Components {
      * Warning: Do not call this manually. ECS calls this automatically when required.
      */
     void destroy() {
-        delete this->inputState;
-        this->inputState = nullptr;
-        delete this->renderMesh;
-        this->renderMesh = nullptr;
-        delete this->transform;
-        this->transform = nullptr;
-        delete this->camera;
-        this->camera = nullptr;
-
-        delete this->simplifiedMeshMutex;
-        this->simplifiedMeshMutex = nullptr;
+        this->inputState.reset(nullptr);
+        this->renderMesh.reset(nullptr);
+        this->renderMeshSimplifiable.reset(nullptr);
+        this->transform.reset(nullptr);
+        this->camera.reset(nullptr);
 
         this->isDestroyed = true;
         this->willDestroy = false;

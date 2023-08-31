@@ -5,5 +5,5 @@
 #include "ecs/entities/input_state_entity.h"
 
 InputStateEntity::InputStateEntity() {
-    this->components.inputState = new InputState();
+    this->components.inputState = std::make_unique<InputState>();
 }

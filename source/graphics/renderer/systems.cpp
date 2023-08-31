@@ -29,7 +29,8 @@ void Renderer::uploadSimplifiedMeshesThreadHelper(ECS &ecs) {
         if (simplifiedMeshUploadDone && this->simplifiedMeshAllocationThread.joinable()) {
             this->simplifiedMeshAllocationThread.join();
             if (uploadedAnySimplifiedMeshes) {
-                this->state.uiState.meshUploadTimeTaken = Timer::duration(simplifiedMeshUploadThreadStartedTime, Timer::now());
+                this->state.uiState.meshUploadTimeTaken = Timer::duration(simplifiedMeshUploadThreadStartedTime,
+                                                                          Timer::now());
                 this->state.uiState.meshUploadFramesTaken = simplifiedMeshUploadThreadFrameCounter;
             }
         }
@@ -44,7 +45,8 @@ void Renderer::uploadSimplifiedMeshesThreadHelper(ECS &ecs) {
         };
 
         this->simplifiedMeshAllocationThread = std::thread(function, std::ref(ecs), std::ref(this->meshBufferToUse),
-                                                           std::ref(simplifiedMeshUploadDone), std::ref(uploadedAnySimplifiedMeshes));
+                                                           std::ref(simplifiedMeshUploadDone),
+                                                           std::ref(uploadedAnySimplifiedMeshes));
     }
 }
 
@@ -56,18 +58,15 @@ void Renderer::uploadSimplifiedMeshes(ECS &ecs, uint32_t &bufferToUseAfter, bool
 
 
     for (auto components: entities) {
-        if (components->simplifiedMeshMutex == nullptr) {
-            components->simplifiedMeshMutex = new std::mutex{};
-        }
-        if (components->simplifiedMeshMutex->try_lock()) {
-            auto &mesh = *components->renderMeshSimplified;
+        if (components->renderMeshSimplifiable->simplifiedMeshMutex.try_lock()) {
+            auto &mesh = *components->renderMeshSimplifiable;
             // TODO this upload produced a bad access error
             VulkanBuffers::uploadVertices(mesh.vertices, simplifiedMeshBuffer);
             VulkanBuffers::uploadIndices(mesh.indices, simplifiedMeshBuffer);
             mesh.isAllocated = true;
             mesh.bufferIndex = simplifiedMeshBuffer;
-            components->updateSimplifiedMesh = false;
-            components->simplifiedMeshMutex->unlock();
+            mesh.updateSimplifiedMesh = false;
+            mesh.simplifiedMeshMutex.unlock();
 
             uploadedAny = true;
         }

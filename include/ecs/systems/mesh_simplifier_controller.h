@@ -16,7 +16,7 @@ namespace MeshSimplifierController {
 
     static inline bool EvaluatorToSimplify(const Components &components) {
         return components.renderMesh != nullptr && components.transform != nullptr && components.isAlive() &&
-               components.simplifyMesh && !components.updateSimplifiedMesh;
+               components.renderMeshSimplifiable != nullptr && !components.renderMeshSimplifiable->updateSimplifiedMesh;
     };
 };
 #endif //REALTIME_CELL_COLLAPSE_MESH_SIMPLIFIER_CONTROLLER_H

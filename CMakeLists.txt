@@ -74,7 +74,9 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/util/byte_size.h
         include/ecs/components.h
         include/ecs/entities/input_state_entity.h
-        include/io/input_state.h)
+        include/io/input_state.h
+        include/graphics/render_mesh_simplifiable.h
+        include/ecs/entities/monkey.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
         ${SOURCE_FOLDER}/application.cpp
@@ -113,7 +115,8 @@ set(SOURCE_FILES
 
         ${SOURCE_FOLDER}/util/importer.cpp
         ${SOURCE_FOLDER}/util/timer.cpp
-        source/ecs/entities/input_state_entity.cpp)
+        source/ecs/entities/input_state_entity.cpp
+        source/ecs/entities/monkey.cpp)
 message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable
 add_executable(Realtime_Cell_Collapse ${SOURCE_FOLDER}/main.cpp ${HEADER_FILES} ${SOURCE_FILES})

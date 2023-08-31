@@ -30,12 +30,12 @@ void InputController::update(sec delta, ECS &ecs) {
     auto entities = ecs.requestEntities(InputController::EvaluatorInputManagerEntity);
 
     for (auto e: entities) {
-        auto state = e->inputState;
-        state->closeWindow = this->closeWindow;
-        state->toggleFullscreen = this->toggleFullscreen;
-        state->moveForward = this->moveForward;
-        state->moveBackward = this->moveBackward;
-        state->toggleRotation = this->toggleRotation;
+        auto &state = *e->inputState;
+        state.closeWindow = this->closeWindow;
+        state.toggleFullscreen = this->toggleFullscreen;
+        state.moveForward = this->moveForward;
+        state.moveBackward = this->moveBackward;
+        state.toggleRotation = this->toggleRotation;
     }
 }
 

@@ -139,7 +139,7 @@ void simplify(const Components *camera, const Components *components) {
     const auto view = camera->camera->getView(*camera->transform);
     const auto proj = camera->camera->getProjection(VulkanSwapchain::aspectRatio);
 
-    auto &to = *components->renderMeshSimplified;
+    auto &to = *components->renderMeshSimplifiable;
     auto &from = *components->renderMesh;
     to.vertices = from.vertices; // TODO
     to.indices.clear();
@@ -296,17 +296,10 @@ void MeshSimplifierController::update(ECS &ecs, sec *timeTaken, uint32_t *frames
 
             auto function = [=](bool &done) {
                 for (auto components: entities) {
-                    if (components->simplifiedMeshMutex == nullptr) {
-                        components->simplifiedMeshMutex = new std::mutex{};
-                    }
-                    if (components->simplifiedMeshMutex->try_lock()) {
-                        if (components->renderMeshSimplified == nullptr) {
-                            components->renderMeshSimplified = new RenderMesh();
-                        }
-
+                    if (components->renderMeshSimplifiable->simplifiedMeshMutex.try_lock()) {
                         simplify(camera, components);
-                        components->updateSimplifiedMesh = true;
-                        components->simplifiedMeshMutex->unlock();
+                        components->renderMeshSimplifiable->updateSimplifiedMesh = true;
+                        components->renderMeshSimplifiable->simplifiedMeshMutex.unlock();
                     }
                 }
                 done = true;
