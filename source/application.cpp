@@ -27,9 +27,13 @@ void Application::init() {
     this->renderer.create(this->title, this->windowManager.window);
 
     // Entities
+    InputStateEntity inputStateEntity{};
+    inputStateEntity.upload(this->ecs);
+
     Camera camera{};
     camera.components.isMainCamera = true;
     camera.upload(this->ecs);
+
     DenseSphere sphere{};
     sphere.upload(this->ecs);
 }
@@ -38,13 +42,12 @@ void Application::mainLoop() {
     while (!this->windowManager.shouldClose()) {
 
         // Input
-        this->inputManager.poll();
-        if (this->inputManager.getKeyState(IM_CLOSE_WINDOW) == IM_DOWN_EVENT) {
+        this->inputManager.update(this->deltaTime, this->ecs);
+        auto inputState = ecs.requestEntities(InputManagerController::EvaluatorInputManagerEntity)[0]->inputState;
+        if (inputState->closeWindow == IM_DOWN_EVENT)
             this->windowManager.close();
-        }
-        if (this->inputManager.consumeKeyState(IM_FULLSCREEN) == IM_DOWN_EVENT) {
+        if (inputState->toggleFullscreen == IM_DOWN_EVENT)
             this->windowManager.toggleFullscreen();
-        }
 
         // UI
         auto uiState = this->renderer.getUiState();
@@ -52,10 +55,11 @@ void Application::mainLoop() {
         uiState->cpuWaitTime = this->currentCpuWaitTime;
 
         // Systems
-        CameraController::update(this->deltaTime, this->ecs, this->inputManager);
-        SphereController::update(this->deltaTime, this->ecs, this->inputManager);
+        CameraController::update(this->deltaTime, this->ecs);
+        SphereController::update(this->deltaTime, this->ecs);
         if (uiState->runMeshSimplifier)
-            MeshSimplifierController::update(this->ecs, &uiState->meshSimplifierTimeTaken, &uiState->meshSimplifierFramesTaken);
+            MeshSimplifierController::update(this->ecs, &uiState->meshSimplifierTimeTaken,
+                                             &uiState->meshSimplifierFramesTaken);
 
         // Render
         if (uiState->returnToOriginalMeshBuffer)

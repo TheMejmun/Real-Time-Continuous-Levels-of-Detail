@@ -6,8 +6,7 @@
 #define REALTIME_CELL_COLLAPSE_ECS_H
 
 #include "preprocessor.h"
-#include "graphics/render_mesh.h"
-#include "graphics/projector.h"
+#include "ecs/components.h"
 
 #include <mutex>
 #include <vector>
@@ -15,54 +14,6 @@
 #include <tuple>
 #include <memory>
 #include <functional>
-
-struct Components {
-    bool isDestroyed = false;
-    bool willDestroy = false;
-    uint32_t index = 0;
-
-    RenderMesh *renderMesh = nullptr;
-    RenderMesh *renderMeshSimplified = nullptr;
-    // TODO move these somewhere else
-    bool updateSimplifiedMesh = false;
-    std::mutex *simplifiedMeshMutex =new std::mutex{};
-    bool simplifyMesh = false;
-
-    Transformer4 *transform = nullptr;
-
-    bool isMainCamera = false;
-    Projector *camera = nullptr;
-
-    bool isRotatingSphere = false;
-
-    /**
-     * Destroys all contained entities.
-     *
-     * Warning: Do not call this manually. ECS calls this automatically when required.
-     */
-    void destroy() {
-        delete this->renderMesh;
-        this->renderMesh = nullptr;
-        delete this->transform;
-        this->transform = nullptr;
-        delete this->camera;
-        this->camera = nullptr;
-
-        delete this->simplifiedMeshMutex;
-        this->simplifiedMeshMutex = nullptr;
-
-        this->isDestroyed = true;
-        this->willDestroy = false;
-    }
-
-    /**
-     * Convenience function
-     * @return True, if these entities are not and will not be destroyed this frame.
-     */
-    [[nodiscard]] bool isAlive() const {
-        return !isDestroyed && !willDestroy;
-    }
-};
 
 class ECS {
 public:
