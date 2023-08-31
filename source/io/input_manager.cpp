@@ -9,11 +9,14 @@
 
 static InputController *instance;
 
-void InputController::create(GLFWwindow *w) {
+void InputController::create(GLFWwindow *w, ECS &ecs) {
     INF "Creating InputManager" ENDL;
 
     this->window = w;
     instance = this;
+
+    InputStateEntity inputStateEntity{};
+    inputStateEntity.upload(ecs);
 
     glfwSetKeyCallback(window, _callback);
 }

@@ -24,13 +24,10 @@ void Application::init() {
 
     this->ecs.create();
     this->windowManager.create(this->title);
-    this->inputManager.create(this->windowManager.window);
+    this->inputManager.create(this->windowManager.window, this->ecs);
     this->renderer.create(this->title, this->windowManager.window);
 
     // Entities
-    InputStateEntity inputStateEntity{};
-    inputStateEntity.upload(this->ecs);
-
     Camera camera{};
     camera.components.isMainCamera = true;
     camera.upload(this->ecs);
