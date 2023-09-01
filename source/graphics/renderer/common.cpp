@@ -11,6 +11,8 @@
 void Renderer::create(const std::string &title, GLFWwindow *window) {
     INF "Creating Renderer" ENDL;
 
+    this->state = {};
+
     this->state.title = title;
     this->state.window = window;
 
