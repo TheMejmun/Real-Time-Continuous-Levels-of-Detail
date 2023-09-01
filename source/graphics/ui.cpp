@@ -28,9 +28,11 @@ void UI::update(UiState &state) {
 
     ImGui::Text("Current vertex count: %d", state.currentMeshVertices);
     ImGui::Text("Current triangle count: %d", state.currentMeshTriangles);
-    // ImGui::Text("Current projected mesh size: %3.1f px^2", state.currentMeshSizeSq); TODO
     if (ImGui::Button("Use original"))
         state.returnToOriginalMeshBuffer = true;
+    const std::string meshSwitchText = state.isMonkeyMesh ? "Switch to Sphere":"Switch to Monkey";
+    if (ImGui::Button(meshSwitchText.c_str()))
+        state.switchMesh = true;
 
     ImGui::SeparatorText("Mesh Optimizer");
 
@@ -47,7 +49,6 @@ void UI::update(UiState &state) {
     ImGui::SeparatorText("Mesh Upload");
 
     ImGui::Text("Took: %3.4f seconds", state.meshUploadTimeTaken);
-    ImGui::Text("Took: %d frames", state.meshUploadFramesTaken);
 
     ImGui::SeparatorText("Controls");
 

@@ -37,6 +37,9 @@ private:
     sec currentCpuWaitTime;
     uint32_t currentFPS = 0;
     sec deltaTime = 0;
+
+    bool monkeyMode = true;
+    bool exitAfterMainLoop = true;
 };
 
 #endif //REALTIME_CELL_COLLAPSE_APPLICATION_H

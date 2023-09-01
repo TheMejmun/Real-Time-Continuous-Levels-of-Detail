@@ -14,9 +14,12 @@
 #include <iomanip>
 
 void Application::run() {
-    init();
-    mainLoop();
-    destroy();
+    do {
+        this->exitAfterMainLoop = true;
+        init();
+        mainLoop();
+        destroy();
+    } while (this->exitAfterMainLoop == false);
 }
 
 void Application::init() {
@@ -27,15 +30,20 @@ void Application::init() {
     this->inputManager.create(this->windowManager.window, this->ecs);
     this->renderer.create(this->title, this->windowManager.window);
 
+    renderer.getUiState()->isMonkeyMesh = this->monkeyMode;
+
     // Entities
     Camera camera{};
     camera.components.isMainCamera = true;
     camera.upload(this->ecs);
 
-//    DenseSphere sphere{};
-//    sphere.upload(this->ecs);
-    Monkey monkey{};
-    monkey.upload(this->ecs);
+    if (this->monkeyMode) {
+        Monkey monkey{};
+        monkey.upload(this->ecs);
+    } else {
+        DenseSphere sphere{};
+        sphere.upload(this->ecs);
+    }
 }
 
 void Application::mainLoop() {
@@ -53,6 +61,12 @@ void Application::mainLoop() {
         auto uiState = this->renderer.getUiState();
         uiState->fps.update(this->deltaTime);
         uiState->cpuWaitTime = this->currentCpuWaitTime;
+
+        if (uiState->switchMesh) {
+            this->exitAfterMainLoop = false;
+            this->monkeyMode = !this->monkeyMode;
+            this->windowManager.close();
+        }
 
         // Systems
         CameraController::update(this->deltaTime, this->ecs);
@@ -82,6 +96,7 @@ void Application::destroy() {
     MeshSimplifierController::destroy();
 
     this->renderer.destroy();
+    this->inputManager.destroy();
     this->windowManager.destroy();
     this->ecs.destroy();
 }

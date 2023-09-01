@@ -31,7 +31,6 @@ void Renderer::uploadSimplifiedMeshesThreadHelper(ECS &ecs) {
             if (uploadedAnySimplifiedMeshes) {
                 this->state.uiState.meshUploadTimeTaken = Timer::duration(simplifiedMeshUploadThreadStartedTime,
                                                                           Timer::now());
-                this->state.uiState.meshUploadFramesTaken = simplifiedMeshUploadThreadFrameCounter;
             }
         }
     } else {
