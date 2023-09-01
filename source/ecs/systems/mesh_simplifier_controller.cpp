@@ -30,8 +30,6 @@ struct SVO { // Simplification Vertex Object
     bool set = false;
     uint32_t index = 0;
     glm::vec3 worldPos{};
-    uint32_t screenX = 0;
-    uint32_t screenY = 0;
     float depth = 0.0f;
 };
 
@@ -103,8 +101,8 @@ public:
     uint32_t getMapping(uint32_t forIndex) {
         uint32_t found = forIndex;
         while (found != MAX_INDEX && this->indexMappings[found] != 0) {
-            found = this->indexMappings[found] == MAX_INDEX ? MAX_INDEX : this->indexMappings[found] -
-                                                                          1; // because the stored mappings are +1
+            // because the stored mappings are +1
+            found = this->indexMappings[found] == MAX_INDEX ? MAX_INDEX : this->indexMappings[found] - 1;
         }
         return found;
     }
@@ -137,7 +135,6 @@ void simplify(const Components *camera, const Components *components) {
     auto &to = *components->renderMeshSimplifiable;
     auto &from = *components->renderMesh;
     to.vertices.clear();
-//    to.vertices = from.vertices; // TODO remove
     to.indices.clear();
 
     const uint32_t rasterWidth = VulkanSwapchain::framebufferWidth / MAX_PIXELS_PER_VERTEX;
@@ -148,6 +145,7 @@ void simplify(const Components *camera, const Components *components) {
 
     IndexLut lut{};
     lut.resize(from.vertices.size());
+    uint32_t newVertexCount = 0;
 
     // Calculate raster positions
 
@@ -162,23 +160,23 @@ void simplify(const Components *camera, const Components *components) {
         }
 
         const glm::vec4 projectedPos = proj * view * worldPos;
-        const float depth = projectedPos.z / projectedPos.w;
         const long x = lroundf((projectedPos.x * 0.5f / projectedPos.w + 0.5f) * static_cast<float>(rasterWidth));
         const long y = lroundf((projectedPos.y * 0.5f / projectedPos.w + 0.5f) * static_cast<float>(rasterHeight));
-        const uint32_t rasterIndex = y * rasterWidth + x;
 
         if (x < 0 || x >= rasterWidth || y < 0 || y >= rasterHeight) {
             lut.insertMapping(i, MAX_INDEX);
             continue;
         }
 
+        const float depth = projectedPos.z / projectedPos.w;
+        const uint32_t rasterIndex = y * rasterWidth + x;
+
         if (!indicesRaster[rasterIndex].set) {
+            ++newVertexCount;
             indicesRaster[rasterIndex] = {
                     .set = true,
                     .index = i,
                     .worldPos = worldPos,
-                    .screenX = static_cast<uint32_t>(x),
-                    .screenY = static_cast<uint32_t>(y),
                     .depth = depth
             };
         } else if (indicesRaster[rasterIndex].depth > depth) {
@@ -188,49 +186,17 @@ void simplify(const Components *camera, const Components *components) {
                     .set = true,
                     .index = i,
                     .worldPos = worldPos,
-                    .screenX = static_cast<uint32_t>(x),
-                    .screenY = static_cast<uint32_t>(y),
                     .depth = depth
             };
         } else {
             // stored vertex is closer to the camera than the current
             lut.insertMapping(i, indicesRaster[rasterIndex].index); // Map previously stored to the current vertex
         }
-
-#ifdef OUTPUT_MAPPINGS
-        auto mappedId = lut.getMapping(i);
-        auto result = std::find_if(indicesRaster.begin(), indicesRaster.end(), [&mappedId](const SVO &obj) { return obj.index == mappedId; });
-        uint32_t index;
-        if (result != indicesRaster.end())
-            index = std::distance(indicesRaster.begin(), result);
-        SVO mappedTo = indicesRaster[index];
-
-        if (mappedTo.index != i) {
-            printf("\tid: %d, screen: x: %d, y: %d, z: %1.3f,\tworld: x: %1.3f, y: %1.3f, z: %1.3f\n",
-                   i, x, y, depth, worldPos.x, worldPos.y, worldPos.z);
-            printf("->\tid: %d, screen: x: %d, y: %d, z: %1.3f,\tworld: x: %1.3f, y: %1.3f, z: %1.3f\n",
-                   mappedId, mappedTo.screenX, mappedTo.screenY, mappedTo.depth, mappedTo.worldPos.x, mappedTo.worldPos.y, mappedTo.worldPos.z);
-        }
-#endif
-
     }
-
-    // Count vertices & store depth
-    uint32_t newVertexCount = 0;
-    std::vector<float> mappedDepth{};
-    mappedDepth.resize(from.vertices.size());
-    for (auto &svo: indicesRaster) {
-        if (svo.set) {
-            newVertexCount++;
-            mappedDepth[svo.index] = svo.depth;
-        }
-    }
-    DBG "Using " << newVertexCount << " vertices, instead of " << from.vertices.size() << " before." ENDL;
 
     // Map the used vertices' indices to skip unused ones
-    IndexLut usedVertexIndexMappings{};
-    usedVertexIndexMappings.resize(from.vertices.size());
-    uint32_t currentUsedVertexIndex = 0;
+    std::vector<bool> isVertexUsed{};
+    isVertexUsed.resize(from.vertices.size());
 
     // Filter triangles
     std::unordered_set<Triangle, Triangle> triangles{}; // Ordered set
@@ -243,30 +209,51 @@ void simplify(const Components *camera, const Components *components) {
             id1 == id2 || id1 == id3 || id2 == id3)
             continue;
 
-        // If the vertex is not in the new array, add it and map the index
-        if (!usedVertexIndexMappings.isSet(id1)) {
-            to.vertices.push_back(from.vertices[id1]);
-            usedVertexIndexMappings.insertMapping(id1, currentUsedVertexIndex++);
-        }
-        if (!usedVertexIndexMappings.isSet(id2)) {
-            to.vertices.push_back(from.vertices[id2]);
-            usedVertexIndexMappings.insertMapping(id2, currentUsedVertexIndex++);
-        }
-        if (!usedVertexIndexMappings.isSet(id3)) {
-            to.vertices.push_back(from.vertices[id3]);
-            usedVertexIndexMappings.insertMapping(id3, currentUsedVertexIndex++);
-        }
+        isVertexUsed[id1] = true;
+        isVertexUsed[id2] = true;
+        isVertexUsed[id3] = true;
 
         const Triangle triangle = orientTriangle({id1, id2, id3});
         triangles.insert(triangle);
     }
 
     // Push
+    // Count vertices & store depth
+    std::vector<uint32_t> usedVertexIndexMappings;
+    usedVertexIndexMappings.resize(from.vertices.size());
+
     to.indices.reserve(triangles.size() * 3);
-    for (const Triangle &triangle: triangles) {
-        to.indices.push_back(usedVertexIndexMappings.getMapping(triangle.id1));
-        to.indices.push_back(usedVertexIndexMappings.getMapping(triangle.id2));
-        to.indices.push_back(usedVertexIndexMappings.getMapping(triangle.id3));
+    to.vertices.reserve(newVertexCount);
+
+    // Initialise the first value to enable the usedVertexIndexMappings[i] == 0 condition
+    const uint32_t firstIndex = triangles.begin()->id1;
+    usedVertexIndexMappings.push_back(firstIndex);
+    to.vertices.emplace_back(from.vertices[firstIndex]);
+
+    for (const auto &[id1, id2, id3]: triangles) {
+        if (usedVertexIndexMappings[id1] == 0) {
+            usedVertexIndexMappings[id1] = to.vertices.size();
+            to.indices.push_back(to.vertices.size());
+            to.vertices.push_back(from.vertices[id1]);
+        } else {
+            to.indices.push_back(usedVertexIndexMappings[id1]);
+        }
+
+        if (usedVertexIndexMappings[id2] == 0) {
+            usedVertexIndexMappings[id2] = to.vertices.size();
+            to.indices.push_back(to.vertices.size());
+            to.vertices.push_back(from.vertices[id2]);
+        } else {
+            to.indices.push_back(usedVertexIndexMappings[id2]);
+        }
+
+        if (usedVertexIndexMappings[id3] == 0) {
+            usedVertexIndexMappings[id3] = to.vertices.size();
+            to.indices.push_back(to.vertices.size());
+            to.vertices.push_back(from.vertices[id3]);
+        } else {
+            to.indices.push_back(usedVertexIndexMappings[id3]);
+        }
     }
 }
 
