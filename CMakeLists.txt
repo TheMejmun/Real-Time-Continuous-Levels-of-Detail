@@ -117,6 +117,7 @@ set(SOURCE_FILES
         ${SOURCE_FOLDER}/util/timer.cpp
         source/ecs/entities/input_state_entity.cpp
         source/ecs/entities/monkey.cpp
+        source/io/printer.cpp
         source/io/printer.cpp)
 message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable

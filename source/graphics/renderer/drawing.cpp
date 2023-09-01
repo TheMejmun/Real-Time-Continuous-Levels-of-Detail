@@ -372,7 +372,7 @@ sec Renderer::draw(const sec &delta, ECS &ecs) {
     }
 
     uploadRenderables(ecs);
-    uploadSimplifiedMeshesThreadHelper(ecs);
+    uploadSimplifiedMeshes(ecs);
     destroyRenderables(ecs);
 
     auto beforeFence = Timer::now();
