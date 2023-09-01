@@ -35,6 +35,10 @@ namespace VulkanSwapchain {
     extern std::vector<VkFramebuffer> framebuffers;
     extern bool needsNewSwapchain;
 
+    extern VkImage depthImage;
+    extern VkDeviceMemory depthImageMemory;
+    extern VkImageView depthImageView;
+
     SwapchainSupportDetails querySwapchainSupport(VkPhysicalDevice device);
 
     void createSurface(GLFWwindow *window);
@@ -63,6 +67,8 @@ namespace VulkanSwapchain {
     findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
     VkFormat findDepthFormat();
+
+    bool hasStencilComponent(VkFormat format);
 
     void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
                      VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &imageMemory);

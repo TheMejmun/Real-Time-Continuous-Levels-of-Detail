@@ -9,6 +9,7 @@
 #include "graphics/vulkan/vulkan_renderpasses.h"
 #include "graphics/vulkan/vulkan_memory.h"
 #include "graphics/vulkan/vulkan_imgui.h"
+#include "graphics/vulkan/vulkan_images.h"
 
 #include <GLFW/glfw3.h>
 #include <algorithm>
@@ -27,6 +28,10 @@ std::vector<VkFramebuffer> VulkanSwapchain::framebuffers{};
 bool VulkanSwapchain::needsNewSwapchain = false;
 uint32_t VulkanSwapchain::minImageCount = 2;
 uint32_t VulkanSwapchain::imageCount = 2;
+
+VkImage VulkanSwapchain::depthImage = nullptr;
+VkDeviceMemory VulkanSwapchain::depthImageMemory = nullptr;
+VkImageView VulkanSwapchain::depthImageView = nullptr;
 
 // Local
 GLFWwindow *window = nullptr;
@@ -147,7 +152,7 @@ bool VulkanSwapchain::recreateSwapchain(RenderState &state) {
 
     auto success = createSwapchain();
 
-    if(success){
+    if (success) {
         VulkanImgui::recalculateScale(state);
     }
 
@@ -228,7 +233,8 @@ bool VulkanSwapchain::createSwapchain() {
     VulkanSwapchain::extent = extentTemp;
     VulkanSwapchain::presentMode = presentModeTemp;
 
-    createImageViews();
+    VulkanSwapchain::createImageViews();
+    VulkanSwapchain::createDepthResources();
     VulkanRenderPasses::create();
     createFramebuffers();
 
@@ -244,6 +250,10 @@ void VulkanSwapchain::destroySwapchain() {
 
     VulkanRenderPasses::destroy();
 
+    vkDestroyImageView(VulkanDevices::logical, VulkanSwapchain::depthImageView, nullptr);
+    vkDestroyImage(VulkanDevices::logical, VulkanSwapchain::depthImage, nullptr);
+    vkFreeMemory(VulkanDevices::logical, VulkanSwapchain::depthImageMemory, nullptr);
+
     for (auto &swapchainImageView: VulkanSwapchain::imageViews) {
         vkDestroyImageView(VulkanDevices::logical, swapchainImageView, nullptr);
     }
@@ -254,45 +264,24 @@ void VulkanSwapchain::destroySwapchain() {
 void VulkanSwapchain::createImageViews() {
     VulkanSwapchain::imageViews.resize(VulkanSwapchain::images.size());
 
-    for (size_t i = 0; i < VulkanSwapchain::images.size(); i++) {
-        VkImageViewCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        createInfo.image = VulkanSwapchain::images[i];
-        createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D; // 1D - 3D or Cube maps
-        createInfo.format = VulkanSwapchain::imageFormat;
-
-        // Can swizzle all entities to be mapped to a single channel, or map to constants, etc.
-        createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-        createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-
-        // Color, no mipmapping, single layer
-        createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        createInfo.subresourceRange.baseMipLevel = 0;
-        createInfo.subresourceRange.levelCount = 1;
-        createInfo.subresourceRange.baseArrayLayer = 0;
-        createInfo.subresourceRange.layerCount = 1; // No 3D
-
-        if (vkCreateImageView(VulkanDevices::logical, &createInfo, nullptr, &VulkanSwapchain::imageViews[i]) !=
-            VK_SUCCESS) {
-            THROW("Failed to create image views!");
-        }
+    for (uint32_t i = 0; i < VulkanSwapchain::images.size(); ++i) {
+        VulkanSwapchain::imageViews[i] = VulkanImages::createImageView(VulkanSwapchain::images[i],
+                                                                       VulkanSwapchain::imageFormat);
     }
 }
 
 void VulkanSwapchain::createDepthResources() {
     VkFormat depthFormat = findDepthFormat();
 
-//    createImage(VulkanSwapchain::extent.width,
-//                VulkanSwapchain::extent.height,
-//                depthFormat,
-//                VK_IMAGE_TILING_OPTIMAL,
-//                VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-//                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-//                VulkanSwapchain::depthImage,
-//                VulkanSwapchain::depthImageMemory);
-//    VulkanSwapchain::depthImageView = createImageView(depthImage, depthFormat);
+    VulkanImages::createImage(VulkanSwapchain::extent.width,
+                              VulkanSwapchain::extent.height,
+                              depthFormat,
+                              VK_IMAGE_TILING_OPTIMAL,
+                              VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                              VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                              VulkanSwapchain::depthImage,
+                              VulkanSwapchain::depthImageMemory);
+    VulkanSwapchain::depthImageView = VulkanImages::createImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
 VkFormat VulkanSwapchain::findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling,
@@ -318,63 +307,30 @@ VkFormat VulkanSwapchain::findDepthFormat() {
     );
 }
 
-void VulkanSwapchain::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
-                                  VkImageUsageFlags usage,
-                                  VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &imageMemory) {
-    VkImageCreateInfo imageInfo{};
-    imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    imageInfo.imageType = VK_IMAGE_TYPE_2D;
-    imageInfo.extent.width = width;
-    imageInfo.extent.height = height;
-    imageInfo.extent.depth = 1;
-    imageInfo.mipLevels = 1;
-    imageInfo.arrayLayers = 1;
-    imageInfo.format = format;
-    imageInfo.tiling = tiling;
-    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    imageInfo.usage = usage;
-    imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-    if (vkCreateImage(VulkanDevices::logical, &imageInfo, nullptr, &image) != VK_SUCCESS) {
-        THROW("Failed to create image!");
-    }
-
-    VkMemoryRequirements memRequirements;
-    vkGetImageMemoryRequirements(VulkanDevices::logical, image, &memRequirements);
-
-    VkMemoryAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = VulkanMemory::findMemoryType(memRequirements.memoryTypeBits, properties);
-
-    if (vkAllocateMemory(VulkanDevices::logical, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
-        THROW("Failed to allocate image memory!");
-    }
-
-    vkBindImageMemory(VulkanDevices::logical, image, imageMemory, 0);
+bool VulkanSwapchain::hasStencilComponent(VkFormat format) {
+    return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
 void VulkanSwapchain::createFramebuffers() {
     VulkanSwapchain::framebuffers.resize(VulkanSwapchain::imageViews.size());
 
     for (size_t i = 0; i < VulkanSwapchain::imageViews.size(); i++) {
-        VkImageView attachments[] = {
-                VulkanSwapchain::imageViews[i]
+        std::array<VkImageView, 2> attachments = {
+                VulkanSwapchain::imageViews[i],
+                VulkanSwapchain::depthImageView  // Always write to the same depth image. YOLO
         };
 
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebufferInfo.renderPass = VulkanRenderPasses::renderPass;
-        framebufferInfo.attachmentCount = 1;
-        framebufferInfo.pAttachments = attachments;
+        framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+        framebufferInfo.pAttachments = attachments.data();
         framebufferInfo.width = VulkanSwapchain::extent.width;
         framebufferInfo.height = VulkanSwapchain::extent.height;
         framebufferInfo.layers = 1;
 
         if (vkCreateFramebuffer(VulkanDevices::logical, &framebufferInfo, nullptr,
-                                &VulkanSwapchain::framebuffers[i]) !=
-            VK_SUCCESS) {
+                                &VulkanSwapchain::framebuffers[i]) != VK_SUCCESS) {
             THROW("Failed to create framebuffer!");
         }
     }

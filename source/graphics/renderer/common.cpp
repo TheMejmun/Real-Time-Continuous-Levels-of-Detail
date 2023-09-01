@@ -32,7 +32,6 @@ void Renderer::initVulkan() {
     createDescriptorPool();
     createDescriptorSets();
     createCommandPool();
-    VulkanSwapchain::createDepthResources();
     VulkanImages::createTextureImage();
     createSyncObjects();
 }
