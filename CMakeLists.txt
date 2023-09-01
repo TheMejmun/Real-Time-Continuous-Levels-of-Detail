@@ -116,7 +116,8 @@ set(SOURCE_FILES
         ${SOURCE_FOLDER}/util/importer.cpp
         ${SOURCE_FOLDER}/util/timer.cpp
         source/ecs/entities/input_state_entity.cpp
-        source/ecs/entities/monkey.cpp)
+        source/ecs/entities/monkey.cpp
+        source/io/printer.cpp)
 message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable
 add_executable(Realtime_Cell_Collapse ${SOURCE_FOLDER}/main.cpp ${HEADER_FILES} ${SOURCE_FILES})

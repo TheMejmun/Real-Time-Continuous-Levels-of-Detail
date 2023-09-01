@@ -50,5 +50,8 @@
     INF name << ": " << _duration ENDL; \
 }
 
+namespace Printer {
+    void printThreadStarted();
+}
 
 #endif //REALTIME_CELL_COLLAPSE_PRINTER_H

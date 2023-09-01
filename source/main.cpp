@@ -1,9 +1,13 @@
 
 #include "application.h"
+#include "io/printer.h"
 
 #include <iostream>
+#include <sstream>
 
 int main() {
+    Printer::printThreadStarted();
+
     Application app{};
     app.title = "Hello World!";
 
