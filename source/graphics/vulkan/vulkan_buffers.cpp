@@ -258,12 +258,11 @@ void VulkanBuffers::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, Vk
 }
 
 void VulkanBuffers::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
-    VkCommandBufferAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocInfo.commandPool = VulkanBuffers::transferCommandPool;
-    allocInfo.commandBufferCount = 1;
-
+//    VkCommandBufferAllocateInfo allocInfo{};
+//    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+//    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+//    allocInfo.commandPool = VulkanBuffers::transferCommandPool;
+//    allocInfo.commandBufferCount = 1;
 //    VkCommandBuffer transferBuffer;
 //    vkAllocateCommandBuffers(logical, &allocInfo, &transferBuffer);
 
