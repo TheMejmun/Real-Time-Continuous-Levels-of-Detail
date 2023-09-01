@@ -29,6 +29,7 @@ set(LIB_FOLDER lib)
 # Add any added source/header files here
 set(HEADER_FILES
         ${HEADER_FOLDER}/application.h
+        ${HEADER_FOLDER}/preprocessor.h
 
         ${HEADER_FOLDER}/graphics/ui.h
         ${HEADER_FOLDER}/graphics/renderer.h
@@ -58,6 +59,7 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/io/printer.h
 
         ${HEADER_FOLDER}/ecs/ecs.h
+        ${HEADER_FOLDER}/ecs/system.h
         ${HEADER_FOLDER}/ecs/entity.h
         ${HEADER_FOLDER}/ecs/entities/dense_sphere.h
         ${HEADER_FOLDER}/ecs/entities/camera.h
@@ -70,7 +72,11 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/util/timer.h
         ${HEADER_FOLDER}/util/importer.h
         ${HEADER_FOLDER}/util/byte_size.h
-        include/preprocessor.h)
+        include/ecs/components.h
+        include/ecs/entities/input_state_entity.h
+        include/io/input_state.h
+        include/graphics/render_mesh_simplifiable.h
+        include/ecs/entities/monkey.h)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
         ${SOURCE_FOLDER}/application.cpp
@@ -108,7 +114,9 @@ set(SOURCE_FILES
         ${SOURCE_FOLDER}/physics/transformer.cpp
 
         ${SOURCE_FOLDER}/util/importer.cpp
-        ${SOURCE_FOLDER}/util/timer.cpp)
+        ${SOURCE_FOLDER}/util/timer.cpp
+        source/ecs/entities/input_state_entity.cpp
+        source/ecs/entities/monkey.cpp)
 message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable
 add_executable(Realtime_Cell_Collapse ${SOURCE_FOLDER}/main.cpp ${HEADER_FILES} ${SOURCE_FILES})

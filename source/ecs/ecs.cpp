@@ -18,15 +18,16 @@ uint32_t ECS::insert(Components &entityComponents) {
             destroyReferences(i); // Clean up old references before overriding pointers
         }
         if (this->entities[i].isDestroyed) {
-            this->entities[i] = entityComponents; // Move reference here -> param cant be const
             entityComponents.index = i;
+            this->entities[i] = std::move(entityComponents); // Move reference here -> param can't be const
             return i;
         }
     }
 
-    this->entities.push_back(entityComponents);
-    entityComponents.index = this->entities.size() - 1;
-    return entityComponents.index;
+    auto index = this->entities.size() - 1;
+    entityComponents.index = index;
+    this->entities.push_back(std::move(entityComponents));
+    return index;
 }
 
 void ECS::destroy() {

@@ -5,6 +5,7 @@
 #include "application.h"
 #include "io/printer.h"
 #include "ecs/entities/dense_sphere.h"
+#include "ecs/entities/monkey.h"
 #include "ecs/entities/camera.h"
 #include "ecs/systems/camera_controller.h"
 #include "ecs/systems/sphere_controller.h"
@@ -23,28 +24,30 @@ void Application::init() {
 
     this->ecs.create();
     this->windowManager.create(this->title);
-    this->inputManager.create(this->windowManager.window);
+    this->inputManager.create(this->windowManager.window, this->ecs);
     this->renderer.create(this->title, this->windowManager.window);
 
     // Entities
     Camera camera{};
     camera.components.isMainCamera = true;
     camera.upload(this->ecs);
-    DenseSphere sphere{};
-    sphere.upload(this->ecs);
+
+//    DenseSphere sphere{};
+//    sphere.upload(this->ecs);
+    Monkey monkey{};
+    monkey.upload(this->ecs);
 }
 
 void Application::mainLoop() {
     while (!this->windowManager.shouldClose()) {
 
         // Input
-        this->inputManager.poll();
-        if (this->inputManager.getKeyState(IM_CLOSE_WINDOW) == IM_DOWN_EVENT) {
+        this->inputManager.update(this->deltaTime, this->ecs);
+        auto &inputState = *ecs.requestEntities(InputController::EvaluatorInputManagerEntity)[0]->inputState;
+        if (inputState.closeWindow == IM_DOWN_EVENT)
             this->windowManager.close();
-        }
-        if (this->inputManager.consumeKeyState(IM_FULLSCREEN) == IM_DOWN_EVENT) {
+        if (inputState.toggleFullscreen == IM_DOWN_EVENT)
             this->windowManager.toggleFullscreen();
-        }
 
         // UI
         auto uiState = this->renderer.getUiState();
@@ -52,10 +55,11 @@ void Application::mainLoop() {
         uiState->cpuWaitTime = this->currentCpuWaitTime;
 
         // Systems
-        CameraController::update(this->deltaTime, this->ecs, this->inputManager);
-        SphereController::update(this->deltaTime, this->ecs, this->inputManager);
+        CameraController::update(this->deltaTime, this->ecs);
+        SphereController::update(this->deltaTime, this->ecs);
         if (uiState->runMeshSimplifier)
-            MeshSimplifierController::update(this->ecs, &uiState->meshSimplifierTimeTaken, &uiState->meshSimplifierFramesTaken);
+            MeshSimplifierController::update(this->ecs, &uiState->meshSimplifierTimeTaken,
+                                             &uiState->meshSimplifierFramesTaken);
 
         // Render
         if (uiState->returnToOriginalMeshBuffer)

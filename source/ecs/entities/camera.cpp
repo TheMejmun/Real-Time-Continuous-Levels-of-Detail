@@ -7,7 +7,7 @@
 #include "graphics/colors.h"
 
 Camera::Camera() {
-    this->components.transform = new Transformer4();
+    this->components.transform = std::make_unique<Transformer4>();
     this->components.transform->translate(glm::vec3(0, 0, -5));
-    this->components.camera = new Projector();
+    this->components.camera = std::make_unique<Projector>();
 }

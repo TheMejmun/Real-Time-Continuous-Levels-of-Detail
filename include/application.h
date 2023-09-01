@@ -31,7 +31,7 @@ private:
     ECS ecs{};
     Renderer renderer{};
     WindowManager windowManager{};
-    InputManager inputManager{};
+    InputController inputManager{};
 
     chrono_sec_point lastTimestamp = Timer::now();
     sec currentCpuWaitTime;

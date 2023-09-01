@@ -7,10 +7,8 @@
 
 #include "preprocessor.h"
 #include "graphics/vertex.h"
-#include "physics/transformer.h"
 
 #include <vector>
-#include <vulkan/vulkan.h>
 
 struct RenderMesh {
     std::vector<Vertex> vertices;

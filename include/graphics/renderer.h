@@ -87,7 +87,7 @@ private:
 
     static inline bool EvaluatorToAllocateSimplifiedMesh(const Components &components) {
         return components.renderMesh != nullptr && components.isAlive() &&
-               components.renderMeshSimplified != nullptr && components.updateSimplifiedMesh;
+               components.renderMeshSimplifiable != nullptr && components.renderMeshSimplifiable->updateSimplifiedMesh;
     };
 
     static inline bool EvaluatorToDeallocate(const Components &components) {

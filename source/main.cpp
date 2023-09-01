@@ -4,7 +4,6 @@
 #include <iostream>
 
 int main() {
-
     Application app{};
     app.title = "Hello World!";
 

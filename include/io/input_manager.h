@@ -6,34 +6,24 @@
 #define REALTIME_CELL_COLLAPSE_INPUT_MANAGER_H
 
 #include "preprocessor.h"
+#include "ecs/entity.h"
+#include "ecs/system.h"
+#include "ecs/entities/input_state_entity.h"
 
 #include <GLFW/glfw3.h>
 #include <memory>
 
-#define IM_DOWN_EVENT 0x1
-#define IM_HELD 0x2
-#define IM_UP_EVENT 0x3
-#define IM_RELEASED 0x4
-
-#define IM_CLOSE_WINDOW 0x0
-#define IM_FULLSCREEN 0x1
-#define IM_MOVE_FORWARD 0x2
-#define IM_MOVE_BACKWARD 0x3
-
-#define IM_TOGGLE_ROTATION 0x4
-
-using KeyState = uint8_t;
-using KeyCode = uint16_t;
-
-class InputManager {
+class InputController : public System {
 public:
-    void create(GLFWwindow *window);
+    void create(GLFWwindow *window, ECS &ecs);
 
-    static void poll();
+    virtual void destroy() override;
 
-    KeyState getKeyState(const KeyCode &key);
+    virtual void update(sec delta, ECS &ecs) override;
 
-    KeyState consumeKeyState(const KeyCode &key);
+    static inline bool EvaluatorInputManagerEntity(const Components &components) {
+        return components.isAlive() && components.inputState != nullptr;
+    };
 
 private:
     static void _callback(GLFWwindow *window, int key, int scancode, int action, int mods);

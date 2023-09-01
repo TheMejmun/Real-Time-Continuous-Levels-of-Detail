@@ -362,6 +362,8 @@ sec Renderer::draw(const sec &delta, ECS &ecs) {
     vkWaitForFences(VulkanDevices::logical, 1, &this->inFlightFence, VK_TRUE, UINT64_MAX);
     auto afterFence = Timer::now();
 
+//    printf("Waited for fence: %f seconds\n", Timer::duration(beforeFence, afterFence));
+
     uint32_t imageIndex;
     auto acquireImageResult = vkAcquireNextImageKHR(VulkanDevices::logical, VulkanSwapchain::swapchain, UINT64_MAX,
                                                     this->imageAvailableSemaphore, nullptr, &imageIndex);
