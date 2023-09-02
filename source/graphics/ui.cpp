@@ -31,7 +31,7 @@ void UI::update(UiState &state) {
             state.loggingStartTime = Timer::now();
         }
     } else {
-        ImGui::Text("Performance log running: %f",
+        ImGui::Text("Performance log running: %3.2f",
                     PerformanceLogging::LOG_DURATION - Timer::duration(state.loggingStartTime, Timer::now()));
     }
 
