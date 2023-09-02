@@ -8,6 +8,7 @@
 #include "ecs/entities/camera.h"
 #include "io/printer.h"
 #include "util/timer.h"
+#include "util/performance_logging.h"
 
 #include <thread>
 #include <limits>
@@ -278,8 +279,10 @@ void MeshSimplifierController::update(ECS &ecs, sec *timeTaken, uint32_t *frames
             auto function = [=](bool &done) {
                 for (auto components: entities) {
                     if (components->renderMeshSimplifiable->simplifiedMeshMutex.try_lock()) {
+                        PerformanceLogging::meshCalculationStarted();
                         simplify(camera, components);
                         components->renderMeshSimplifiable->updateSimplifiedMesh = true;
+                        PerformanceLogging::meshCalculatiodFinished();
                         components->renderMeshSimplifiable->simplifiedMeshMutex.unlock();
                     }
                 }

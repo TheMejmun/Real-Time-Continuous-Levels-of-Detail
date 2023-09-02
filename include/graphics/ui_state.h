@@ -17,6 +17,8 @@ struct UiState {
 
     FPSCounter fps{};
     sec cpuWaitTime = 0;
+    bool loggingStarted = false;
+    chrono_sec_point loggingStartTime{};
 
     uint32_t currentMeshVertices = 0;
     uint32_t currentMeshTriangles = 0;

@@ -18,7 +18,7 @@ DenseSphere::DenseSphere() {
     this->components.renderMeshSimplifiable = std::make_unique<RenderMeshSimplifiable>();
 
     this->components.transform = std::make_unique<Transformer4>();
-    this->components.transform->scale(2.0f);
+    this->components.transform->scale(1.0f);
 
     this->components.isRotatingSphere = true;
 }

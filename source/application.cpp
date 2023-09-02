@@ -10,6 +10,7 @@
 #include "ecs/systems/camera_controller.h"
 #include "ecs/systems/sphere_controller.h"
 #include "ecs/systems/mesh_simplifier_controller.h"
+#include "util/performance_logging.h"
 
 #include <iomanip>
 
@@ -83,8 +84,11 @@ void Application::mainLoop() {
         // Benchmark
         auto time = Timer::now();
         this->deltaTime = Timer::duration(this->lastTimestamp, time);
-
         this->lastTimestamp = time;
+
+        // Performance logging
+        PerformanceLogging::update(*uiState);
+        PerformanceLogging::newFrame();
     }
 }
 
