@@ -82,6 +82,7 @@ void PerformanceLogging::update(UiState &uiState) {
             nameBuilder << ".txt";
 
             std::ofstream file;
+            file << std::setprecision(4) << std::fixed;
             file.open(nameBuilder.str());
 
             file << "Average FPS: "
