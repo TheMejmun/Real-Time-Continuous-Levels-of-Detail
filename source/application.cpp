@@ -88,7 +88,10 @@ void Application::mainLoop() {
 
         // Performance logging
         PerformanceLogging::update(*uiState);
-        PerformanceLogging::newFrame();
+        PerformanceLogging::newFrame({
+                                             .cpuWaitTime = this->currentCpuWaitTime,
+                                             .totalFrameTime= this->deltaTime
+                                     });
     }
 }
 

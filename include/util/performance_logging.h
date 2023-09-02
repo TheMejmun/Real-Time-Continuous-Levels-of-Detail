@@ -8,10 +8,15 @@
 #include "util/timer.h"
 #include "graphics/ui_state.h"
 
+struct FrameTimes{
+    sec cpuWaitTime;
+    sec totalFrameTime;
+};
+
 namespace PerformanceLogging {
     extern const sec LOG_DURATION;
 
-    void newFrame();
+    void newFrame(const FrameTimes& frameTimes);
 
     void meshCalculationStarted();
 

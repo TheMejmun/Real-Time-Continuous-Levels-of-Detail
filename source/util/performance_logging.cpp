@@ -11,21 +11,26 @@
 #include <sstream>
 
 extern const sec PerformanceLogging::LOG_DURATION = 10.0;
+const uint32_t EXPECTED_MAX_FRAME_COUNT =
+        static_cast<uint32_t>(PerformanceLogging::LOG_DURATION) * 2000; // seconds * frames
 
 bool active = false;
 
-uint32_t frameCount = 0;
+std::vector<FrameTimes> frames{};
+
 std::optional<chrono_sec_point> lastCalculationStarted{};
 std::optional<chrono_sec_point> lastUploadStarted{};
 std::vector<sec> calculationDurations{};
 std::vector<sec> uploadDurations{};
 
-void PerformanceLogging::newFrame() {
-    ++frameCount;
+void PerformanceLogging::newFrame(const FrameTimes &frameTimes) {
+    if (active)
+        frames.push_back(frameTimes);
 }
 
 void PerformanceLogging::meshCalculationStarted() {
-    lastCalculationStarted = Timer::now();
+    if (active)
+        lastCalculationStarted = Timer::now();
 }
 
 void PerformanceLogging::meshCalculatiodFinished() {
@@ -34,7 +39,8 @@ void PerformanceLogging::meshCalculatiodFinished() {
 }
 
 void PerformanceLogging::meshUploadStarted() {
-    lastUploadStarted = Timer::now();
+    if (active)
+        lastUploadStarted = Timer::now();
 }
 
 void PerformanceLogging::meshUploadFinished() {
@@ -46,7 +52,8 @@ void PerformanceLogging::update(UiState &uiState) {
     if (uiState.loggingStarted) {
         if (!active) {
             // Reset and start
-            frameCount = 0;
+            frames.clear();
+            frames.reserve(EXPECTED_MAX_FRAME_COUNT);
             lastCalculationStarted.reset();
             lastUploadStarted.reset();
             calculationDurations.clear();
@@ -78,7 +85,19 @@ void PerformanceLogging::update(UiState &uiState) {
             file.open(nameBuilder.str());
 
             file << "Average FPS: "
-                 << (frameCount / PerformanceLogging::LOG_DURATION)
+                 << (static_cast<double>(frames.size()) / PerformanceLogging::LOG_DURATION)
+                 << "\n";
+
+            double totalCpuWaitTime = 0.0;
+            for (auto x: frames) totalCpuWaitTime += x.cpuWaitTime;
+            file << "Average cpu wait time: "
+                 << (totalCpuWaitTime / static_cast<double>(frames.size()))
+                 << "\n";
+
+            double totalTotalFrameTime = 0.0;
+            for (auto x: frames) totalTotalFrameTime += x.totalFrameTime;
+            file << "Average total frame time: "
+                 << (totalTotalFrameTime / static_cast<double>(frames.size()))
                  << "\n";
 
             file << "Average mesh calculation count per second: "
