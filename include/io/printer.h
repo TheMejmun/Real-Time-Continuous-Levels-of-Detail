@@ -11,7 +11,7 @@
 #include <stdexcept>
 
 #define INFO_PRINTING
-//#define DEBUG_PRINTING
+#define DEBUG_PRINTING
 //#define VERBOSE_PRINTING
 //#define FPS_PRINTING
 

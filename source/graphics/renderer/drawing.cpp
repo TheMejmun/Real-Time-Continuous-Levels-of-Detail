@@ -321,12 +321,12 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
 
     vkCmdBindPipeline(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->graphicsPipeline);
 
-    VkBuffer vertexBuffers[] = {VulkanBuffers::vertexBuffer[this->meshBufferToUse]};
+    VkBuffer vertexBuffers[] = {VulkanBuffers::vertexBuffer[VulkanBuffers::meshBufferToUse]};
     VkDeviceSize offsets[] = {0};
     // Offset and number of bindings, buffers, and byte offsets from those buffers
     vkCmdBindVertexBuffers(buffer, 0, 1, vertexBuffers, offsets);
 
-    vkCmdBindIndexBuffer(buffer, VulkanBuffers::indexBuffer[this->meshBufferToUse], 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindIndexBuffer(buffer, VulkanBuffers::indexBuffer[VulkanBuffers::meshBufferToUse], 0, VK_INDEX_TYPE_UINT32);
 
     VkViewport viewport{};
     viewport.x = 0.0f;
@@ -346,8 +346,9 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
     vkCmdBindDescriptorSets(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipelineLayout, 0, 1,
                             &this->descriptorSets[VulkanBuffers::uniformBufferIndex], 0, nullptr);
 
-//    DBG "Drawing with mesh buffer " << this->meshBufferToUse ENDL;
-    vkCmdDrawIndexed(buffer, VulkanBuffers::indexCount[this->meshBufferToUse], 25, 0, 0, 0);
+    vkCmdDrawIndexed(buffer, VulkanBuffers::indexCount[VulkanBuffers::meshBufferToUse], 25, 0, 0, 0);
+
+//    DBG "Used mesh buffer " << VulkanBuffers::meshBufferToUse ENDL;
 
     this->drawUi();
 

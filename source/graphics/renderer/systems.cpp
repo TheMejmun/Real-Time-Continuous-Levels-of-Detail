@@ -19,11 +19,21 @@ void Renderer::uploadRenderables(ECS &ecs) {
 }
 
 void Renderer::uploadSimplifiedMeshes(ECS &ecs) {
+    if (VulkanBuffers::waitingForFence) {
+        DBG "Waiting for fence" ENDL;
+        if (VulkanBuffers::isTransferQueueReady()) {
+            DBG "Ready" ENDL;
+            VulkanBuffers::finishTransfer();
+        } else {
+            DBG "Not ready" ENDL;
+            return;
+        }
+    }
     const auto startTime = Timer::now();
     auto entities = ecs.requestEntities(Renderer::EvaluatorToAllocateSimplifiedMesh);
 
-    int simplifiedMeshBuffer = 1 - VulkanBuffers::simplifiedMeshBuffersIndex;
-    if (simplifiedMeshBuffer < 0 || simplifiedMeshBuffer > 1) simplifiedMeshBuffer = 0;
+    uint32_t bufferToUse = 1;
+    if (VulkanBuffers::meshBufferToUse == 1) bufferToUse = 2;
 
     bool uploadedAny = false;
 
@@ -31,10 +41,9 @@ void Renderer::uploadSimplifiedMeshes(ECS &ecs) {
         if (components->renderMeshSimplifiable->simplifiedMeshMutex.try_lock()) {
             auto &mesh = *components->renderMeshSimplifiable;
             // TODO this upload produced a bad access error
-            VulkanBuffers::uploadVertices(mesh.vertices, simplifiedMeshBuffer);
-            VulkanBuffers::uploadIndices(mesh.indices, simplifiedMeshBuffer);
+            VulkanBuffers::uploadMesh(mesh.vertices, mesh.indices, true, bufferToUse);
             mesh.isAllocated = true;
-            mesh.bufferIndex = simplifiedMeshBuffer;
+            mesh.bufferIndex = bufferToUse;
             mesh.updateSimplifiedMesh = false;
             mesh.simplifiedMeshMutex.unlock();
 
@@ -44,7 +53,6 @@ void Renderer::uploadSimplifiedMeshes(ECS &ecs) {
 
     if (uploadedAny) {
         // Treat this like a return
-        this->meshBufferToUse = simplifiedMeshBuffer + 1;
         this->state.uiState.meshUploadTimeTaken = Timer::duration(startTime, Timer::now());
     }
 }

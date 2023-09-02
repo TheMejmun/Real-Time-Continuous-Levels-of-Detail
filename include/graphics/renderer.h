@@ -113,14 +113,6 @@ private:
     chrono_sec_point lastTimestamp = Timer::now();
     std::thread simplifiedMeshAllocationThread{};
 
-    uint32_t meshBufferToUse = 0;
-
-    // Depth testing
-    // TODO destroy:
-//    VkImage depthImage;
-//    VkDeviceMemory depthImageMemory;
-//    VkImageView depthImageView;
-
     VkDescriptorSetLayout descriptorSetLayout = nullptr;
     VkDescriptorPool descriptorPool = nullptr;
     std::vector<VkDescriptorSet> descriptorSets{}; // Will be cleaned up with pool
