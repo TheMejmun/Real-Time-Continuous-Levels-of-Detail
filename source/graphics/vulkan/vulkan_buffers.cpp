@@ -7,6 +7,7 @@
 #include "graphics/uniform_buffer_object.h"
 #include "graphics/vulkan/vulkan_memory.h"
 #include "graphics/vulkan/vulkan_devices.h"
+#include "util/timer.h"
 
 uint32_t VulkanBuffers::maxAllocations = 0, VulkanBuffers::currentAllocations = 0;
 
@@ -15,7 +16,7 @@ VkBuffer VulkanBuffers::vertexBuffer[] = {nullptr, nullptr, nullptr};
 uint32_t VulkanBuffers::vertexCount[] = {0, 0, 0};
 VkBuffer VulkanBuffers::indexBuffer[] = {nullptr, nullptr, nullptr};
 uint32_t VulkanBuffers::indexCount[] = {0, 0, 0};
-int VulkanBuffers::simplifiedMeshBuffersIndex = -1;
+uint32_t VulkanBuffers::meshBufferToUse = 0;
 
 extern const uint32_t VulkanBuffers::UBO_BUFFER_COUNT = 2;
 extern const uint32_t VulkanBuffers::DEFAULT_ALLOCATION_SIZE = FROM_MB(256); // 128MB is not enough
@@ -33,6 +34,13 @@ std::vector<void *> VulkanBuffers::uniformBuffersMapped{};
 VkQueue VulkanBuffers::transferQueue = nullptr;
 VkCommandPool VulkanBuffers::transferCommandPool = nullptr;
 VkCommandBuffer VulkanBuffers::transferCommandBuffer = nullptr; // Cleaned automatically by command pool clean.
+
+VkFence VulkanBuffers::uploadFence = nullptr;
+bool VulkanBuffers::waitingForFence = false;
+std::vector<VkBuffer> stagingBuffersToDestroy{};
+std::vector<VkDeviceMemory> stagingBufferMemoriesToDestroy{};
+uint32_t indexCountToSet, vertexCountToSet;
+uint32_t meshBufferIndexToSet;
 
 void VulkanBuffers::create() {
     INF "Creating VulkanBuffers" ENDL;
@@ -52,10 +60,28 @@ void VulkanBuffers::create() {
     createVertexBuffer();
     createIndexBuffer();
     createUniformBuffers();
+    createUploadFence();
+}
+
+void destroyStagingBuffers() {
+    for (auto stagingBuffer: stagingBuffersToDestroy) {
+        vkDestroyBuffer(VulkanDevices::logical, stagingBuffer, nullptr);
+    }
+    stagingBuffersToDestroy.clear();
+
+    for (auto stagingBufferMemory: stagingBufferMemoriesToDestroy) {
+        vkFreeMemory(VulkanDevices::logical, stagingBufferMemory, nullptr);
+    }
+    stagingBufferMemoriesToDestroy.clear();
 }
 
 void VulkanBuffers::destroy() {
     INF "Destroying VulkanBuffers" ENDL;
+
+    vkQueueWaitIdle(VulkanBuffers::transferQueue); // In case we are still uploading
+    destroyStagingBuffers();
+
+    vkDestroyFence(VulkanDevices::logical, VulkanBuffers::uploadFence, nullptr);
 
     for (size_t i = 0; i < UBO_BUFFER_COUNT; i++) {
         vkDestroyBuffer(VulkanDevices::logical, VulkanBuffers::uniformBuffers[i], nullptr);
@@ -76,6 +102,210 @@ void VulkanBuffers::destroy() {
 //    vkFreeCommandBuffers(VulkanDevices::logical, VulkanBuffers::transferCommandPool, 1, &VulkanBuffers::transferCommandBuffer);
 }
 
+void VulkanBuffers::uploadVertices(const std::vector<Vertex> &vertices, uint32_t bufferIndex) {
+    VkDeviceSize bufferSize = sizeof(Vertex) * vertices.size();
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer,
+                 &stagingBufferMemory);
+
+    void *data;
+    vkMapMemory(VulkanDevices::logical, stagingBufferMemory, 0, bufferSize, 0, &data);
+    memcpy(data, vertices.data(), (size_t) bufferSize);
+    vkUnmapMemory(VulkanDevices::logical, stagingBufferMemory);
+
+    // +1 because -1 means that we are accessing a non-simplified buffer
+    auto dstBuffer = VulkanBuffers::vertexBuffer[bufferIndex];
+    copyBuffer(stagingBuffer, dstBuffer, bufferSize);
+
+    // Cleanup
+    vkDestroyBuffer(VulkanDevices::logical, stagingBuffer, nullptr);
+    vkFreeMemory(VulkanDevices::logical, stagingBufferMemory, nullptr);
+
+    // TODO += -> = revert
+    VulkanBuffers::vertexCount[bufferIndex] = vertices.size();
+
+    // TODO for now assume that initial buffer is only copied to once
+//    VulkanBuffers::simplifiedMeshBuffersIndex = simplifiedIndex; TODO
+}
+
+void VulkanBuffers::uploadIndices(const std::vector<uint32_t> &indices, uint32_t bufferIndex) {
+    VkDeviceSize bufferSize = sizeof(uint32_t) * indices.size();
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer,
+                 &stagingBufferMemory);
+
+    void *data;
+    vkMapMemory(VulkanDevices::logical, stagingBufferMemory, 0, bufferSize, 0, &data);
+    memcpy(data, indices.data(), (size_t) bufferSize);
+    vkUnmapMemory(VulkanDevices::logical, stagingBufferMemory);
+
+    // +1 because -1 means that we are accessing a non-simplified buffer
+    copyBuffer(stagingBuffer, VulkanBuffers::indexBuffer[bufferIndex], bufferSize);
+
+    vkDestroyBuffer(VulkanDevices::logical, stagingBuffer, nullptr);
+    vkFreeMemory(VulkanDevices::logical, stagingBufferMemory, nullptr);
+
+    // TODO += -> = revert
+    VulkanBuffers::indexCount[bufferIndex] = indices.size();
+
+    // TODO for now assume that initial buffer is only copied to once
+//    VulkanBuffers::simplifiedMeshBuffersIndex = simplifiedIndex; TODO
+}
+
+void VulkanBuffers::uploadMesh(const std::vector<Vertex> &vertices, const std::vector<uint32_t> &indices,
+                               bool parallel, uint32_t bufferIndex) {
+
+    size_t vertexBufferSize = sizeof(Vertex) * vertices.size();
+    size_t indexBufferSize = sizeof(uint32_t) * indices.size();
+    VkDeviceSize bufferSize = vertexBufferSize + indexBufferSize;
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer,
+                 &stagingBufferMemory);
+
+    // To staging buffer
+
+    void *data;
+    // Upload vertices
+    vkMapMemory(VulkanDevices::logical, stagingBufferMemory, 0, vertexBufferSize, 0, &data);
+    memcpy(data, vertices.data(), (size_t) vertexBufferSize);
+    vkUnmapMemory(VulkanDevices::logical, stagingBufferMemory);
+    // Upload indices
+    vkMapMemory(VulkanDevices::logical, stagingBufferMemory, vertexBufferSize, indexBufferSize, 0, &data);
+    memcpy(data, indices.data(), (size_t) indexBufferSize);
+    vkUnmapMemory(VulkanDevices::logical, stagingBufferMemory);
+
+    // To final buffer
+
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    vkBeginCommandBuffer(VulkanBuffers::transferCommandBuffer, &beginInfo);
+
+    // Upload vertices
+    auto dstBufferVertices = VulkanBuffers::vertexBuffer[bufferIndex];
+    VkBufferCopy copyRegionVertices{};
+    copyRegionVertices.srcOffset = 0; // Optional
+    copyRegionVertices.dstOffset = 0; // Optional
+    copyRegionVertices.size = vertexBufferSize; // VK_WHOLE_SIZE  not allowed here!
+    vkCmdCopyBuffer(VulkanBuffers::transferCommandBuffer, stagingBuffer, dstBufferVertices, 1, &copyRegionVertices);
+
+    // Upload indices
+    auto dstBufferIndices = VulkanBuffers::indexBuffer[bufferIndex];
+    VkBufferCopy copyRegionIndices{};
+    copyRegionIndices.srcOffset = vertexBufferSize; // Optional
+    copyRegionIndices.dstOffset = 0; // Optional
+    copyRegionIndices.size = indexBufferSize; // VK_WHOLE_SIZE  not allowed here!
+    vkCmdCopyBuffer(VulkanBuffers::transferCommandBuffer, stagingBuffer, dstBufferIndices, 1, &copyRegionIndices);
+
+    vkEndCommandBuffer(VulkanBuffers::transferCommandBuffer);
+
+    // Submit
+
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &VulkanBuffers::transferCommandBuffer;
+
+    START_TRACE
+    vkQueueSubmit(VulkanBuffers::transferQueue, 1, &submitInfo, uploadFence);
+    END_TRACE("Queue submit")
+
+    // End
+    stagingBuffersToDestroy.push_back(stagingBuffer);
+    stagingBufferMemoriesToDestroy.push_back(stagingBufferMemory);
+    waitingForFence = true;
+
+    meshBufferIndexToSet = bufferIndex;
+    indexCountToSet = indices.size();
+    vertexCountToSet = vertices.size();
+}
+
+void VulkanBuffers::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, bool parallel) {
+//    VkCommandBufferAllocateInfo allocInfo{};
+//    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+//    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+//    allocInfo.commandPool = VulkanBuffers::transferCommandPool;
+//    allocInfo.commandBufferCount = 1;
+//    VkCommandBuffer transferBuffer;
+//    vkAllocateCommandBuffers(logical, &allocInfo, &transferBuffer);
+
+    VkCommandBufferBeginInfo beginInfo{};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+    vkBeginCommandBuffer(VulkanBuffers::transferCommandBuffer, &beginInfo);
+
+    VkBufferCopy copyRegion{};
+    copyRegion.srcOffset = 0; // Optional
+    copyRegion.dstOffset = 0; // Optional
+    copyRegion.size = size; // VK_WHOLE_SIZE  not allowed here!
+    vkCmdCopyBuffer(VulkanBuffers::transferCommandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+    vkEndCommandBuffer(VulkanBuffers::transferCommandBuffer);
+
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &VulkanBuffers::transferCommandBuffer;
+
+    START_TRACE
+    vkQueueSubmit(VulkanBuffers::transferQueue, 1, &submitInfo, VK_NULL_HANDLE);
+    vkQueueWaitIdle(VulkanBuffers::transferQueue);
+    END_TRACE("Queue submit & wait idle")
+
+//    vkFreeCommandBuffers(logical, VulkanBuffers::transferCommandPool, 1, &VulkanBuffers::transferCommandBuffer);
+}
+
+void VulkanBuffers::waitForTransfer() {
+    VkResult result = vkWaitForFences(VulkanDevices::logical, 1, &VulkanBuffers::uploadFence, true,
+                                      30'000'000'000); // Wait for 30s max
+    if (result != VK_SUCCESS) {
+        THROW("Waiting for the upload fence was unsuccessful");
+    }
+    finishTransfer();
+}
+
+void VulkanBuffers::finishTransfer() {
+    vkResetFences(VulkanDevices::logical, 1, &VulkanBuffers::uploadFence);
+    destroyStagingBuffers();
+    waitingForFence = false;
+    VulkanBuffers::meshBufferToUse = meshBufferIndexToSet;
+    VulkanBuffers::indexCount[meshBufferIndexToSet] = indexCountToSet;
+    VulkanBuffers::vertexCount[meshBufferIndexToSet] = vertexCountToSet;
+}
+
+bool VulkanBuffers::isTransferQueueReady() {
+    if (!waitingForFence) return true;
+
+    VkResult result = vkGetFenceStatus(VulkanDevices::logical, VulkanBuffers::uploadFence);
+    if (result == VK_SUCCESS) {
+        return true;
+    } else if (result == VK_ERROR_DEVICE_LOST) {
+        THROW("Device lost when checking fence");
+    } else {
+        return false;
+    }
+}
+
+void VulkanBuffers::createUploadFence() {
+    VkFenceCreateInfo createInfo{
+            .sType=VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+            .flags=0
+    };
+    if (vkCreateFence(VulkanDevices::logical, &createInfo, nullptr, &VulkanBuffers::uploadFence) != VK_SUCCESS) {
+        THROW("Failed to create upload fence");
+    }
+}
+
 void VulkanBuffers::destroyCommandBuffer(VkCommandPool commandPool) {
     vkFreeCommandBuffers(VulkanDevices::logical, commandPool, 1, &VulkanBuffers::commandBuffer);
 }
@@ -92,35 +322,6 @@ VkBuffer VulkanBuffers::getCurrentUniformBuffer() {
     return VulkanBuffers::uniformBuffers[VulkanBuffers::uniformBufferIndex];
 }
 
-void VulkanBuffers::uploadVertices(const std::vector<Vertex> &vertices, int simplifiedIndex) {
-    VkDeviceSize bufferSize = sizeof(Vertex) * vertices.size();
-
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer,
-                 &stagingBufferMemory);
-
-    void *data;
-    vkMapMemory(VulkanDevices::logical, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, vertices.data(), (size_t) bufferSize);
-    vkUnmapMemory(VulkanDevices::logical, stagingBufferMemory);
-
-    // +1 because -1 means that we are accessing a non-simplified buffer
-    auto dstBuffer = VulkanBuffers::vertexBuffer[simplifiedIndex + 1];
-    copyBuffer(stagingBuffer, dstBuffer, bufferSize);
-
-    // Cleanup
-    vkDestroyBuffer(VulkanDevices::logical, stagingBuffer, nullptr);
-    vkFreeMemory(VulkanDevices::logical, stagingBufferMemory, nullptr);
-
-    // TODO += -> = revert
-    VulkanBuffers::vertexCount[simplifiedIndex + 1] = vertices.size();
-
-    // TODO for now assume that initial buffer is only copied to once
-    VulkanBuffers::simplifiedMeshBuffersIndex = simplifiedIndex;
-}
-
 void VulkanBuffers::createVertexBuffer() {
     VkDeviceSize bufferSize = DEFAULT_ALLOCATION_SIZE;
 
@@ -128,33 +329,6 @@ void VulkanBuffers::createVertexBuffer() {
         createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
                      VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VulkanBuffers::vertexBuffer + i,
                      VulkanBuffers::vertexBufferMemory + i);
-}
-
-void VulkanBuffers::uploadIndices(const std::vector<uint32_t> &indices, int simplifiedIndex) {
-    VkDeviceSize bufferSize = sizeof(uint32_t) * indices.size();
-
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffer,
-                 &stagingBufferMemory);
-
-    void *data;
-    vkMapMemory(VulkanDevices::logical, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, indices.data(), (size_t) bufferSize);
-    vkUnmapMemory(VulkanDevices::logical, stagingBufferMemory);
-
-    // +1 because -1 means that we are accessing a non-simplified buffer
-    copyBuffer(stagingBuffer, VulkanBuffers::indexBuffer[simplifiedIndex + 1], bufferSize);
-
-    vkDestroyBuffer(VulkanDevices::logical, stagingBuffer, nullptr);
-    vkFreeMemory(VulkanDevices::logical, stagingBufferMemory, nullptr);
-
-    // TODO += -> = revert
-    VulkanBuffers::indexCount[simplifiedIndex + 1] = indices.size();
-
-    // TODO for now assume that initial buffer is only copied to once
-    VulkanBuffers::simplifiedMeshBuffersIndex = simplifiedIndex;
 }
 
 void VulkanBuffers::createIndexBuffer() {
@@ -257,36 +431,6 @@ void VulkanBuffers::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, Vk
     vkBindBufferMemory(VulkanDevices::logical, *pBuffer, *pBufferMemory, 0);
 }
 
-void VulkanBuffers::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
-//    VkCommandBufferAllocateInfo allocInfo{};
-//    allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-//    allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-//    allocInfo.commandPool = VulkanBuffers::transferCommandPool;
-//    allocInfo.commandBufferCount = 1;
-//    VkCommandBuffer transferBuffer;
-//    vkAllocateCommandBuffers(logical, &allocInfo, &transferBuffer);
-
-    VkCommandBufferBeginInfo beginInfo{};
-    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-
-    vkBeginCommandBuffer(VulkanBuffers::transferCommandBuffer, &beginInfo);
-
-    VkBufferCopy copyRegion{};
-    copyRegion.srcOffset = 0; // Optional
-    copyRegion.dstOffset = 0; // Optional
-    copyRegion.size = size; // VK_WHOLE_SIZE  not allowed here!
-    vkCmdCopyBuffer(VulkanBuffers::transferCommandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-
-    vkEndCommandBuffer(VulkanBuffers::transferCommandBuffer);
-
-    VkSubmitInfo submitInfo{};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &VulkanBuffers::transferCommandBuffer;
-
-    vkQueueSubmit(VulkanBuffers::transferQueue, 1, &submitInfo, VK_NULL_HANDLE);
-    vkQueueWaitIdle(VulkanBuffers::transferQueue); // TODO replace with fence
-
-//    vkFreeCommandBuffers(logical, VulkanBuffers::transferCommandPool, 1, &VulkanBuffers::transferCommandBuffer);
+void VulkanBuffers::resetMeshBufferToUse() {
+    VulkanBuffers::meshBufferToUse = 0;
 }

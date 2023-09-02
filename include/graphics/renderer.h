@@ -102,9 +102,7 @@ private:
     void uploadRenderables(ECS &ecs);
 
     // return buffer to use
-    static void uploadSimplifiedMeshes(ECS &ecs, uint32_t &bufferToUse, bool &uploadedAnySimplifiedMeshes);
-
-    void uploadSimplifiedMeshesThreadHelper(ECS &ecs);
+    void uploadSimplifiedMeshes(ECS &ecs);
 
     void destroyRenderables(ECS &ecs);
 
@@ -114,14 +112,6 @@ private:
 
     chrono_sec_point lastTimestamp = Timer::now();
     std::thread simplifiedMeshAllocationThread{};
-
-    uint32_t meshBufferToUse = 0;
-
-    // Depth testing
-    // TODO destroy:
-//    VkImage depthImage;
-//    VkDeviceMemory depthImageMemory;
-//    VkImageView depthImageView;
 
     VkDescriptorSetLayout descriptorSetLayout = nullptr;
     VkDescriptorPool descriptorPool = nullptr;

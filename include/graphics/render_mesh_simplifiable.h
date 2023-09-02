@@ -15,7 +15,7 @@ struct RenderMeshSimplifiable {
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
     bool isAllocated = false;
-    int bufferIndex = 0;
+    uint32_t bufferIndex = 0;
     bool updateSimplifiedMesh = false;
     std::mutex simplifiedMeshMutex = std::mutex{};
 };

@@ -11,11 +11,11 @@ UiState *Renderer::getUiState() {
 }
 
 void Renderer::resetMesh() {
-    this->meshBufferToUse = 0;
+    VulkanBuffers::resetMeshBufferToUse();
 }
 
 void Renderer::drawUi(){
-    this->state.uiState.currentMeshVertices = VulkanBuffers::vertexCount[this->meshBufferToUse];
-    this->state.uiState.currentMeshTriangles = VulkanBuffers::indexCount[this->meshBufferToUse] / 3;
+    this->state.uiState.currentMeshVertices = VulkanBuffers::vertexCount[VulkanBuffers::meshBufferToUse];
+    this->state.uiState.currentMeshTriangles = VulkanBuffers::indexCount[VulkanBuffers::meshBufferToUse] / 3;
     VulkanImgui::draw(this->state);
 }

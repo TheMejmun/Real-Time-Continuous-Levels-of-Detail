@@ -22,7 +22,7 @@ namespace VulkanBuffers {
     extern uint32_t vertexCount[];
     extern VkBuffer indexBuffer[];
     extern uint32_t indexCount[];
-    extern int simplifiedMeshBuffersIndex;
+    extern uint32_t meshBufferToUse;
     extern uint32_t uniformBufferIndex;
 
     extern VkPhysicalDeviceMemoryProperties memProperties;
@@ -36,6 +36,8 @@ namespace VulkanBuffers {
     extern VkQueue transferQueue;
     extern VkCommandPool transferCommandPool;
     extern VkCommandBuffer transferCommandBuffer; // Cleaned automatically by command pool clean.
+    extern bool waitingForFence;
+    extern VkFence uploadFence;
 
     void create();
 
@@ -49,9 +51,12 @@ namespace VulkanBuffers {
 
     void *getCurrentUniformBufferMapping();
 
-    void uploadVertices(const std::vector<Vertex> &vertices, int simplifiedMeshBufferIndex = -1);
+    void uploadVertices(const std::vector<Vertex> &vertices, uint32_t bufferIndex = 0);
 
-    void uploadIndices(const std::vector<uint32_t> &indices, int simplifiedMeshBufferIndex = -1);
+    void uploadIndices(const std::vector<uint32_t> &indices, uint32_t bufferIndex = 0);
+
+    void uploadMesh(const std::vector<Vertex> &vertices, const std::vector<uint32_t> &indices,
+                    bool parallel = false, uint32_t bufferIndex = 0);
 
     VkBuffer getCurrentUniformBuffer();
 
@@ -65,10 +70,20 @@ namespace VulkanBuffers {
 
     void createTransferCommandPool();
 
+    void createUploadFence();
+
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer *pBuffer,
                       VkDeviceMemory *pBufferMemory);
 
-    void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+    void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, bool parallel = false);
+
+    bool isTransferQueueReady();
+
+    void finishTransfer();
+
+    void waitForTransfer();
+
+    void resetMeshBufferToUse();
 }
 
 #endif //REALTIME_CELL_COLLAPSE_VULKAN_BUFFERS_H
