@@ -11,7 +11,9 @@
 void Renderer::create(const std::string &title, GLFWwindow *window) {
     INF "Creating Renderer" ENDL;
 
+    // Reset
     this->state = {};
+    VulkanBuffers::meshBufferToUse = 0;
 
     this->state.title = title;
     this->state.window = window;
