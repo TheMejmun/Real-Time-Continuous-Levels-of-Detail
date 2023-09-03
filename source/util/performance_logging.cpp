@@ -123,7 +123,7 @@ void PerformanceLogging::update(UiState &uiState) {
                  << "\n";
 
             double totalUploadDuration = 0.0;
-            for (auto x: calculationDurations) totalUploadDuration += x;
+            for (auto x: uploadDurations) totalUploadDuration += x;
             file << "Average mesh upload duration: "
                  << (totalUploadDuration / static_cast<double>(uploadDurations.size()))
                  << "\n";
