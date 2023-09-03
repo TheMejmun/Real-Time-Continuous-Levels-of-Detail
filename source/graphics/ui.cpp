@@ -3,6 +3,7 @@
 //
 
 #include "graphics/ui.h"
+#include "util/performance_logging.h"
 
 #include <imgui.h>
 
@@ -13,24 +14,36 @@ void UI::update(UiState &state) {
 
     ImGui::Begin("Realtime Cell Collapse");
 
+    ImGui::Text("Camera Z: %3.2f", state.cameraZ);
+
     ImGui::SeparatorText("Performance");
 
     ImGui::Text("CPU wait time: %1.4f seconds", state.cpuWaitTime);
-    if(!state.fps.frametimesLastSecond.empty()) {
+    if (!state.fps.frametimesLastSecond.empty()) {
         sec lastFrametime = state.fps.frametimesLastSecond.back();
         ImGui::Text("Total frame time: %1.4f seconds", lastFrametime);
-    }else{
+    } else {
         ImGui::Text("Total frame time: >1 second");
     }
     ImGui::Text("Frames per second: %d", state.fps.currentFPS());
+
+    if (!state.loggingStarted) {
+        if (ImGui::Button("Start performance log")) {
+            state.loggingStarted = true;
+            state.loggingStartTime = Timer::now();
+        }
+    } else {
+        ImGui::Text("Performance log running: %3.2f",
+                    PerformanceLogging::LOG_DURATION - Timer::duration(state.loggingStartTime, Timer::now()));
+    }
 
     ImGui::SeparatorText("Mesh Info");
 
     ImGui::Text("Current vertex count: %d", state.currentMeshVertices);
     ImGui::Text("Current triangle count: %d", state.currentMeshTriangles);
-    if (ImGui::Button("Use original"))
+    if (ImGui::Button("Use original mesh"))
         state.returnToOriginalMeshBuffer = true;
-    const std::string meshSwitchText = state.isMonkeyMesh ? "Switch to Sphere":"Switch to Monkey";
+    const std::string meshSwitchText = state.isMonkeyMesh ? "Switch to Sphere" : "Switch to Monkey";
     if (ImGui::Button(meshSwitchText.c_str()))
         state.switchMesh = true;
 

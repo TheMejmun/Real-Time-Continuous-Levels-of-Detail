@@ -42,6 +42,7 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/graphics/triangle.h
         ${HEADER_FOLDER}/graphics/render_state.h
         ${HEADER_FOLDER}/graphics/ui_state.h
+        ${HEADER_FOLDER}/graphics/render_mesh_simplifiable.h
 
         ${HEADER_FOLDER}/graphics/vulkan/vulkan_images.h
         ${HEADER_FOLDER}/graphics/vulkan/vulkan_memory.h
@@ -61,8 +62,11 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/ecs/ecs.h
         ${HEADER_FOLDER}/ecs/system.h
         ${HEADER_FOLDER}/ecs/entity.h
+        ${HEADER_FOLDER}/ecs/components.h
         ${HEADER_FOLDER}/ecs/entities/dense_sphere.h
         ${HEADER_FOLDER}/ecs/entities/camera.h
+        ${HEADER_FOLDER}/ecs/entities/input_state_entity.h
+        ${HEADER_FOLDER}/ecs/entities/monkey.h
         ${HEADER_FOLDER}/ecs/systems/camera_controller.h
         ${HEADER_FOLDER}/ecs/systems/sphere_controller.h
         ${HEADER_FOLDER}/ecs/systems/mesh_simplifier_controller.h
@@ -72,11 +76,10 @@ set(HEADER_FILES
         ${HEADER_FOLDER}/util/timer.h
         ${HEADER_FOLDER}/util/importer.h
         ${HEADER_FOLDER}/util/byte_size.h
-        include/ecs/components.h
-        include/ecs/entities/input_state_entity.h
-        include/io/input_state.h
-        include/graphics/render_mesh_simplifiable.h
-        include/ecs/entities/monkey.h)
+        ${HEADER_FOLDER}/util/performance_logging.h
+
+        ${HEADER_FOLDER}/io/input_state.h
+)
 message(STATUS "HEADER_FILES: ${HEADER_FILES}")
 set(SOURCE_FILES
         ${SOURCE_FOLDER}/application.cpp
@@ -102,11 +105,14 @@ set(SOURCE_FILES
 
         ${SOURCE_FOLDER}/io/input_manager.cpp
         ${SOURCE_FOLDER}/io/window_manager.cpp
+        ${SOURCE_FOLDER}/io/printer.cpp
 
         ${SOURCE_FOLDER}/ecs/ecs.cpp
         ${SOURCE_FOLDER}/ecs/entity.cpp
         ${SOURCE_FOLDER}/ecs/entities/dense_sphere.cpp
         ${SOURCE_FOLDER}/ecs/entities/camera.cpp
+        ${SOURCE_FOLDER}/ecs/entities/input_state_entity.cpp
+        ${SOURCE_FOLDER}/ecs/entities/monkey.cpp
         ${SOURCE_FOLDER}/ecs/systems/camera_controller.cpp
         ${SOURCE_FOLDER}/ecs/systems/sphere_controller.cpp
         ${SOURCE_FOLDER}/ecs/systems/mesh_simplifier_controller.cpp
@@ -115,10 +121,8 @@ set(SOURCE_FILES
 
         ${SOURCE_FOLDER}/util/importer.cpp
         ${SOURCE_FOLDER}/util/timer.cpp
-        source/ecs/entities/input_state_entity.cpp
-        source/ecs/entities/monkey.cpp
-        source/io/printer.cpp
-        source/io/printer.cpp)
+        ${SOURCE_FOLDER}/util/performance_logging.cpp
+)
 message(STATUS "SOURCE_FILES: ${SOURCE_FILES}")
 # Main executable
 add_executable(Realtime_Cell_Collapse ${SOURCE_FOLDER}/main.cpp ${HEADER_FILES} ${SOURCE_FILES})

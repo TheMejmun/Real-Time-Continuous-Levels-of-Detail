@@ -5,6 +5,7 @@
 #include "graphics/renderer.h"
 #include "graphics/uniform_buffer_object.h"
 #include "graphics/vulkan/vulkan_swapchain.h"
+#include "util/performance_logging.h"
 
 // SYSTEMS THAT PLUG INTO THE ECS
 
@@ -39,12 +40,14 @@ void Renderer::uploadSimplifiedMeshes(ECS &ecs) {
 
     for (auto components: entities) {
         if (components->renderMeshSimplifiable->simplifiedMeshMutex.try_lock()) {
+            PerformanceLogging::meshUploadStarted();
             auto &mesh = *components->renderMeshSimplifiable;
             // TODO this upload produced a bad access error
             VulkanBuffers::uploadMesh(mesh.vertices, mesh.indices, true, bufferToUse);
             mesh.isAllocated = true;
             mesh.bufferIndex = bufferToUse;
             mesh.updateSimplifiedMesh = false;
+            PerformanceLogging::meshUploadFinished({mesh.vertices.size(), mesh.indices.size() / 3});
             mesh.simplifiedMeshMutex.unlock();
 
             uploadedAny = true;
