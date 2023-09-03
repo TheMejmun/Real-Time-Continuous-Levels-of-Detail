@@ -6,8 +6,6 @@
 #include <sstream>
 
 int main() {
-    Printer::printThreadStarted();
-
     Application app{};
     app.title = "Hello World!";
 
