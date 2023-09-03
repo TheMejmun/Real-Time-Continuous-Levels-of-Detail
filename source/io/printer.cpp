@@ -8,8 +8,10 @@
 #include <thread>
 
 void Printer::printThreadStarted() {
+#ifdef NDEBUG
     std::stringstream ss;
     ss << std::this_thread::get_id();
     std::string id = ss.str();
     printf("Thread id: %s\n", id.c_str());
+#endif
 }
