@@ -20,15 +20,21 @@ layout(location = 3) out vec3 fragNormal;
 layout(location = 4) out vec3 fragUVW;
 layout(location = 5) out mat4 modelTransform;
 
+//#define OFFSET_INSTANCES
+
 void main() {
-    mat4 model  = ubo.model + mat4 (
+    mat4 model  = ubo.model;
+
+#ifdef OFFSET_INSTANCES
+    model += mat4 (
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
     (gl_InstanceIndex / 5 - 2) * 5, (gl_InstanceIndex % 5 - 2) * 5, 0, 0
     );
+#endif
+
     vec4 posWS = model * vec4(inPosition, 1.0);
-//    posWS += vec4((gl_InstanceIndex / 5 - 2) * 5, (gl_InstanceIndex % 5 - 2) * 5, 0, 0);
     vec4 posSS = ubo.proj * ubo.view * posWS;
     gl_Position = posSS;
 
