@@ -14,6 +14,8 @@ void UI::update(UiState &state) {
 
     ImGui::Begin("Realtime Cell Collapse");
 
+    ImGui::Text("Camera Z: %3.2f", state.cameraZ);
+
     ImGui::SeparatorText("Performance");
 
     ImGui::Text("CPU wait time: %1.4f seconds", state.cpuWaitTime);

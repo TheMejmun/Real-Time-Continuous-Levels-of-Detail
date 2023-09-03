@@ -69,6 +69,10 @@ void Application::mainLoop() {
             this->windowManager.close();
         }
 
+        auto cameraPos = this->ecs.requestEntities(CameraController::EvaluatorActiveCamera)[0]
+                ->transform->getPosition();
+        uiState->cameraZ = cameraPos.z;
+
         // Systems
         CameraController::update(this->deltaTime, this->ecs);
         SphereController::update(this->deltaTime, this->ecs);

@@ -77,7 +77,9 @@ void PerformanceLogging::update(UiState &uiState) {
 #endif
 
             std::stringstream nameBuilder{};
+            nameBuilder << std::setprecision(2) << std::fixed;
             nameBuilder << "output/performance_log";
+            nameBuilder << "_z" << uiState.cameraZ;
             if (uiState.isMonkeyMesh)
                 nameBuilder << "_monkey";
             else
