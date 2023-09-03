@@ -38,7 +38,7 @@ private:
     uint32_t currentFPS = 0;
     sec deltaTime = 0;
 
-    bool monkeyMode = true;
+    bool monkeyMode = false;
     bool exitAfterMainLoop = true;
 };
 
