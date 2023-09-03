@@ -10,7 +10,12 @@ All further information is displayed on the screen.
 
 ## Source code setup
 
-This project requires a valid [Vulkan](https://www.vulkan.org/tools#download-these-essential-development-tools) installation and [vcpkg](https://vcpkg.io/) to be compilable. It has been tested working on Windows (x64) and MacOS (arm64). 
+This project requires a valid [Vulkan](https://www.vulkan.org/tools#download-these-essential-development-tools) installation and [vcpkg](https://vcpkg.io/) to be compilable. It has been tested working on Windows (x64) and MacOS (arm64).
+
+1. Install Vulkan and vcpkg
+2. Execute `vcpkg install` to download the dependencies
+3. Run `./compileShaders.sh` or `compileShaders.bat` depending on your system to compile the shaders
+4. Compile the program using CMake
 
 ### Warning
 
