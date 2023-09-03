@@ -8,7 +8,15 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+
+#ifdef _WIN32
+// This is required for the windows mkdir function to work.
 #include <direct.h>
+#else
+// macos
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
 
 extern const sec PerformanceLogging::LOG_DURATION = 60.0;
 const uint32_t EXPECTED_MAX_FRAME_COUNT =
