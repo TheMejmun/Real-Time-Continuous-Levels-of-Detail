@@ -7,6 +7,8 @@
 #include "io/printer.h"
 #include "graphics/vulkan/vulkan_swapchain.h"
 
+#include <array>
+
 VkRenderPass VulkanRenderPasses::renderPass = nullptr;
 
 void VulkanRenderPasses::create() {
@@ -49,7 +51,9 @@ void VulkanRenderPasses::create() {
     subpass.pColorAttachments = &colorAttachmentRef; // Output attachment
     subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
-    std::array<VkAttachmentDescription, 2> attachments = {colorAttachment, depthAttachment};
+    std::array<VkAttachmentDescription, 2> attachments{};
+    attachments[0] = colorAttachment;
+    attachments[1] = depthAttachment;
 
     VkRenderPassCreateInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;

@@ -11,7 +11,8 @@
 #include "graphics/vulkan/vulkan_imgui.h"
 #include "graphics/vulkan/vulkan_images.h"
 
-#include <GLFW/glfw3.h>
+#include <glfw/glfw3.h>
+#include <array>
 #include <algorithm>
 
 // Global
@@ -315,10 +316,9 @@ void VulkanSwapchain::createFramebuffers() {
     VulkanSwapchain::framebuffers.resize(VulkanSwapchain::imageViews.size());
 
     for (size_t i = 0; i < VulkanSwapchain::imageViews.size(); i++) {
-        std::array<VkImageView, 2> attachments = {
-                VulkanSwapchain::imageViews[i],
-                VulkanSwapchain::depthImageView  // Always write to the same depth image. YOLO
-        };
+        std::array<VkImageView, 2> attachments = {};
+        attachments[0] = VulkanSwapchain::imageViews[i];
+        attachments[1] = VulkanSwapchain::depthImageView; // Always write to the same depth image. YOLO
 
         VkFramebufferCreateInfo framebufferInfo{};
         framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

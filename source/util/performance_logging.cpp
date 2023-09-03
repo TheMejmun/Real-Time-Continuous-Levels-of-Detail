@@ -7,8 +7,8 @@
 
 #include <iostream>
 #include <fstream>
-#include <sys/stat.h>
 #include <sstream>
+#include <direct.h>
 
 extern const sec PerformanceLogging::LOG_DURATION = 60.0;
 const uint32_t EXPECTED_MAX_FRAME_COUNT =
@@ -71,7 +71,7 @@ void PerformanceLogging::update(UiState &uiState) {
 
             // mkdir varies between OSes
 #ifdef _WIN32
-            mkdir("output");
+            _mkdir("output");
 #else
             mkdir("output", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 #endif
