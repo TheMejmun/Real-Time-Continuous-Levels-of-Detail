@@ -11,8 +11,8 @@
 #include <memory>
 #include <string>
 
-const int32_t DEFAULT_WIDTH = 1280;
-const int32_t DEFAULT_HEIGHT = 720;
+const int32_t DEFAULT_WIDTH = 1920;
+const int32_t DEFAULT_HEIGHT = 1080;
 
 class WindowManager {
 public:
