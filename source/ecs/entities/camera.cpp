@@ -8,6 +8,8 @@
 
 Camera::Camera() {
     this->components.transform = std::make_unique<Transformer4>();
-    this->components.transform->translate(glm::vec3(0, 0, -5));
+    this->components.transform->translate(glm::vec3(0, 0, -1.5));
+//    this->components.transform->translate(glm::vec3(0, 0, -3));
+//    this->components.transform->translate(glm::vec3(0, 0, -30));
     this->components.camera = std::make_unique<Projector>();
 }

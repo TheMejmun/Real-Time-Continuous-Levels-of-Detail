@@ -280,7 +280,7 @@ void MeshSimplifierController::update(ECS &ecs, sec *timeTaken, uint32_t *frames
                         PerformanceLogging::meshCalculationStarted();
                         simplify(camera, components);
                         components->renderMeshSimplifiable->updateSimplifiedMesh = true;
-                        PerformanceLogging::meshCalculatiodFinished();
+                        PerformanceLogging::meshCalculationFinished();
                         components->renderMeshSimplifiable->simplifiedMeshMutex.unlock();
                     }
                 }

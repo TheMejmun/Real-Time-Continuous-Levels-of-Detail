@@ -47,7 +47,7 @@ void Renderer::uploadSimplifiedMeshes(ECS &ecs) {
             mesh.isAllocated = true;
             mesh.bufferIndex = bufferToUse;
             mesh.updateSimplifiedMesh = false;
-            PerformanceLogging::meshUploadFinished();
+            PerformanceLogging::meshUploadFinished({mesh.vertices.size(), mesh.indices.size() / 3});
             mesh.simplifiedMeshMutex.unlock();
 
             uploadedAny = true;
