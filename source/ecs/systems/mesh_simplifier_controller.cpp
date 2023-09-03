@@ -26,7 +26,6 @@ uint32_t simplifiedMeshCalculationThreadFrameCounter = 0;
 chrono_sec_point simplifiedMeshCalculationThreadStartedTime{};
 bool meshCalculationDone = false;
 
-
 struct SVO { // Simplification Vertex Object
     bool set = false;
     uint32_t index = 0;
@@ -219,7 +218,6 @@ void simplify(const Components *camera, const Components *components) {
     }
 
     // Push
-    // Count vertices & store depth
     std::vector<uint32_t> usedVertexIndexMappings;
     usedVertexIndexMappings.resize(from.vertices.size());
 
