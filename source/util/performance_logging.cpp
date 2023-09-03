@@ -23,6 +23,8 @@ std::optional<chrono_sec_point> lastUploadStarted{};
 std::vector<sec> calculationDurations{};
 std::vector<sec> uploadDurations{};
 
+std::vector<MeshStatistics> meshStatistics{};
+
 void PerformanceLogging::newFrame(const FrameTimes &frameTimes) {
     if (active)
         frames.push_back(frameTimes);
@@ -33,7 +35,7 @@ void PerformanceLogging::meshCalculationStarted() {
         lastCalculationStarted = Timer::now();
 }
 
-void PerformanceLogging::meshCalculatiodFinished() {
+void PerformanceLogging::meshCalculationFinished() {
     if (lastCalculationStarted.has_value())
         calculationDurations.push_back(Timer::duration(lastCalculationStarted.value(), Timer::now()));
 }
@@ -43,9 +45,11 @@ void PerformanceLogging::meshUploadStarted() {
         lastUploadStarted = Timer::now();
 }
 
-void PerformanceLogging::meshUploadFinished() {
-    if (lastUploadStarted.has_value())
+void PerformanceLogging::meshUploadFinished(const MeshStatistics &stats) {
+    if (lastUploadStarted.has_value()) {
         uploadDurations.push_back(Timer::duration(lastUploadStarted.value(), Timer::now()));
+        meshStatistics.push_back(stats);
+    }
 }
 
 void PerformanceLogging::update(UiState &uiState) {
@@ -58,6 +62,7 @@ void PerformanceLogging::update(UiState &uiState) {
             lastUploadStarted.reset();
             calculationDurations.clear();
             uploadDurations.clear();
+            meshStatistics.clear();
             active = true;
         }
 
@@ -72,7 +77,9 @@ void PerformanceLogging::update(UiState &uiState) {
 #endif
 
             std::stringstream nameBuilder{};
+            nameBuilder << std::setprecision(2) << std::fixed;
             nameBuilder << "output/performance_log";
+            nameBuilder << "_z" << uiState.cameraZ;
             if (uiState.isMonkeyMesh)
                 nameBuilder << "_monkey";
             else
@@ -119,6 +126,22 @@ void PerformanceLogging::update(UiState &uiState) {
             for (auto x: calculationDurations) totalUploadDuration += x;
             file << "Average mesh upload duration: "
                  << (totalUploadDuration / static_cast<double>(uploadDurations.size()))
+                 << "\n";
+
+            double averageMeshVertices = 0.0;
+            for (auto x: meshStatistics)
+                averageMeshVertices +=
+                        static_cast<double>(x.vertexCount) / static_cast<double>(meshStatistics.size());
+            file << "Average mesh vertex count: "
+                 << averageMeshVertices
+                 << "\n";
+
+            double averageMeshTriangles = 0.0;
+            for (auto x: meshStatistics)
+                averageMeshTriangles +=
+                        static_cast<double>(x.triangleCount) / static_cast<double>(meshStatistics.size());
+            file << "Average mesh triangle count: "
+                 << averageMeshTriangles
                  << "\n";
 
             file.close();

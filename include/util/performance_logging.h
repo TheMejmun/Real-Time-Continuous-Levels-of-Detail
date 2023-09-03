@@ -8,25 +8,30 @@
 #include "util/timer.h"
 #include "graphics/ui_state.h"
 
-struct FrameTimes{
+struct FrameTimes {
     sec cpuWaitTime;
     sec totalFrameTime;
+};
+
+struct MeshStatistics {
+    size_t vertexCount;
+    size_t triangleCount;
 };
 
 namespace PerformanceLogging {
     extern const sec LOG_DURATION;
 
-    void newFrame(const FrameTimes& frameTimes);
+    void newFrame(const FrameTimes &frameTimes);
 
     void meshCalculationStarted();
 
-    void meshCalculatiodFinished();
+    void meshCalculationFinished();
 
     void meshUploadStarted();
 
-    void meshUploadFinished();
+    void meshUploadFinished(const MeshStatistics &meshStatistics);
 
-    void update(UiState& uiState);
+    void update(UiState &uiState);
 }
 
 #endif //REALTIME_CELL_COLLAPSE_PERFORMANCE_LOGGING_H

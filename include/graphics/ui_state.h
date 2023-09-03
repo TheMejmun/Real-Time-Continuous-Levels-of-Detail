@@ -15,6 +15,8 @@ struct UiState {
     std::string title{};
     GLFWwindow *window = nullptr;
 
+    float cameraZ = 0;
+
     FPSCounter fps{};
     sec cpuWaitTime = 0;
     bool loggingStarted = false;
