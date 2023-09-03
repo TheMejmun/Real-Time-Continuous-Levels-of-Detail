@@ -20,12 +20,12 @@ layout(location = 3) out vec3 fragNormal;
 layout(location = 4) out vec3 fragUVW;
 layout(location = 5) out mat4 modelTransform;
 
-//#define OFFSET_INSTANCES
+//#define INSTANCED_RENDERING
 
 void main() {
     mat4 model  = ubo.model;
 
-#ifdef OFFSET_INSTANCES
+#ifdef INSTANCED_RENDERING
     model += mat4 (
     0, 0, 0, 0,
     0, 0, 0, 0,

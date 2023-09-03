@@ -346,7 +346,11 @@ void Renderer::recordCommandBuffer(VkCommandBuffer buffer, uint32_t imageIndex) 
     vkCmdBindDescriptorSets(buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipelineLayout, 0, 1,
                             &this->descriptorSets[VulkanBuffers::uniformBufferIndex], 0, nullptr);
 
+#ifdef INSTANCED_RENDERING
+    vkCmdDrawIndexed(buffer, VulkanBuffers::indexCount[VulkanBuffers::meshBufferToUse], 25, 0, 0, 0);
+#else
     vkCmdDrawIndexed(buffer, VulkanBuffers::indexCount[VulkanBuffers::meshBufferToUse], 1, 0, 0, 0);
+#endif
 
     this->drawUi();
 
