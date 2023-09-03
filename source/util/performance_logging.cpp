@@ -10,7 +10,7 @@
 #include <sys/stat.h>
 #include <sstream>
 
-extern const sec PerformanceLogging::LOG_DURATION = 30.0;
+extern const sec PerformanceLogging::LOG_DURATION = 60.0;
 const uint32_t EXPECTED_MAX_FRAME_COUNT =
         static_cast<uint32_t>(PerformanceLogging::LOG_DURATION) * 2000; // seconds * frames
 
