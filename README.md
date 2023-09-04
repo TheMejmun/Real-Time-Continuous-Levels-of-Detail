@@ -2,8 +2,8 @@
 
 ## Launching pre-compiled binaries
 
-1. Unzip the archive for either Windows, or MacOS (Apple Silicon only)
-2. Launch the file named Realtime_Cell_Collapse.exe. In the case of MacOS launch the program using the command ./Realtime_Cell_Collapse
+1. Unzip the archive for either Windows, or MacOS (Apple Silicon only).
+2. Launch the file named `Realtime_Cell_Collapse.exe`. In the case of MacOS launch the program using the command `./Realtime_Cell_Collapse`.
 3. Wait for the program to load the 3D model from disk before there is any feedback. Depending on the system this can take up to a minute.
    
 All further information is displayed on the screen.
@@ -12,10 +12,10 @@ All further information is displayed on the screen.
 
 This project requires a valid [Vulkan](https://www.vulkan.org/tools#download-these-essential-development-tools) installation and [vcpkg](https://vcpkg.io/) to be compilable. It has been tested working on Windows (x64) and MacOS (arm64).
 
-1. Install Vulkan and vcpkg
-2. Execute `vcpkg install` to download the dependencies
-3. Run `./compileShaders.sh` or `compileShaders.bat` depending on your system to compile the shaders
-4. Compile the program using CMake
+1. Install Vulkan and vcpkg.
+2. Execute `vcpkg install` to download the dependencies.
+3. Run `./compileShaders.sh` or `compileShaders.bat` depending on your system to compile the shaders.
+4. Compile the program using CMake.
 
 ### Warning
 
