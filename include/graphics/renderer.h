@@ -20,7 +20,7 @@
 #include "graphics/render_state.h"
 
 #include <glm/glm.hpp>
-#include <GLFW/glfw3.h>
+#include <glfw/glfw3.h>
 #include <string>
 #include <utility>
 #include <vector>
@@ -34,7 +34,7 @@
 #include <thread>
 
 //#define WIREFRAME_MODE
-#define INSTANCED_RENDERING
+//#define INSTANCED_RENDERING
 
 // TODO https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
 
