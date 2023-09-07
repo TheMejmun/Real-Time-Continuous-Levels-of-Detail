@@ -17,6 +17,7 @@
 #include <algorithm>
 
 //#define OUTPUT_MAPPINGS
+#define CACHE_LOCALITY_MODE
 
 const uint32_t MAX_PIXELS_PER_VERTEX = 1;
 const uint32_t MAX_INDEX = std::numeric_limits<uint32_t>::max();
@@ -218,6 +219,20 @@ void simplify(const Components *camera, const Components *components) {
     }
 
     // Push
+#ifdef CACHE_LOCALITY_MODE
+    to.indices.reserve(triangles.size() * 3);
+    to.vertices.reserve(to.indices.size()); // Duplicate vertices for good cache locality
+
+    for (const auto &[id1, id2, id3]: triangles) {
+        to.indices.push_back(to.vertices.size());
+        to.vertices.push_back(from.vertices[id1]);
+        to.indices.push_back(to.vertices.size());
+        to.vertices.push_back(from.vertices[id2]);
+        to.indices.push_back(to.vertices.size());
+        to.vertices.push_back(from.vertices[id3]);
+    }
+
+#else
     std::vector<uint32_t> usedVertexIndexMappings;
     usedVertexIndexMappings.resize(from.vertices.size());
 
@@ -254,6 +269,7 @@ void simplify(const Components *camera, const Components *components) {
             to.indices.push_back(usedVertexIndexMappings[id3]);
         }
     }
+#endif
 }
 
 void MeshSimplifierController::update(ECS &ecs, sec *timeTaken, uint32_t *framesTaken) {
