@@ -16,7 +16,7 @@
 //#define FPS_PRINTING
 
 #define COUT std::cout <<
-#define ENDL << std::endl
+#define ENDL << "\n"
 #define THROW(message) throw std::runtime_error(message)
 
 #if(defined(NDEBUG) || !defined(INFO_PRINTING))
