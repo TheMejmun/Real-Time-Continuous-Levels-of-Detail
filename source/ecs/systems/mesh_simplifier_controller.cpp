@@ -130,12 +130,22 @@ private:
 
 std::vector<uint32_t> makeIndexRange(uint32_t untilInclusive) {
     std::vector<uint32_t> out{};
-    out.resize(untilInclusive + 1);
+    out.reserve(untilInclusive + 1);
     for (int i = 0; i <= untilInclusive; ++i) {
-        out[i] = i;
+        out.emplace_back(i);
     }
     return out;
 }
+
+#define insertOutput(id) \
+    if (usedVertexIndexMappings[id] == MAX_INDEX) { \
+        usedVertexIndexMappings[id] = to.vertices.size(); \
+        to.indices.push_back(to.vertices.size()); \
+        to.vertices.emplace_back(from.vertices[id]); \
+    } else { \
+        to.indices.push_back(usedVertexIndexMappings[id]); \
+    }
+
 
 void simplify(const Components *camera, const Components *components) {
     // Init
@@ -189,15 +199,11 @@ void simplify(const Components *camera, const Components *components) {
 
     // PARALLELLLLLL
     const auto indices = makeIndexRange(from.vertices.size());
-    {
-        START_TRACE
-        std::for_each(
-                std::execution::par,
-                indices.begin(),
-                indices.end(),
-                positionCalcLambda);
-        END_TRACE("Parallel position compute")
-    }
+    std::for_each(
+            std::execution::par,
+            indices.begin(),
+            indices.end(),
+            positionCalcLambda);
 
     std::vector<SVO> indicesRaster{};
     indicesRaster.resize(rasterWidth * rasterHeight);
@@ -207,99 +213,67 @@ void simplify(const Components *camera, const Components *components) {
     uint32_t newVertexCount = 0;
 
     // Insert into raster
-    {
-        START_TRACE
-        for (uint32_t i = 0; i < svos.size(); ++i) {
-            const auto &svo = svos[i];
-            if (!svo.set) {
-                lut.insertMapping(i, MAX_INDEX); // Map previously stored to the current vertex
-                continue;
-            }
-
-            if (!indicesRaster[svo.rasterIndex].set) {
-                ++newVertexCount;
-                indicesRaster[svo.rasterIndex] = svo;
-            } else if (indicesRaster[svo.rasterIndex].depth > svo.depth) {
-                // stored vertex is farther away
-                lut.insertMapping(indicesRaster[svo.rasterIndex].index, i); // Map previously stored to the current vertex
-                indicesRaster[svo.rasterIndex] = svo;
-            } else {
-                // stored vertex is closer to the camera than the current
-                lut.insertMapping(i, indicesRaster[svo.rasterIndex].index); // Map previously stored to the current vertex
-            }
+    for (uint32_t i = 0; i < svos.size(); ++i) {
+        const auto &svo = svos[i];
+        if (!svo.set) {
+            lut.insertMapping(i, MAX_INDEX); // Map previously stored to the current vertex
+            continue;
         }
-        END_TRACE("Raster insert")
+
+        if (!indicesRaster[svo.rasterIndex].set) {
+            ++newVertexCount;
+            indicesRaster[svo.rasterIndex] = svo;
+        } else if (indicesRaster[svo.rasterIndex].depth > svo.depth) {
+            // stored vertex is farther away
+            lut.insertMapping(indicesRaster[svo.rasterIndex].index, i); // Map previously stored to the current vertex
+            indicesRaster[svo.rasterIndex] = svo;
+        } else {
+            // stored vertex is closer to the camera than the current
+            lut.insertMapping(i, indicesRaster[svo.rasterIndex].index); // Map previously stored to the current vertex
+        }
     }
 
     // Filter triangles
     std::unordered_set<Triangle, Triangle> triangles{}; // Ordered set
-    {
-        START_TRACE
-        for (uint32_t i = 0; i < from.indices.size(); i += 3) {
-            const uint32_t id1 = lut.getMapping(from.indices[i]);
-            const uint32_t id2 = lut.getMapping(from.indices[i + 1]);
-            const uint32_t id3 = lut.getMapping(from.indices[i + 2]);
+    for (uint32_t i = 0; i < from.indices.size(); i += 3) {
+        const uint32_t id1 = lut.getMapping(from.indices[i]);
+        const uint32_t id2 = lut.getMapping(from.indices[i + 1]);
+        const uint32_t id3 = lut.getMapping(from.indices[i + 2]);
 
-            if (id1 == MAX_INDEX || id2 == MAX_INDEX || id3 == MAX_INDEX ||
-                id1 == id2 || id1 == id3 || id2 == id3)
-                continue;
+        if (id1 == MAX_INDEX || id2 == MAX_INDEX || id3 == MAX_INDEX ||
+            id1 == id2 || id1 == id3 || id2 == id3)
+            continue;
 
-            triangles.insert(makeOrientedTriangle(id1, id2, id3));
-        }
-        END_TRACE("Filter triangles")
+        triangles.insert(makeOrientedTriangle(id1, id2, id3));
     }
 
     // Push
-    {
-        START_TRACE
 #ifdef CACHE_LOCALITY_MODE
-        to.indices.reserve(triangles.size() * 3);
-        to.vertices.reserve(to.indices.size()); // Duplicate vertices for good cache locality
+    to.indices.reserve(triangles.size() * 3);
+    to.vertices.reserve(to.indices.size()); // Duplicate vertices for good cache locality
 
-        for (const auto &[id1, id2, id3]: triangles) {
-            to.indices.push_back(to.vertices.size());
-            to.vertices.push_back(from.vertices[id1]);
-            to.indices.push_back(to.vertices.size());
-            to.vertices.push_back(from.vertices[id2]);
-            to.indices.push_back(to.vertices.size());
-            to.vertices.push_back(from.vertices[id3]);
-        }
+    for (const auto &[id1, id2, id3]: triangles) {
+        to.indices.push_back(to.vertices.size());
+        to.vertices.push_back(from.vertices[id1]);
+        to.indices.push_back(to.vertices.size());
+        to.vertices.push_back(from.vertices[id2]);
+        to.indices.push_back(to.vertices.size());
+        to.vertices.push_back(from.vertices[id3]);
+    }
 
 #else
-        std::vector<uint32_t> usedVertexIndexMappings;
-        usedVertexIndexMappings.resize(from.vertices.size(), MAX_INDEX);
+    std::vector<uint32_t> usedVertexIndexMappings;
+    usedVertexIndexMappings.resize(from.vertices.size(), MAX_INDEX);
 
-        to.indices.reserve(triangles.size() * 3);
-        to.vertices.reserve(newVertexCount);
+    to.indices.reserve(triangles.size() * 3);
+    to.vertices.reserve(newVertexCount);
 
-        for (const auto &[id1, id2, id3]: triangles) {
-            if (usedVertexIndexMappings[id1] == MAX_INDEX) {
-                usedVertexIndexMappings[id1] = to.vertices.size();
-                to.indices.push_back(to.vertices.size());
-                to.vertices.emplace_back(from.vertices[id1]);
-            } else {
-                to.indices.push_back(usedVertexIndexMappings[id1]);
-            }
-
-            if (usedVertexIndexMappings[id2] == MAX_INDEX) {
-                usedVertexIndexMappings[id2] = to.vertices.size();
-                to.indices.push_back(to.vertices.size());
-                to.vertices.emplace_back(from.vertices[id2]);
-            } else {
-                to.indices.push_back(usedVertexIndexMappings[id2]);
-            }
-
-            if (usedVertexIndexMappings[id3] == MAX_INDEX) {
-                usedVertexIndexMappings[id3] = to.vertices.size();
-                to.indices.push_back(to.vertices.size());
-                to.vertices.emplace_back(from.vertices[id3]);
-            } else {
-                to.indices.push_back(usedVertexIndexMappings[id3]);
-            }
-        }
-#endif
-        END_TRACE("Output")
+    for (const auto &[id1, id2, id3]: triangles) {
+        insertOutput(id1)
+        insertOutput(id2)
+        insertOutput(id3)
     }
+#endif
 }
 
 void MeshSimplifierController::update(ECS &ecs, sec *timeTaken, uint32_t *framesTaken) {
